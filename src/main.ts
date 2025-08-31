@@ -3,6 +3,7 @@ import { AppModule } from '@/app.module';
 import { ConfigService } from '@nestjs/config';
 import { LogLevel, ValidationPipe } from '@nestjs/common';
 import { WsAdapter } from '@nestjs/platform-ws';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 declare const module: any;
 
@@ -24,6 +25,14 @@ async function bootstrap() {
     app.useLogger(loggerLevels);
 
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+    const config = new DocumentBuilder()
+        .setTitle('Bitshala API')
+        .setDescription('API documentation for Bitshala')
+        .addBearerAuth()
+        .build();
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, documentFactory);
 
     await app.listen(port);
 
