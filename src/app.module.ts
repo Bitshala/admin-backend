@@ -8,8 +8,9 @@ import { AppService } from '@/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from '@/configuration';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 import { entities } from '@/entities/entities';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { AllExceptionsFilter } from '@/global-exception.filter';
 
 @Module({
     imports: [
@@ -57,6 +58,10 @@ import { entities } from '@/entities/entities';
     controllers: [AppController],
     providers: [
         AppService,
+        {
+            provide: APP_FILTER,
+            useClass: AllExceptionsFilter,
+        },
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
