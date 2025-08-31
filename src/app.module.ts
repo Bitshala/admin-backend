@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,8 +9,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from '@/configuration';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { entities } from '@/entities/entities';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionsFilter } from '@/global-exception.filter';
+import { RequestLoggerMiddleware } from '@/middlewares/logger.middleware';
+import { ResponseLoggingInterceptor } from '@/interceptors/response-logger.interceptor';
 
 @Module({
     imports: [
@@ -63,9 +65,17 @@ import { AllExceptionsFilter } from '@/global-exception.filter';
             useClass: AllExceptionsFilter,
         },
         {
+            provide: APP_INTERCEPTOR,
+            useClass: ResponseLoggingInterceptor,
+        },
+        {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
         },
     ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(RequestLoggerMiddleware).forRoutes('*');
+    }
+}
