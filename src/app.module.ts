@@ -13,6 +13,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionsFilter } from '@/global-exception.filter';
 import { RequestLoggerMiddleware } from '@/middlewares/logger.middleware';
 import { ResponseLoggingInterceptor } from '@/interceptors/response-logger.interceptor';
+import { CohortsModule } from '@/cohorts/cohorts.module';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { ResponseLoggingInterceptor } from '@/interceptors/response-logger.inter
                 },
             ],
         }),
+        CohortsModule,
     ],
     controllers: [AppController],
     providers: [
