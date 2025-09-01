@@ -14,6 +14,7 @@ import { AllExceptionsFilter } from '@/global-exception.filter';
 import { RequestLoggerMiddleware } from '@/middlewares/logger.middleware';
 import { ResponseLoggingInterceptor } from '@/interceptors/response-logger.interceptor';
 import { CohortsModule } from '@/cohorts/cohorts.module';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
     imports: [
@@ -58,6 +59,7 @@ import { CohortsModule } from '@/cohorts/cohorts.module';
             ],
         }),
         CohortsModule,
+        UsersModule,
     ],
     controllers: [AppController],
     providers: [
