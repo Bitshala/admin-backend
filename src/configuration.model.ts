@@ -5,6 +5,7 @@ import {
     IsNotEmpty,
     IsOptional,
     IsString,
+    IsUrl,
     Max,
     Min,
     ValidateIf,
@@ -46,7 +47,54 @@ class DbConfig {
     synchronize: boolean;
 }
 
+class DiscordConfig {
+    @IsString()
+    @IsNotEmpty()
+    clientId: string;
+
+    @IsString()
+    @IsNotEmpty()
+    clientSecret: string;
+
+    @IsInt()
+    @Min(60)
+    stateTtlSeconds: number;
+
+    @IsUrl({
+        require_protocol: true,
+        protocols: ['https'],
+    })
+    apiBaseUrl: string;
+
+    @IsUrl({
+        require_protocol: true,
+        protocols: ['https'],
+    })
+    oauthUrl: string;
+
+    @IsString({ each: true })
+    @IsNotEmpty({ each: true })
+    authScopes: string[];
+}
+
+class AppAuthConfig {
+    @IsString()
+    @IsNotEmpty()
+    callbackPath: string;
+
+    @IsString()
+    @IsNotEmpty()
+    dashboardRedirectPath: string;
+
+    @IsInt()
+    @Min(300)
+    sessionTtlSeconds: number;
+}
+
 class AppConfig {
+    @IsUrl({ require_tld: false })
+    baseUrl: string;
+
     @IsInt()
     @Min(1)
     @Max(65535)
@@ -59,6 +107,11 @@ class AppConfig {
     @IsOptional()
     @IsBoolean()
     debug?: boolean;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => AppAuthConfig)
+    auth: AppAuthConfig;
 }
 
 export class Config {
@@ -66,6 +119,11 @@ export class Config {
     @ValidateNested()
     @Type(() => DbConfig)
     db: DbConfig;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => DiscordConfig)
+    discord: DiscordConfig;
 
     @IsDefined()
     @ValidateNested()
