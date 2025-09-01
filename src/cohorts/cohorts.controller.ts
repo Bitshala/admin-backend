@@ -1,16 +1,21 @@
 import {
+    Body,
     Controller,
     Get,
     Param,
     ParseUUIDPipe,
-    Query,
-    Post,
-    Body,
     Patch,
+    Post,
+    Query,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiQuery,
+    ApiTags,
+} from '@nestjs/swagger';
 import {
     CreateCohortRequestDto,
     UpdateCohortRequestDto,
@@ -19,9 +24,12 @@ import {
 import { GetCohortResponseDto } from '@/cohorts/cohorts.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { CohortsService } from '@/cohorts/cohorts.service';
+import { Roles } from '@/auth/roles.decorator';
+import { UserRole } from '@/common/enum';
 
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @ApiTags('Cohorts')
+@ApiBearerAuth()
 @Controller('cohorts')
 export class CohortsController {
     constructor(private readonly cohortsService: CohortsService) {}
@@ -56,6 +64,7 @@ export class CohortsController {
 
     @Post()
     @ApiOperation({ summary: 'Create a new cohort' })
+    @Roles(UserRole.ADMIN)
     async createCohort(@Body() body: CreateCohortRequestDto): Promise<void> {
         await this.cohortsService.createCohort(body);
     }
@@ -73,6 +82,7 @@ export class CohortsController {
 
     @Patch('weeks/:cohortWeekId')
     @ApiOperation({ summary: 'Update a cohort week' })
+    @Roles(UserRole.ADMIN)
     async updateCohortWeek(
         @Param('cohortWeekId', new ParseUUIDPipe())
         cohortWeekId: string,

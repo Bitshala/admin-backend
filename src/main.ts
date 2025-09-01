@@ -23,7 +23,6 @@ async function bootstrap() {
     if (isDebug) loggerLevels.push('debug');
 
     app.useLogger(loggerLevels);
-
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
     const config = new DocumentBuilder()

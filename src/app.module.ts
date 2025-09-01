@@ -15,6 +15,9 @@ import { RequestLoggerMiddleware } from '@/middlewares/logger.middleware';
 import { ResponseLoggingInterceptor } from '@/interceptors/response-logger.interceptor';
 import { CohortsModule } from '@/cohorts/cohorts.module';
 import { UsersModule } from '@/users/users.module';
+import { AuthModule } from '@/auth/auth.module';
+import { AuthGuard } from '@/auth/auth.guard';
+import { RolesGuard } from '@/auth/roles.guard';
 
 @Module({
     imports: [
@@ -58,6 +61,7 @@ import { UsersModule } from '@/users/users.module';
                 },
             ],
         }),
+        AuthModule,
         CohortsModule,
         UsersModule,
     ],
@@ -75,6 +79,14 @@ import { UsersModule } from '@/users/users.module';
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard,
         },
     ],
 })
