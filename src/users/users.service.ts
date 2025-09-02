@@ -4,6 +4,11 @@ import { User } from '@/entities/user.entity';
 import { Repository } from 'typeorm';
 import { UserRole } from '@/common/enum';
 import { randomUUID } from 'crypto';
+import { GetUserResponse } from '@/users/users.response';
+import {
+    UpdateUserRequest,
+    UpdateUserRoleRequest,
+} from '@/users/users.request';
 
 @Injectable()
 export class UsersService {
@@ -38,6 +43,10 @@ export class UsersService {
             );
         }
 
+        if (!data.email) {
+            throw new BadRequestException('Email is required to create a user');
+        }
+
         const user = new User();
         user.id = randomUUID();
         user.email = data.email;
@@ -59,6 +68,10 @@ export class UsersService {
             where: { discordUserId: data.discordUserId },
         });
 
+        if (!data.email) {
+            throw new BadRequestException('Email is required to create a user');
+        }
+
         if (user) {
             user.discordUserName = data.discordUsername;
             user.discordGlobalName = data.discordGlobalName;
@@ -67,5 +80,44 @@ export class UsersService {
         } else {
             return this.createStudentUser(data);
         }
+    }
+
+    getMe(user: User): GetUserResponse {
+        return new GetUserResponse({
+            id: user.id,
+            email: user.email,
+            discordUsername: user.discordUserName,
+            discordGlobalName: user.discordGlobalName,
+            name: user.name,
+            role: user.role,
+            description: user.description,
+        });
+    }
+
+    async updateMe(
+        user: User,
+        body: UpdateUserRequest,
+    ): Promise<GetUserResponse> {
+        if (body.name !== undefined) {
+            user.name = body.name;
+        }
+        if (body.description !== undefined) {
+            user.description = body.description;
+        }
+
+        const updatedUser = await this.userRepository.save(user);
+        return new GetUserResponse({
+            id: updatedUser.id,
+            email: updatedUser.email,
+            discordUsername: updatedUser.discordUserName,
+            discordGlobalName: updatedUser.discordGlobalName,
+            name: updatedUser.name,
+            role: updatedUser.role,
+            description: updatedUser.description,
+        });
+    }
+
+    async updateUserRole(body: UpdateUserRoleRequest): Promise<void> {
+        await this.userRepository.update(body.userId, { role: body.role });
     }
 }
