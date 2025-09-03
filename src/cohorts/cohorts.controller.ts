@@ -26,6 +26,8 @@ import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { Roles } from '@/auth/roles.decorator';
 import { UserRole } from '@/common/enum';
+import { GetUser } from '@/decorators/user.decorator';
+import { User } from '@/entities/user.entity';
 
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @ApiTags('Cohorts')
@@ -89,5 +91,14 @@ export class CohortsController {
         @Body() body: UpdateCohortWeekRequestDto,
     ): Promise<void> {
         await this.cohortsService.updateCohortWeek(cohortWeekId, body);
+    }
+
+    @Post(':cohortId/join')
+    @ApiOperation({ summary: 'Join a cohort' })
+    async joinCohort(
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+        @GetUser() user: User,
+    ): Promise<void> {
+        await this.cohortsService.joinCohort(user, cohortId);
     }
 }

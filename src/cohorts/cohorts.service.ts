@@ -12,6 +12,9 @@ import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
 import { GetCohortResponseDto } from '@/cohorts/cohorts.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
+import { User } from '@/entities/user.entity';
+import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
+import { ExerciseScore } from '@/entities/exercise-score.entity';
 
 @Injectable()
 export class CohortsService {
@@ -224,5 +227,76 @@ export class CohortsService {
         }
 
         await this.cohortWeekRepository.save(cohortWeek);
+    }
+
+    async joinCohort(user: User, cohortId: string) {
+        const cohort: Cohort | null = await this.cohortRepository.findOne({
+            select: {
+                id: true,
+                registrationDeadline: true,
+                users: { id: true },
+                weeks: true,
+            },
+            where: { id: cohortId },
+            relations: {
+                weeks: true,
+            },
+        });
+
+        if (!cohort) {
+            throw new BadRequestException(
+                `Cohort with id ${cohortId} does not exist.`,
+            );
+        }
+
+        if (new Date() > cohort.registrationDeadline) {
+            throw new BadRequestException(
+                `Registration deadline for this cohort has passed.`,
+            );
+        }
+
+        const alreadyEnrolled: boolean =
+            cohort.users?.some((enrolledUser) => enrolledUser.id === user.id) ??
+            false;
+
+        if (alreadyEnrolled) {
+            throw new BadRequestException(
+                `User is already enrolled in cohort.`,
+            );
+        }
+
+        await this.dbTransactionService.execute(
+            async (manager): Promise<void> => {
+                if (!cohort.users) {
+                    cohort.users = [user];
+                } else {
+                    cohort.users.push(user);
+                }
+
+                await manager.save(cohort);
+
+                const groupDiscussionScores: GroupDiscussionScore[] = [];
+                const exerciseScores: ExerciseScore[] = [];
+
+                for (const week of cohort.weeks) {
+                    const groupDiscussionScore = new GroupDiscussionScore();
+                    groupDiscussionScore.user = user;
+                    groupDiscussionScore.cohort = cohort;
+                    groupDiscussionScore.cohortWeek = week;
+
+                    groupDiscussionScores.push(groupDiscussionScore);
+
+                    const exerciseScore = new ExerciseScore();
+                    exerciseScore.user = user;
+                    exerciseScore.cohort = cohort;
+                    exerciseScore.cohortWeek = week;
+
+                    exerciseScores.push(exerciseScore);
+                }
+
+                await manager.save(groupDiscussionScores);
+                await manager.save(exerciseScores);
+            },
+        );
     }
 }
