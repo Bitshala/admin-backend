@@ -5,6 +5,7 @@ import {
     OneToMany,
     ManyToMany,
     Unique,
+    JoinTable,
 } from 'typeorm';
 import { User } from '@/entities/user.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
@@ -35,6 +36,7 @@ export class Cohort extends BaseEntity {
     endDate!: Date;
 
     @ManyToMany(() => User, (u) => u.cohorts)
+    @JoinTable()
     users!: User[];
 
     @OneToMany(() => CohortWeek, (cw) => cw.cohort)
