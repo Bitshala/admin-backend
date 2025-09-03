@@ -20,11 +20,11 @@ export class CohortWeek extends BaseEntity {
     @Column('int')
     week!: number;
 
-    @Column('jsonb', { nullable: true })
-    questions!: string[] | null;
+    @Column('jsonb', { default: [] })
+    questions!: string[];
 
-    @Column('jsonb', { nullable: true })
-    bonusQuestion!: string[] | null;
+    @Column('jsonb', { default: [] })
+    bonusQuestion!: string[];
 
     @Column('text', { nullable: true })
     classroomUrl!: string | null;
