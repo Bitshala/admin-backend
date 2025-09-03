@@ -1,0 +1,29 @@
+db:
+  postgres:
+    host: localhost
+    port: 5432
+    username: root
+    password: password
+    databaseName: bitshala
+  synchronize: true
+discord:
+  clientId: <discord_client_id>
+  clientSecret: <discord_client_secret>
+  stateTtlSeconds: 300
+  apiBaseUrl: 'https://discord.com/api/v10'
+  oauthUrl: 'https://discord.com/oauth2/authorize'
+  authScopes:
+    - identify
+    - email
+    - guilds
+    - guilds.join
+    - guilds.members.read
+app:
+  baseUrl: 'http://localhost:3000'
+  port: 3000
+  verbose: false
+  debug: true
+  auth:
+    callbackPath: '/auth/discord/callback'
+    dashboardRedirectPath: '/health'
+    sessionTtlSeconds: 604800 # 7 days
