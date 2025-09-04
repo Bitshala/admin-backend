@@ -9,12 +9,24 @@ import {
     UpdateUserRequest,
     UpdateUserRoleRequest,
 } from '@/users/users.request';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
+    private readonly adminRoleId: string;
+    private readonly teachingAssistantRoleId: string;
+
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
-    ) {}
+        private readonly configService: ConfigService,
+    ) {
+        this.adminRoleId = this.configService.getOrThrow<string>(
+            'discord.roles.admin',
+        );
+        this.teachingAssistantRoleId = this.configService.getOrThrow<string>(
+            'discord.roles.teachingAssistant',
+        );
+    }
 
     async findByUserId(userId: string): Promise<User> {
         const user = await this.userRepository.findOne({
@@ -32,6 +44,8 @@ export class UsersService {
         discordUserId: string;
         discordUsername: string;
         discordGlobalName: string;
+        isGuildMember: boolean;
+        roles: string[];
     }): Promise<User> {
         const userAlreadyExists = await this.userRepository.exists({
             where: { discordUserId: data.discordUserId },
@@ -53,9 +67,17 @@ export class UsersService {
         user.discordUserId = data.discordUserId;
         user.discordUserName = data.discordUsername;
         user.discordGlobalName = data.discordGlobalName;
-        user.role = UserRole.STUDENT;
+        user.isGuildMember = data.isGuildMember;
+        user.role = this.inferUserRoleFromDiscordRoles(data.roles);
 
         return this.userRepository.save(user);
+    }
+
+    inferUserRoleFromDiscordRoles(roles: string[]): UserRole {
+        if (roles.includes(this.adminRoleId)) return UserRole.ADMIN;
+        if (roles.includes(this.teachingAssistantRoleId))
+            return UserRole.TEACHING_ASSISTANT;
+        return UserRole.STUDENT;
     }
 
     async upsertUser(data: {
@@ -63,6 +85,8 @@ export class UsersService {
         discordUserId: string;
         discordUsername: string;
         discordGlobalName: string;
+        isGuildMember: boolean;
+        roles: string[];
     }): Promise<User> {
         const user = await this.userRepository.findOne({
             where: { discordUserId: data.discordUserId },
@@ -76,6 +100,8 @@ export class UsersService {
             user.discordUserName = data.discordUsername;
             user.discordGlobalName = data.discordGlobalName;
             user.email = data.email;
+            user.isGuildMember = data.isGuildMember;
+            user.role = this.inferUserRoleFromDiscordRoles(data.roles);
             return this.userRepository.save(user);
         } else {
             return this.createStudentUser(data);

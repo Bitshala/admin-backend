@@ -12,3 +12,15 @@ export interface DiscordUser {
     email?: string;
     global_name?: string;
 }
+
+export interface GuildPartial {
+    id: string;
+    name: string;
+}
+
+export interface GuildMember {
+    user?: DiscordUser;
+    nick?: string;
+    roles: string[];
+    joined_at?: string;
+}

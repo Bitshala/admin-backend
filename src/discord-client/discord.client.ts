@@ -2,7 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { ServiceError } from '@/common/errors';
 import { ConfigService } from '@nestjs/config';
-import { DiscordTokenResponse, DiscordUser } from '@/discord-client/response';
+import {
+    DiscordTokenResponse,
+    DiscordUser,
+    GuildMember,
+    GuildPartial,
+} from '@/discord-client/response';
 
 @Injectable()
 export class DiscordClient {
@@ -11,6 +16,8 @@ export class DiscordClient {
     private readonly clientId: string;
     private readonly clientSecret: string;
     private readonly callbackUrl: string;
+    private readonly guildId: string;
+    private readonly botToken: string;
 
     constructor(private readonly configService: ConfigService) {
         this.axios = axios.create({
@@ -25,6 +32,9 @@ export class DiscordClient {
             this.configService.getOrThrow<string>('app.auth.callbackPath'),
             this.configService.getOrThrow<string>('app.baseUrl'),
         ).toString();
+        this.guildId = this.configService.getOrThrow<string>('discord.guildId');
+        this.botToken =
+            this.configService.getOrThrow<string>('discord.botToken');
     }
 
     private async executeRequest<T>(
@@ -130,6 +140,41 @@ export class DiscordClient {
             method: 'GET',
             url: '/users/@me',
             headers: { Authorization: `Bearer ${accessToken}` },
+        });
+    }
+
+    async listCurrentUserGuilds(accessToken: string): Promise<GuildPartial[]> {
+        return await this.executeRequest<GuildPartial[]>({
+            method: 'GET',
+            url: '/users/@me/guilds',
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+    }
+
+    async addUserToGuild(
+        accessToken: string,
+        discordUserId: string,
+    ): Promise<void> {
+        await this.executeRequest({
+            method: 'PUT',
+            url: `/guilds/${this.guildId}/members/${discordUserId}`,
+            headers: {
+                Authorization: `Bot ${this.botToken}`,
+                'Content-Type': 'application/json',
+            },
+            data: {
+                access_token: accessToken,
+            },
+        });
+    }
+
+    async getGuildMember(discordUserId: string): Promise<GuildMember> {
+        return await this.executeRequest<GuildMember>({
+            method: 'GET',
+            url: `/guilds/${this.guildId}/members/${discordUserId}`,
+            headers: {
+                Authorization: `Bot ${this.botToken}`,
+            },
         });
     }
 }

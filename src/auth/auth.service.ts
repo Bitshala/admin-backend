@@ -28,6 +28,7 @@ export class AuthService {
     private readonly discordOauthUri: string;
     private readonly discordRedirectUri: string;
     private readonly discordScopes: string[];
+    private readonly guildId: string;
 
     constructor(
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -57,6 +58,7 @@ export class AuthService {
             this.configService.getOrThrow<string>('app.auth.callbackPath'),
             this.appBaseUrl,
         ).toString();
+        this.guildId = this.configService.getOrThrow<string>('discord.guildId');
     }
 
     async buildAuthorizeUrl(): Promise<string> {
@@ -101,15 +103,39 @@ export class AuthService {
         }
 
         const tokens = await this.discordClient.exchangeCodeForTokens(code);
-        const discordUser = await this.discordClient.fetchDiscordUser(
-            tokens.access_token,
+
+        const [discordUser, currentUsersGuilds] = await Promise.all([
+            this.discordClient.fetchDiscordUser(tokens.access_token),
+            this.discordClient.listCurrentUserGuilds(tokens.access_token),
+        ]);
+
+        const isGuildMember = currentUsersGuilds.some(
+            (g) => g.id === this.guildId,
         );
+        const roles: string[] = [];
+
+        if (!isGuildMember) {
+            await this.discordClient.addUserToGuild(
+                tokens.access_token,
+                discordUser.id,
+            );
+        } else {
+            const member = await this.discordClient.getGuildMember(
+                discordUser.id,
+            );
+
+            if (member && member.roles) {
+                roles.push(...member.roles);
+            }
+        }
 
         const user = await this.usersService.upsertUser({
             email: discordUser.email || null,
             discordUserId: discordUser.id,
             discordUsername: discordUser.username,
             discordGlobalName: discordUser.global_name || discordUser.username,
+            isGuildMember: isGuildMember,
+            roles: roles,
         });
 
         const expiresAt = Date.now() + tokens.expires_in * 1000;
