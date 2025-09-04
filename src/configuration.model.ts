@@ -44,6 +44,22 @@ class DbConfig {
     synchronize: boolean;
 }
 
+class RedisConfig {
+    @IsUrl({
+        require_protocol: true,
+        protocols: ['redis', 'rediss'],
+        require_tld: false,
+    })
+    url: string;
+}
+
+class CacheConfig {
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => RedisConfig)
+    redis: RedisConfig;
+}
+
 class DiscordRolesConfig {
     @IsNumberString({ no_symbols: true })
     admin: string;
@@ -155,6 +171,11 @@ export class Config {
     @ValidateNested()
     @Type(() => DbConfig)
     db: DbConfig;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => CacheConfig)
+    cache: CacheConfig;
 
     @IsDefined()
     @ValidateNested()

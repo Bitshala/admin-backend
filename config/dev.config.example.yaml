@@ -6,6 +6,9 @@ db:
     password: password
     databaseName: bitshala
   synchronize: true
+cache:
+  redis:
+    url: redis://localhost:6379
 discord:
   clientId: <discord_client_id>
   clientSecret: <discord_client_secret>

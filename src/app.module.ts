@@ -18,6 +18,7 @@ import { UsersModule } from '@/users/users.module';
 import { AuthModule } from '@/auth/auth.module';
 import { AuthGuard } from '@/auth/auth.guard';
 import { RolesGuard } from '@/auth/roles.guard';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
     imports: [
@@ -28,7 +29,9 @@ import { RolesGuard } from '@/auth/roles.guard';
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
-                ttl: configService.get<number>('cache.ttl', 5000),
+                stores: [
+                    createKeyv(configService.getOrThrow('cache.redis.url')),
+                ],
             }),
         }),
         ConfigModule.forRoot({
