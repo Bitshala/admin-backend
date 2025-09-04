@@ -9,15 +9,24 @@ db:
 discord:
   clientId: <discord_client_id>
   clientSecret: <discord_client_secret>
+  botToken: <discord_bot_token>
   stateTtlSeconds: 300
   apiBaseUrl: 'https://discord.com/api/v10'
   oauthUrl: 'https://discord.com/oauth2/authorize'
+  guildId: '1104831812720656540'
   authScopes:
     - identify
     - email
     - guilds
     - guilds.join
     - guilds.members.read
+  roles:
+    admin: '1104833385626607718'
+    teachingAssistant: '1257350427565883494'
+    masteringBitcoin: '1239628480111579268'
+    learningBitcoinFromCommandLine: '1104833425623482368'
+    programmingBitcoin: '1165952193556389928'
+    bitcoinProtocolDevelopment: '1221081628021887009'
 app:
   baseUrl: 'http://localhost:3000'
   port: 3000

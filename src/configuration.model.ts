@@ -3,15 +3,16 @@ import {
     IsDefined,
     IsInt,
     IsNotEmpty,
+    IsNumberString,
     IsOptional,
     IsString,
     IsUrl,
     Max,
     Min,
-    ValidateIf,
     ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ArrayContains } from 'class-validator';
 
 class PostgresConfig {
     @IsString()
@@ -25,10 +26,6 @@ class PostgresConfig {
     @IsNotEmpty()
     username: string;
 
-    @IsBoolean()
-    useIamAuth: boolean;
-
-    @ValidateIf((o) => o.useIamAuth == false)
     @IsString()
     @IsNotEmpty()
     password: string;
@@ -47,6 +44,26 @@ class DbConfig {
     synchronize: boolean;
 }
 
+class DiscordRolesConfig {
+    @IsNumberString({ no_symbols: true })
+    admin: string;
+
+    @IsNumberString({ no_symbols: true })
+    teachingAssistant: string;
+
+    @IsNumberString({ no_symbols: true })
+    masteringBitcoin: string;
+
+    @IsNumberString({ no_symbols: true })
+    learningBitcoinFromCommandLine: string;
+
+    @IsNumberString({ no_symbols: true })
+    programmingBitcoin: string;
+
+    @IsNumberString({ no_symbols: true })
+    bitcoinProtocolDevelopment: string;
+}
+
 class DiscordConfig {
     @IsString()
     @IsNotEmpty()
@@ -55,6 +72,10 @@ class DiscordConfig {
     @IsString()
     @IsNotEmpty()
     clientSecret: string;
+
+    @IsString()
+    @IsNotEmpty()
+    botToken: string;
 
     @IsInt()
     @Min(60)
@@ -72,9 +93,24 @@ class DiscordConfig {
     })
     oauthUrl: string;
 
+    @IsNumberString({ no_symbols: true })
+    guildId: string;
+
     @IsString({ each: true })
     @IsNotEmpty({ each: true })
+    @ArrayContains([
+        'identify',
+        'email',
+        'guilds',
+        'guilds.join',
+        'guilds.members.read',
+    ])
     authScopes: string[];
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => DiscordRolesConfig)
+    roles: DiscordRolesConfig;
 }
 
 class AppAuthConfig {
