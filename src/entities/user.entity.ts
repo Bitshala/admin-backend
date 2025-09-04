@@ -28,6 +28,9 @@ export class User extends BaseEntity {
     @Column('text', { nullable: true })
     discordGlobalName!: string | null;
 
+    @Column('boolean', { default: false })
+    isGuildMember!: boolean;
+
     @Column('varchar', { nullable: true })
     name!: string | null;
 
