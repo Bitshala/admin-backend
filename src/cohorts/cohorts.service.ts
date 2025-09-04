@@ -15,16 +15,43 @@ import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { User } from '@/entities/user.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
+import { DiscordClient } from '@/discord-client/discord.client';
+import { ConfigService } from '@nestjs/config';
+import { CohortType } from '@/common/enum';
 
 @Injectable()
 export class CohortsService {
+    private readonly masteringBitcoinDiscordRoleId: string;
+    private readonly learningBitcoinFromCommandLineDiscordRoleId: string;
+    private readonly programmingBitcoinDiscordRoleId: string;
+    private readonly bitcoinProtocolDevelopmentDiscordRoleId: string;
+
     constructor(
         @InjectRepository(Cohort)
         private readonly cohortRepository: Repository<Cohort>,
         @InjectRepository(CohortWeek)
         private readonly cohortWeekRepository: Repository<CohortWeek>,
         private readonly dbTransactionService: DbTransactionService,
-    ) {}
+        private readonly discordClient: DiscordClient,
+        private readonly configService: ConfigService,
+    ) {
+        this.masteringBitcoinDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.masteringBitcoin',
+            );
+        this.learningBitcoinFromCommandLineDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.learningBitcoinFromCommandLine',
+            );
+        this.programmingBitcoinDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.programmingBitcoin',
+            );
+        this.bitcoinProtocolDevelopmentDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.bitcoinProtocolDevelopment',
+            );
+    }
 
     async getCohort(cohortId: string): Promise<GetCohortResponseDto> {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
@@ -229,10 +256,42 @@ export class CohortsService {
         await this.cohortWeekRepository.save(cohortWeek);
     }
 
+    async assignDiscordRole(user: User, cohortType: CohortType) {
+        let roleId: string;
+
+        switch (cohortType) {
+            case CohortType.MASTERING_BITCOIN:
+                roleId = this.masteringBitcoinDiscordRoleId;
+                break;
+            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
+                roleId = this.learningBitcoinFromCommandLineDiscordRoleId;
+                break;
+            case CohortType.PROGRAMMING_BITCOIN:
+                roleId = this.programmingBitcoinDiscordRoleId;
+                break;
+            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
+                roleId = this.bitcoinProtocolDevelopmentDiscordRoleId;
+                break;
+            default:
+                throw new BadRequestException(
+                    `Invalid cohort type: ${cohortType}`,
+                );
+        }
+
+        if (!user.isGuildMember) {
+            throw new BadRequestException(
+                `User is not a member of the Discord guild.`,
+            );
+        }
+
+        await this.discordClient.attachRoleToMember(user.discordUserId, roleId);
+    }
+
     async joinCohort(user: User, cohortId: string) {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             select: {
                 id: true,
+                type: true,
                 registrationDeadline: true,
                 users: { id: true },
                 weeks: true,
@@ -296,6 +355,8 @@ export class CohortsService {
 
                 await manager.save(groupDiscussionScores);
                 await manager.save(exerciseScores);
+
+                await this.assignDiscordRole(user, cohort.type);
             },
         );
     }

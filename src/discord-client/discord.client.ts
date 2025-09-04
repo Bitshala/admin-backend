@@ -177,4 +177,17 @@ export class DiscordClient {
             },
         });
     }
+
+    async attachRoleToMember(
+        discordUserId: string,
+        roleId: string,
+    ): Promise<void> {
+        await this.executeRequest({
+            method: 'PUT',
+            url: `/guilds/${this.guildId}/members/${discordUserId}/roles/${roleId}`,
+            headers: {
+                Authorization: `Bot ${this.botToken}`,
+            },
+        });
+    }
 }
