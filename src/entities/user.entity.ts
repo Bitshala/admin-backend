@@ -40,6 +40,30 @@ export class User extends BaseEntity {
     @Column('varchar', { nullable: true })
     description!: string | null;
 
+    @Column('text', { nullable: true })
+    background!: string | null;
+
+    @Column('varchar', { length: 2048, nullable: true })
+    githubProfileUrl!: string | null;
+
+    @Column({ type: 'jsonb', default: [] })
+    skills!: string[];
+
+    @Column({ type: 'date', nullable: true })
+    firstHeardAboutBitcoinOn!: Date | null;
+
+    @Column({ type: 'jsonb', default: [] })
+    bitcoinBooksRead!: string[];
+
+    @Column('text', { nullable: true })
+    whyBitcoin!: string | null;
+
+    @Column('int', { nullable: true })
+    weeklyCohortCommitmentHours!: number | null;
+
+    @Column('varchar', { length: 255, nullable: true })
+    location!: string | null;
+
     @ManyToMany(() => Cohort, (c) => c.users)
     cohorts!: Cohort[];
 

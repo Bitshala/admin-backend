@@ -109,15 +109,7 @@ export class UsersService {
     }
 
     getMe(user: User): GetUserResponse {
-        return new GetUserResponse({
-            id: user.id,
-            email: user.email,
-            discordUsername: user.discordUserName,
-            discordGlobalName: user.discordGlobalName,
-            name: user.name,
-            role: user.role,
-            description: user.description,
-        });
+        return GetUserResponse.fromEntity(user);
     }
 
     async updateMe(
@@ -131,16 +123,8 @@ export class UsersService {
             user.description = body.description;
         }
 
-        const updatedUser = await this.userRepository.save(user);
-        return new GetUserResponse({
-            id: updatedUser.id,
-            email: updatedUser.email,
-            discordUsername: updatedUser.discordUserName,
-            discordGlobalName: updatedUser.discordGlobalName,
-            name: updatedUser.name,
-            role: updatedUser.role,
-            description: updatedUser.description,
-        });
+        await this.userRepository.save(user);
+        return GetUserResponse.fromEntity(user);
     }
 
     async updateUserRole(body: UpdateUserRoleRequest): Promise<void> {
