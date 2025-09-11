@@ -19,6 +19,7 @@ import { AuthModule } from '@/auth/auth.module';
 import { AuthGuard } from '@/auth/auth.guard';
 import { RolesGuard } from '@/auth/roles.guard';
 import { createKeyv } from '@keyv/redis';
+import { ScoresModule } from '@/scores/scores.module';
 
 @Module({
     imports: [
@@ -67,6 +68,7 @@ import { createKeyv } from '@keyv/redis';
         AuthModule,
         CohortsModule,
         UsersModule,
+        ScoresModule,
     ],
     controllers: [AppController],
     providers: [
