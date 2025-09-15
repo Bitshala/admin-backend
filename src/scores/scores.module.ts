@@ -5,10 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@/entities/user.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
+import { Cohort } from '@/entities/cohort.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, GroupDiscussionScore, ExerciseScore]),
+        TypeOrmModule.forFeature([
+            User,
+            GroupDiscussionScore,
+            ExerciseScore,
+            Cohort,
+        ]),
     ],
     controllers: [ScoresController],
     providers: [ScoresService],
