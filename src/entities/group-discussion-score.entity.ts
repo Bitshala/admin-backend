@@ -53,6 +53,9 @@ export class GroupDiscussionScore extends BaseEntity {
     @Column('int', { default: 5 })
     maxBonusFollowupScore!: number;
 
+    @Column('int', { nullable: true })
+    groupNumber!: number | null;
+
     @ManyToOne(() => User, (u) => u.groupDiscussionScores)
     user!: User;
 
