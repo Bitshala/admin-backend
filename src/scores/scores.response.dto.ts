@@ -18,6 +18,7 @@ export class GroupDiscussionScore {
     maxBonusFollowupScore: number;
     totalScore: number;
     maxTotalScore: number;
+    groupNumber?: number | null;
 
     constructor(partial: Partial<GroupDiscussionScore>) {
         Object.assign(this, partial);

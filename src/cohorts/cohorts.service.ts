@@ -323,41 +323,42 @@ export class CohortsService {
                 `User is already enrolled in cohort.`,
             );
         }
+        if (!alreadyEnrolled) {
+            await this.dbTransactionService.execute(
+                async (manager): Promise<void> => {
+                    if (!cohort.users) {
+                        cohort.users = [user];
+                    } else {
+                        cohort.users.push(user);
+                    }
 
-        await this.dbTransactionService.execute(
-            async (manager): Promise<void> => {
-                if (!cohort.users) {
-                    cohort.users = [user];
-                } else {
-                    cohort.users.push(user);
-                }
+                    await manager.save(cohort);
 
-                await manager.save(cohort);
+                    const groupDiscussionScores: GroupDiscussionScore[] = [];
+                    const exerciseScores: ExerciseScore[] = [];
 
-                const groupDiscussionScores: GroupDiscussionScore[] = [];
-                const exerciseScores: ExerciseScore[] = [];
+                    for (const week of cohort.weeks) {
+                        const groupDiscussionScore = new GroupDiscussionScore();
+                        groupDiscussionScore.user = user;
+                        groupDiscussionScore.cohort = cohort;
+                        groupDiscussionScore.cohortWeek = week;
 
-                for (const week of cohort.weeks) {
-                    const groupDiscussionScore = new GroupDiscussionScore();
-                    groupDiscussionScore.user = user;
-                    groupDiscussionScore.cohort = cohort;
-                    groupDiscussionScore.cohortWeek = week;
+                        groupDiscussionScores.push(groupDiscussionScore);
 
-                    groupDiscussionScores.push(groupDiscussionScore);
+                        const exerciseScore = new ExerciseScore();
+                        exerciseScore.user = user;
+                        exerciseScore.cohort = cohort;
+                        exerciseScore.cohortWeek = week;
 
-                    const exerciseScore = new ExerciseScore();
-                    exerciseScore.user = user;
-                    exerciseScore.cohort = cohort;
-                    exerciseScore.cohortWeek = week;
+                        exerciseScores.push(exerciseScore);
+                    }
 
-                    exerciseScores.push(exerciseScore);
-                }
+                    await manager.save(groupDiscussionScores);
+                    await manager.save(exerciseScores);
 
-                await manager.save(groupDiscussionScores);
-                await manager.save(exerciseScores);
-
-                await this.assignDiscordRole(user, cohort.type);
-            },
-        );
+                    await this.assignDiscordRole(user, cohort.type);
+                },
+            );
+        }
     }
 }
