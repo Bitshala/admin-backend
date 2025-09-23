@@ -6,6 +6,7 @@ import { User } from '@/entities/user.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { Cohort } from '@/entities/cohort.entity';
+import { CohortWeek } from '@/entities/cohort-week.entity';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { Cohort } from '@/entities/cohort.entity';
             GroupDiscussionScore,
             ExerciseScore,
             Cohort,
+            CohortWeek,
         ]),
     ],
     controllers: [ScoresController],

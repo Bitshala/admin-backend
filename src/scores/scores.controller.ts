@@ -6,7 +6,6 @@ import {
     ParseUUIDPipe,
     Patch,
     Post,
-    Query,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -82,20 +81,14 @@ export class ScoresController {
         return this.scoresService.getUserScores(userId);
     }
 
-    @Post('cohort/:cohortId/week/:weekId/assign-groups')
+    @Post('week/:weekId/assign-groups')
     @ApiOperation({
         summary: 'Assign users to groups based on scores and attendance',
     })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async assignGroupsForCohortWeek(
-        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Param('weekId', new ParseUUIDPipe()) weekId: string,
-        @Query('previousWeekId') previousWeekId?: string,
     ): Promise<void> {
-        return this.scoresService.assignGroupsForCohortWeek(
-            cohortId,
-            weekId,
-            previousWeekId,
-        );
+        return this.scoresService.assignGroupsForCohortWeek(weekId);
     }
 }
