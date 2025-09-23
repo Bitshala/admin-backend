@@ -289,16 +289,10 @@ export class CohortsService {
 
     async joinCohort(user: User, cohortId: string) {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
-            select: {
-                id: true,
-                type: true,
-                registrationDeadline: true,
-                users: { id: true },
-                weeks: true,
-            },
             where: { id: cohortId },
             relations: {
                 weeks: true,
+                users: true,
             },
         });
 
@@ -315,7 +309,7 @@ export class CohortsService {
         }
 
         const alreadyEnrolled: boolean =
-            cohort.users?.some((enrolledUser) => enrolledUser.id === user.id) ??
+            cohort.users.some((enrolledUser) => enrolledUser.id === user.id) ??
             false;
 
         if (alreadyEnrolled) {
@@ -323,42 +317,41 @@ export class CohortsService {
                 `User is already enrolled in cohort.`,
             );
         }
-        if (!alreadyEnrolled) {
-            await this.dbTransactionService.execute(
-                async (manager): Promise<void> => {
-                    if (!cohort.users) {
-                        cohort.users = [user];
-                    } else {
-                        cohort.users.push(user);
-                    }
 
-                    await manager.save(cohort);
+        await this.dbTransactionService.execute(
+            async (manager): Promise<void> => {
+                if (!cohort.users) {
+                    cohort.users = [user];
+                } else {
+                    cohort.users.push(user);
+                }
 
-                    const groupDiscussionScores: GroupDiscussionScore[] = [];
-                    const exerciseScores: ExerciseScore[] = [];
+                await manager.save(cohort);
 
-                    for (const week of cohort.weeks) {
-                        const groupDiscussionScore = new GroupDiscussionScore();
-                        groupDiscussionScore.user = user;
-                        groupDiscussionScore.cohort = cohort;
-                        groupDiscussionScore.cohortWeek = week;
+                const groupDiscussionScores: GroupDiscussionScore[] = [];
+                const exerciseScores: ExerciseScore[] = [];
 
-                        groupDiscussionScores.push(groupDiscussionScore);
+                for (const week of cohort.weeks) {
+                    const groupDiscussionScore = new GroupDiscussionScore();
+                    groupDiscussionScore.user = user;
+                    groupDiscussionScore.cohort = cohort;
+                    groupDiscussionScore.cohortWeek = week;
 
-                        const exerciseScore = new ExerciseScore();
-                        exerciseScore.user = user;
-                        exerciseScore.cohort = cohort;
-                        exerciseScore.cohortWeek = week;
+                    groupDiscussionScores.push(groupDiscussionScore);
 
-                        exerciseScores.push(exerciseScore);
-                    }
+                    const exerciseScore = new ExerciseScore();
+                    exerciseScore.user = user;
+                    exerciseScore.cohort = cohort;
+                    exerciseScore.cohortWeek = week;
 
-                    await manager.save(groupDiscussionScores);
-                    await manager.save(exerciseScores);
+                    exerciseScores.push(exerciseScore);
+                }
 
-                    await this.assignDiscordRole(user, cohort.type);
-                },
-            );
-        }
+                await manager.save(groupDiscussionScores);
+                await manager.save(exerciseScores);
+
+                await this.assignDiscordRole(user, cohort.type);
+            },
+        );
     }
 }
