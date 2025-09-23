@@ -120,10 +120,6 @@ export class CohortsService {
         });
     }
 
-    private async convertDateToTimestamp(dateString: string): Promise<Date> {
-        return new Date(dateString);
-    }
-
     async createCohort(cohortData: CreateCohortRequestDto): Promise<void> {
         await this.dbTransactionService.execute(
             async (manager): Promise<void> => {
