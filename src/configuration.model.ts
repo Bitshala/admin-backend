@@ -147,6 +147,9 @@ class AppConfig {
     @IsUrl({ require_tld: false })
     baseUrl: string;
 
+    @IsUrl({ require_tld: false })
+    frontEndUrl: string;
+
     @IsInt()
     @Min(1)
     @Max(65535)

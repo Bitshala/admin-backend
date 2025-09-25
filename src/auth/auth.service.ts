@@ -22,6 +22,7 @@ export class AuthService {
     private readonly oauthSessionTtlMs: number;
 
     private readonly appBaseUrl: string;
+    private readonly frontEndUrl: string;
     private readonly dashboardRedirectPath: string;
 
     private readonly discordClientId: string;
@@ -45,6 +46,8 @@ export class AuthService {
                 'app.auth.sessionTtlSeconds',
             ) * 1000;
         this.appBaseUrl = this.configService.getOrThrow<string>('app.baseUrl');
+        this.frontEndUrl =
+            this.configService.getOrThrow<string>('app.frontEndUrl');
         this.dashboardRedirectPath = this.configService.getOrThrow<string>(
             'app.auth.dashboardRedirectPath',
         );
@@ -83,7 +86,7 @@ export class AuthService {
     }
 
     buildDashboardUrl(sessionId: string): string {
-        const url = new URL(this.dashboardRedirectPath, this.appBaseUrl);
+        const url = new URL(this.dashboardRedirectPath, this.frontEndUrl);
         const params = new URLSearchParams({
             ok: '1',
             session_id: sessionId,
