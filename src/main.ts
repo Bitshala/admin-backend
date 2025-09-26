@@ -24,6 +24,9 @@ async function bootstrap() {
 
     app.useLogger(loggerLevels);
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.enableCors({
+        origin: '*',
+    });
 
     const config = new DocumentBuilder()
         .setTitle('Bitshala API')
