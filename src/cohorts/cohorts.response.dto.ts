@@ -32,8 +32,8 @@ export class GetCohortResponseDto {
         this.startDate = obj.startDate;
         this.endDate = obj.endDate;
         this.registrationDeadline = obj.registrationDeadline;
-        this.weeks = obj.weeks.map(
-            (week) => new GetCohortWeekResponseDto(week),
-        );
+        this.weeks = obj.weeks
+            .map((week) => new GetCohortWeekResponseDto(week))
+            .sort((a, b) => a.week - b.week);
     }
 }
