@@ -4,12 +4,14 @@ import {
     Column,
     OneToMany,
     ManyToMany,
+    OneToOne,
 } from 'typeorm';
 import { Cohort } from '@/entities/cohort.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { BaseEntity } from '@/entities/base.entity';
 import { UserRole } from '@/common/enum';
+import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -72,4 +74,7 @@ export class User extends BaseEntity {
 
     @OneToMany(() => ExerciseScore, (es) => es.user)
     exerciseScores!: ExerciseScore[];
+
+    @OneToMany(() => CohortWaitlist, (cwl) => cwl.user)
+    cohortsWaitlist!: CohortWaitlist[];
 }

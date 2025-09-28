@@ -4,13 +4,17 @@ import { Cohort } from '@/entities/cohort.entity';
 import { Repository } from 'typeorm';
 import {
     CreateCohortRequestDto,
+    JoinWaitlistRequestDto,
     UpdateCohortRequestDto,
     UpdateCohortWeekRequestDto,
 } from '@/cohorts/cohorts.request.dto';
 import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
-import { GetCohortResponseDto } from '@/cohorts/cohorts.response.dto';
+import {
+    GetCohortResponseDto,
+    UserCohortWaitlistResponseDto,
+} from '@/cohorts/cohorts.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { User } from '@/entities/user.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
@@ -18,6 +22,7 @@ import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
 import { CohortType } from '@/common/enum';
+import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 
 @Injectable()
 export class CohortsService {
@@ -31,6 +36,8 @@ export class CohortsService {
         private readonly cohortRepository: Repository<Cohort>,
         @InjectRepository(CohortWeek)
         private readonly cohortWeekRepository: Repository<CohortWeek>,
+        @InjectRepository(CohortWaitlist)
+        private readonly cohortWaitlistRepository: Repository<CohortWaitlist>,
         private readonly dbTransactionService: DbTransactionService,
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
@@ -314,6 +321,10 @@ export class CohortsService {
             );
         }
 
+        const waitlistEntry = await this.cohortWaitlistRepository.findOne({
+            where: { user: { id: user.id }, type: cohort.type },
+        });
+
         await this.dbTransactionService.execute(
             async (manager): Promise<void> => {
                 if (!cohort.users) {
@@ -346,8 +357,44 @@ export class CohortsService {
                 await manager.save(groupDiscussionScores);
                 await manager.save(exerciseScores);
 
+                if (waitlistEntry) await manager.remove(waitlistEntry);
+
                 await this.assignDiscordRole(user, cohort.type);
             },
         );
+    }
+
+    async joinCohortWaitlist(
+        user: User,
+        body: JoinWaitlistRequestDto,
+    ): Promise<void> {
+        const alreadyOnWaitlist: boolean =
+            await this.cohortWaitlistRepository.exist({
+                where: { user: { id: user.id }, type: body.type },
+            });
+
+        if (alreadyOnWaitlist) {
+            throw new BadRequestException(
+                `User is already on the waitlist for cohort type ${body.type}.`,
+            );
+        }
+
+        const waitlistEntry = new CohortWaitlist();
+        waitlistEntry.id = randomUUID();
+        waitlistEntry.user = user;
+        waitlistEntry.type = body.type;
+
+        await this.cohortWaitlistRepository.save(waitlistEntry);
+    }
+
+    async getUserWaitlist(user: User): Promise<UserCohortWaitlistResponseDto> {
+        const waitlistEntries: CohortWaitlist[] =
+            await this.cohortWaitlistRepository.find({
+                where: { user: { id: user.id } },
+            });
+
+        return {
+            cohortWaitlist: waitlistEntries.map((entry) => entry.type),
+        };
     }
 }

@@ -68,3 +68,8 @@ export class UpdateCohortWeekRequestDto {
     @IsNotEmpty()
     classroomInviteLink!: string | undefined;
 }
+
+export class JoinWaitlistRequestDto {
+    @IsEnum(CohortType)
+    type!: CohortType;
+}

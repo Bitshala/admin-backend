@@ -1,3 +1,5 @@
+import { CohortType } from '@/common/enum';
+
 export class GetCohortWeekResponseDto {
     id!: string;
     week!: number;
@@ -36,4 +38,8 @@ export class GetCohortResponseDto {
             .map((week) => new GetCohortWeekResponseDto(week))
             .sort((a, b) => a.week - b.week);
     }
+}
+
+export class UserCohortWaitlistResponseDto {
+    cohortWaitlist!: CohortType[];
 }

@@ -18,10 +18,14 @@ import {
 } from '@nestjs/swagger';
 import {
     CreateCohortRequestDto,
+    JoinWaitlistRequestDto,
     UpdateCohortRequestDto,
     UpdateCohortWeekRequestDto,
 } from '@/cohorts/cohorts.request.dto';
-import { GetCohortResponseDto } from '@/cohorts/cohorts.response.dto';
+import {
+    GetCohortResponseDto,
+    UserCohortWaitlistResponseDto,
+} from '@/cohorts/cohorts.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { Roles } from '@/auth/roles.decorator';
@@ -100,5 +104,22 @@ export class CohortsController {
         @GetUser() user: User,
     ): Promise<void> {
         await this.cohortsService.joinCohort(user, cohortId);
+    }
+
+    @Post('waitlist')
+    @ApiOperation({ summary: 'Join the cohort waitlist' })
+    async joinCohortWaitlist(
+        @GetUser() user: User,
+        @Body() body: JoinWaitlistRequestDto,
+    ): Promise<void> {
+        await this.cohortsService.joinCohortWaitlist(user, body);
+    }
+
+    @Get('waitlist/me')
+    @ApiOperation({ summary: 'Get user waitlist status' })
+    async getUserWaitlistStatus(
+        @GetUser() user: User,
+    ): Promise<UserCohortWaitlistResponseDto> {
+        return this.cohortsService.getUserWaitlist(user);
     }
 }
