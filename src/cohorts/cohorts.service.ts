@@ -127,6 +127,47 @@ export class CohortsService {
         });
     }
 
+    async listMyCohorts(
+        user: User,
+        query: PaginatedQueryDto,
+    ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
+        const [cohorts, total]: [Cohort[], number] =
+            await this.cohortRepository.findAndCount({
+                where: {
+                    users: { id: user.id },
+                },
+                skip: query.page * query.pageSize,
+                take: query.pageSize,
+                order: { createdAt: 'DESC' },
+                relations: { weeks: true },
+            });
+
+        return new PaginatedDataDto({
+            totalRecords: total,
+            records: cohorts.map(
+                (cohort) =>
+                    new GetCohortResponseDto({
+                        id: cohort.id,
+                        type: cohort.type,
+                        season: cohort.season,
+                        startDate: cohort.startDate.toISOString(),
+                        endDate: cohort.endDate.toISOString(),
+                        registrationDeadline:
+                            cohort.registrationDeadline.toISOString(),
+                        weeks: cohort.weeks.map((week) => ({
+                            id: week.id,
+                            week: week.week,
+                            questions: week.questions || [],
+                            bonusQuestion: week.bonusQuestion || [],
+                            classroomUrl: week.classroomUrl || null,
+                            classroomInviteLink:
+                                week.classroomInviteLink || null,
+                        })),
+                    }),
+            ),
+        });
+    }
+
     async createCohort(cohortData: CreateCohortRequestDto): Promise<void> {
         await this.dbTransactionService.execute(
             async (manager): Promise<void> => {

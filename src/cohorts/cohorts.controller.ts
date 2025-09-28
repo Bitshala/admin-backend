@@ -40,14 +40,6 @@ import { User } from '@/entities/user.entity';
 export class CohortsController {
     constructor(private readonly cohortsService: CohortsService) {}
 
-    @Get(':id')
-    @ApiOperation({ summary: 'Get a cohort by ID' })
-    async getCohort(
-        @Param('id', new ParseUUIDPipe()) id: string,
-    ): Promise<GetCohortResponseDto> {
-        return this.cohortsService.getCohort(id);
-    }
-
     @Get()
     @ApiOperation({ summary: 'List cohorts with pagination' })
     @ApiQuery({
@@ -66,6 +58,35 @@ export class CohortsController {
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         return this.cohortsService.listCohorts(query);
+    }
+
+    @Get('me')
+    @ApiOperation({ summary: 'List my cohorts with pagination' })
+    @ApiQuery({
+        name: 'page',
+        type: 'number',
+        required: false,
+        description: 'Page number for pagination',
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: 'number',
+        required: false,
+        description: 'Number of items per page',
+    })
+    async listMyCohorts(
+        @GetUser() user: User,
+        @Query() query: PaginatedQueryDto,
+    ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
+        return this.cohortsService.listMyCohorts(user, query);
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get a cohort by ID' })
+    async getCohort(
+        @Param('id', new ParseUUIDPipe()) id: string,
+    ): Promise<GetCohortResponseDto> {
+        return this.cohortsService.getCohort(id);
     }
 
     @Post()
