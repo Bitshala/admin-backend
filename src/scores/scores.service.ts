@@ -126,10 +126,26 @@ export class ScoresService {
         });
 
         return new ListScoresForCohortAndWeekResponseDto({
-            scores: usersWithScores.map<UsersWeekScoreResponseDto>(
-                (u) => this.userWithScoreToUsersScoreDto(u, cohortWeekId),
-                this,
-            ),
+            scores: usersWithScores
+                .map<UsersWeekScoreResponseDto>(
+                    (u) => this.userWithScoreToUsersScoreDto(u, cohortWeekId),
+                    this,
+                )
+                .sort((a, b) => {
+                    if (
+                        a.groupDiscussionScores.groupNumber !== null &&
+                        b.groupDiscussionScores.groupNumber !== null &&
+                        a.groupDiscussionScores.groupNumber !==
+                            b.groupDiscussionScores.groupNumber
+                    ) {
+                        return (
+                            a.groupDiscussionScores.groupNumber -
+                            b.groupDiscussionScores.groupNumber
+                        );
+                    }
+
+                    return a.userId.localeCompare(b.userId);
+                }),
         });
     }
 
