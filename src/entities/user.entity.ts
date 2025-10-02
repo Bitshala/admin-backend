@@ -4,7 +4,6 @@ import {
     Column,
     OneToMany,
     ManyToMany,
-    OneToOne,
 } from 'typeorm';
 import { Cohort } from '@/entities/cohort.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';

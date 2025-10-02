@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator';
 import { IsValidScore } from '@/validators/is-valid-score';
 
 export class UpdateScoresRequestDto {
@@ -49,4 +49,14 @@ export class UpdateScoresRequestDto {
     @IsBoolean()
     @IsOptional()
     hasGoodStructure?: boolean;
+}
+
+export class AssignGroupsRequestDto {
+    @IsInt()
+    @Min(1)
+    participantsPerWeek: number;
+
+    @IsInt()
+    @Min(1)
+    groupsAvailable: number;
 }

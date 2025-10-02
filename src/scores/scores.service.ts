@@ -12,7 +12,10 @@ import {
     WeeklyScore,
 } from '@/scores/scores.response.dto';
 import { ServiceError } from '@/common/errors';
-import { UpdateScoresRequestDto } from '@/scores/scores.request.dto';
+import {
+    AssignGroupsRequestDto,
+    UpdateScoresRequestDto,
+} from '@/scores/scores.request.dto';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 
@@ -332,7 +335,10 @@ export class ScoresService {
         });
     }
 
-    async assignGroupsForCohortWeek(currentWeekId: string): Promise<void> {
+    async assignGroupsForCohortWeek(
+        currentWeekId: string,
+        body: AssignGroupsRequestDto,
+    ): Promise<void> {
         // First, check if this is week 0 - if so, set all groups to 1
         const currentWeek = await this.cohortWeekRepository.findOne({
             where: { id: currentWeekId },
@@ -458,17 +464,20 @@ export class ScoresService {
 
         // Assign groups using round-robin for top performers
         const updates: GroupDiscussionScore[] = [];
+        const totalNumberOfGroups = body.groupsAvailable;
+        const participantsPerWeek = body.participantsPerWeek; // participants per group
+        const totalCapacity = totalNumberOfGroups * participantsPerWeek;
 
         for (let i = 0; i < eligibleUsers.length; i++) {
             const { currentWeekGD } = eligibleUsers[i];
 
-            if (i < 24) {
-                // First 24 users (top performers) - distribute evenly across groups 1, 2, 3
-                // Groups: 1, 2, 3, 1, 2, 3, 1, 2, 3... (repeating pattern)
-                currentWeekGD.groupNumber = (i % 3) + 1;
+            if (i < totalCapacity) {
+                // Blocks of size participantsPerWeek map to groups 1..totalNumberOfGroups
+                currentWeekGD.groupNumber =
+                    Math.floor(i / participantsPerWeek) + 1;
             } else {
-                // Users 25+ continue the round-robin pattern
-                currentWeekGD.groupNumber = (i % 3) + 1;
+                // Everyone beyond capacity goes to the overflow group
+                currentWeekGD.groupNumber = totalNumberOfGroups + 1;
             }
 
             updates.push(currentWeekGD);

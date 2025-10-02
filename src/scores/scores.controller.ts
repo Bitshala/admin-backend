@@ -17,7 +17,10 @@ import {
 } from '@/scores/scores.response.dto';
 import { Roles } from '@/auth/roles.decorator';
 import { UserRole } from '@/common/enum';
-import { UpdateScoresRequestDto } from '@/scores/scores.request.dto';
+import {
+    AssignGroupsRequestDto,
+    UpdateScoresRequestDto,
+} from '@/scores/scores.request.dto';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
 
@@ -88,7 +91,8 @@ export class ScoresController {
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async assignGroupsForCohortWeek(
         @Param('weekId', new ParseUUIDPipe()) weekId: string,
+        @Body() body: AssignGroupsRequestDto,
     ): Promise<void> {
-        return this.scoresService.assignGroupsForCohortWeek(weekId);
+        return this.scoresService.assignGroupsForCohortWeek(weekId, body);
     }
 }
