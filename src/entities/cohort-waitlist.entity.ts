@@ -11,6 +11,6 @@ export class CohortWaitlist extends BaseEntity {
     @Column({ type: 'enum', enum: CohortType })
     type!: CohortType;
 
-    @ManyToOne(() => User, (u) => u.cohorts)
+    @ManyToOne(() => User, (u) => u.cohortsWaitlist)
     user!: User;
 }
