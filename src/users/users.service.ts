@@ -122,6 +122,35 @@ export class UsersService {
         if (body.description !== undefined) {
             user.description = body.description;
         }
+        if (body.background !== undefined) {
+            user.background = body.background;
+        }
+        if (body.githubProfileUrl !== undefined) {
+            user.githubProfileUrl = body.githubProfileUrl;
+        }
+        if (body.skills !== undefined) {
+            user.skills = body.skills ?? [];
+        }
+        if (body.firstHeardAboutBitcoinOn !== undefined) {
+            const date =
+                body.firstHeardAboutBitcoinOn !== null
+                    ? new Date(body.firstHeardAboutBitcoinOn)
+                    : null;
+            if (date !== null) date.setUTCHours(0, 0, 0, 0);
+            user.firstHeardAboutBitcoinOn = date;
+        }
+        if (body.bitcoinBooksRead !== undefined) {
+            user.bitcoinBooksRead = body.bitcoinBooksRead ?? [];
+        }
+        if (body.whyBitcoin !== undefined) {
+            user.whyBitcoin = body.whyBitcoin;
+        }
+        if (body.weeklyCohortCommitmentHours !== undefined) {
+            user.weeklyCohortCommitmentHours = body.weeklyCohortCommitmentHours;
+        }
+        if (body.location !== undefined) {
+            user.location = body.location;
+        }
 
         await this.userRepository.save(user);
         return GetUserResponse.fromEntity(user);
