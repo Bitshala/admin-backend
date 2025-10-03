@@ -1,0 +1,62 @@
+name: 'Check for Migrations'
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+jobs:
+  check-formatting-and-lint:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: bitshala
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.12.x
+          cache: npm
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm install
+      - name: Run Database Migrations
+        run: npm run migration:run
+        env:
+          DB_POSTGRES_HOST: 'localhost'
+          DB_POSTGRES_PORT: '5432'
+          DB_POSTGRES_USERNAME: 'root'
+          DB_POSTGRES_PASSWORD: 'password'
+          DB_POSTGRES_DATABASE_NAME: 'bitshala'
+      - name: Check For Migrations
+        run: |
+          COUNT_AFTER_RUN=$(ls migrations | wc -l) && \
+          (npm run migration:generate || :) && \
+          COUNT_AFTER_GENERATION=$(ls migrations | wc -l)
+          if (( $COUNT_AFTER_RUN < $COUNT_AFTER_GENERATION )); then echo "Migration required but no migrations was found."; exit 1; else exit 0; fi
+        env:
+          DB_POSTGRES_HOST: 'localhost'
+          DB_POSTGRES_PORT: '5432'
+          DB_POSTGRES_USERNAME: 'root'
+          DB_POSTGRES_PASSWORD: 'password'
+          DB_POSTGRES_DATABASE_NAME: 'bitshala'
