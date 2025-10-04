@@ -57,10 +57,6 @@ export class UsersService {
             );
         }
 
-        if (!data.email) {
-            throw new BadRequestException('Email is required to create a user');
-        }
-
         const user = new User();
         user.id = randomUUID();
         user.email = data.email;
@@ -92,14 +88,11 @@ export class UsersService {
             where: { discordUserId: data.discordUserId },
         });
 
-        if (!data.email) {
-            throw new BadRequestException('Email is required to create a user');
-        }
-
         if (user) {
             user.discordUserName = data.discordUsername;
             user.discordGlobalName = data.discordGlobalName;
-            user.email = data.email;
+            // Only update email if it's not already set
+            if (!user.email && data.email) user.email = data.email;
             user.isGuildMember = data.isGuildMember;
             user.role = this.inferUserRoleFromDiscordRoles(data.roles);
             return this.userRepository.save(user);
