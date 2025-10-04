@@ -11,10 +11,15 @@ import {
     Max,
     IsUUID,
     IsEnum,
+    IsEmail,
 } from 'class-validator';
 import { UserRole } from '@/common/enum';
 
 export class UpdateUserRequest {
+    @IsOptional()
+    @IsEmail()
+    email?: string;
+
     /** Full name or pseudonym */
     @IsOptional()
     @IsString()

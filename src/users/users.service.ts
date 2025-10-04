@@ -109,6 +109,9 @@ export class UsersService {
         user: User,
         body: UpdateUserRequest,
     ): Promise<GetUserResponse> {
+        if (body.email !== undefined) {
+            user.email = body.email;
+        }
         if (body.name !== undefined) {
             user.name = body.name;
         }
