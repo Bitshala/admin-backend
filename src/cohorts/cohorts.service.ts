@@ -332,6 +332,12 @@ export class CohortsService {
     }
 
     async joinCohort(user: User, cohortId: string) {
+        if (!user.email) {
+            throw new BadRequestException(
+                `User must have a verified email to join a cohort.`,
+            );
+        }
+
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
             relations: {
@@ -409,6 +415,12 @@ export class CohortsService {
         user: User,
         body: JoinWaitlistRequestDto,
     ): Promise<void> {
+        if (!user.email) {
+            throw new BadRequestException(
+                `User must have a verified email to join a waitlist.`,
+            );
+        }
+
         const alreadyOnWaitlist: boolean =
             await this.cohortWaitlistRepository.exist({
                 where: { user: { id: user.id }, type: body.type },
