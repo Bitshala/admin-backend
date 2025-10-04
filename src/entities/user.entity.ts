@@ -17,8 +17,8 @@ export class User extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column('text', { unique: true })
-    email!: string;
+    @Column('text', { unique: true, nullable: true })
+    email!: string | null;
 
     @Column('text', { unique: true })
     discordUserId!: string;

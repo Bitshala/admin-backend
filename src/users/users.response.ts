@@ -3,7 +3,7 @@ import { User } from '@/entities/user.entity';
 
 export class GetUserResponse {
     id: string;
-    email: string;
+    email: string | null;
     discordUsername: string;
     discordGlobalName: string | null;
     name: string | null;
