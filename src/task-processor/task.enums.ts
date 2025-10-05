@@ -1,0 +1,11 @@
+export enum APITaskStatus {
+    UNPROCESSED = 'UNPROCESSED',
+    PROCESSING = 'PROCESSING',
+    PROCESSED = 'PROCESSED',
+    FAILED = 'FAILED',
+    CANCELLED = 'CANCELLED',
+}
+
+export enum TaskType {
+    ASSIGN_COHORT_ROLE = 'ASSIGN_COHORT_ROLE',
+}

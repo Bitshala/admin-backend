@@ -20,6 +20,7 @@ import { AuthGuard } from '@/auth/auth.guard';
 import { RolesGuard } from '@/auth/roles.guard';
 import { createKeyv } from '@keyv/redis';
 import { ScoresModule } from '@/scores/scores.module';
+import { TaskProcessorModule } from '@/task-processor/task-processor.module';
 
 @Module({
     imports: [
@@ -69,6 +70,7 @@ import { ScoresModule } from '@/scores/scores.module';
         CohortsModule,
         UsersModule,
         ScoresModule,
+        TaskProcessorModule,
     ],
     controllers: [AppController],
     providers: [
