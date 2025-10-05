@@ -5,13 +5,17 @@ import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { APITask } from '@/entities/api-task.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { ApiError, ServiceError } from '@/common/errors';
+import { CohortsService } from '@/cohorts/cohorts.service';
 
 @Injectable()
 export class APITaskProcessorService {
     private readonly logger = new Logger(APITaskProcessorService.name);
     private readonly MESSAGE_BATCH_SIZE = 10;
 
-    constructor(private readonly dbTransactionService: DbTransactionService) {}
+    constructor(
+        private readonly dbTransactionService: DbTransactionService,
+        private readonly cohortsService: CohortsService,
+    ) {}
 
     private async fetchUnprocessedTasks(): Promise<APITask<any>[]> {
         const queryResult = await this.dbTransactionService.execute(
@@ -59,10 +63,10 @@ export class APITaskProcessorService {
         try {
             switch (task.type) {
                 case TaskType.ASSIGN_COHORT_ROLE:
-                    // await this.cohortService.assignCohortRole(
-                    //     task.data.userId,
-                    //     task.data.cohortType,
-                    // );
+                    await this.cohortsService.assignDiscordRole(
+                        task.data.userId,
+                        task.data.cohortType,
+                    );
                     break;
                 default:
                     throw new ApiError(

@@ -23,6 +23,8 @@ import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
 import { CohortType } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
+import { APITask } from '@/entities/api-task.entity';
+import { TaskType } from '@/task-processor/task.enums';
 
 @Injectable()
 export class CohortsService {
@@ -38,6 +40,10 @@ export class CohortsService {
         private readonly cohortWeekRepository: Repository<CohortWeek>,
         @InjectRepository(CohortWaitlist)
         private readonly cohortWaitlistRepository: Repository<CohortWaitlist>,
+        @InjectRepository(APITask)
+        private readonly apiTaskRepository: Repository<APITask<any>>,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
         private readonly dbTransactionService: DbTransactionService,
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
@@ -300,7 +306,11 @@ export class CohortsService {
         await this.cohortWeekRepository.save(cohortWeek);
     }
 
-    async assignDiscordRole(user: User, cohortType: CohortType) {
+    async assignDiscordRole(userId: string, cohortType: CohortType) {
+        const user = await this.userRepository.findOneOrFail({
+            where: { id: userId },
+        });
+
         let roleId: string;
 
         switch (cohortType) {
@@ -406,7 +416,13 @@ export class CohortsService {
 
                 if (waitlistEntry) await manager.remove(waitlistEntry);
 
-                await this.assignDiscordRole(user, cohort.type);
+                const apiTask = new APITask<TaskType.ASSIGN_COHORT_ROLE>();
+                apiTask.type = TaskType.ASSIGN_COHORT_ROLE;
+                apiTask.data = {
+                    userId: user.id,
+                    cohortType: cohort.type,
+                };
+                await this.apiTaskRepository.save(apiTask);
             },
         );
     }
