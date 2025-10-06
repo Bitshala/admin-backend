@@ -21,9 +21,12 @@ import { RolesGuard } from '@/auth/roles.guard';
 import { createKeyv } from '@keyv/redis';
 import { ScoresModule } from '@/scores/scores.module';
 import { TaskProcessorModule } from '@/task-processor/task-processor.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from '@/common/logger.config';
 
 @Module({
     imports: [
+        WinstonModule.forRoot(winstonConfig),
         ScheduleModule.forRoot(),
         EventEmitterModule.forRoot(),
         CacheModule.registerAsync({
