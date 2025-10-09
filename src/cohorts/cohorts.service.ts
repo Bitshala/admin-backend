@@ -341,6 +341,16 @@ export class CohortsService {
         await this.discordClient.attachRoleToMember(user.discordUserId, roleId);
     }
 
+    async addUserToCohort(userId: string, cohortId: string) {
+        const user = await this.userRepository.findOneOrFail({
+            where: {
+                id: userId,
+            },
+        });
+
+        await this.joinCohort(user, cohortId);
+    }
+
     async joinCohort(user: User, cohortId: string) {
         if (!user.email) {
             throw new BadRequestException(

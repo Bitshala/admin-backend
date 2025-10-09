@@ -127,6 +127,16 @@ export class CohortsController {
         await this.cohortsService.joinCohort(user, cohortId);
     }
 
+    @Post(':cohortId/add/:userId')
+    @ApiOperation({ summary: 'Add a user to a cohort' })
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    async addUserToCohort(
+        @Param('userId', new ParseUUIDPipe()) userId: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+    ): Promise<void> {
+        await this.cohortsService.addUserToCohort(userId, cohortId);
+    }
+
     @Post('waitlist')
     @ApiOperation({ summary: 'Join the cohort waitlist' })
     async joinCohortWaitlist(
