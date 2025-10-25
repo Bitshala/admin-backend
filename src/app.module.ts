@@ -23,6 +23,7 @@ import { ScoresModule } from '@/scores/scores.module';
 import { TaskProcessorModule } from '@/task-processor/task-processor.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from '@/common/logger.config';
+import { FeedbackModule } from '@/feedback/feedback.module';
 
 @Module({
     imports: [
@@ -74,6 +75,7 @@ import { winstonConfig } from '@/common/logger.config';
         UsersModule,
         ScoresModule,
         TaskProcessorModule,
+        FeedbackModule,
     ],
     controllers: [AppController],
     providers: [
