@@ -9,12 +9,6 @@ export class Feedback extends BaseEntity {
     id!: string;
 
     @Column('text')
-    preferredName!: string;
-
-    @Column('text')
-    email!: string;
-
-    @Column('text')
     feedbackText!: string;
 
     @ManyToOne(() => User, { nullable: false })

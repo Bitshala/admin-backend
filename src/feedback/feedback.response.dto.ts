@@ -1,7 +1,7 @@
 export class GetFeedbackResponseDto {
     id!: string;
-    preferredName!: string;
-    email!: string;
+    userName!: string | null;
+    userEmail!: string | null;
     feedbackText!: string;
     cohortId!: string;
     userId!: string;
@@ -10,8 +10,8 @@ export class GetFeedbackResponseDto {
 
     constructor(obj: GetFeedbackResponseDto) {
         this.id = obj.id;
-        this.preferredName = obj.preferredName;
-        this.email = obj.email;
+        this.userName = obj.userName;
+        this.userEmail = obj.userEmail;
         this.feedbackText = obj.feedbackText;
         this.cohortId = obj.cohortId;
         this.userId = obj.userId;

@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { Feedback } from '@/entities/feedback.entity';
 import { User } from '@/entities/user.entity';
 import { Cohort } from '@/entities/cohort.entity';
-import { ExerciseScore } from '@/entities/exercise-score.entity';
+import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { CreateFeedbackRequestDto } from '@/feedback/feedback.request.dto';
 import {
     CreateFeedbackResponseDto,
@@ -24,12 +24,10 @@ export class FeedbackService {
     constructor(
         @InjectRepository(Feedback)
         private readonly feedbackRepository: Repository<Feedback>,
-        @InjectRepository(User)
-        private readonly userRepository: Repository<User>,
         @InjectRepository(Cohort)
         private readonly cohortRepository: Repository<Cohort>,
-        @InjectRepository(ExerciseScore)
-        private readonly exerciseScoreRepository: Repository<ExerciseScore>,
+        @InjectRepository(GroupDiscussionScore)
+        private readonly groupDiscussionScoreRepository: Repository<GroupDiscussionScore>,
     ) {}
 
     async createFeedback(
@@ -60,13 +58,15 @@ export class FeedbackService {
         }
 
         // Check if user has attended at least one week
-        const attendanceCount = await this.exerciseScoreRepository.count({
-            where: {
-                user: { id: user.id },
-                cohort: { id: feedbackData.cohortId },
-                isSubmitted: true,
+        const attendanceCount = await this.groupDiscussionScoreRepository.count(
+            {
+                where: {
+                    user: { id: user.id },
+                    cohort: { id: feedbackData.cohortId },
+                    attendance: true,
+                },
             },
-        });
+        );
 
         if (attendanceCount === 0) {
             throw new BadRequestException(
@@ -90,8 +90,6 @@ export class FeedbackService {
 
         // Create feedback
         const feedback = new Feedback();
-        feedback.preferredName = feedbackData.preferredName;
-        feedback.email = feedbackData.email;
         feedback.feedbackText = feedbackData.feedbackText;
         feedback.user = user;
         feedback.cohort = cohort;
@@ -122,8 +120,8 @@ export class FeedbackService {
 
         return new GetFeedbackResponseDto({
             id: feedback.id,
-            preferredName: feedback.preferredName,
-            email: feedback.email,
+            userName: feedback.user.name,
+            userEmail: feedback.user.email,
             feedbackText: feedback.feedbackText,
             cohortId: feedback.cohort.id,
             userId: feedback.user.id,
@@ -148,8 +146,8 @@ export class FeedbackService {
                 (feedback) =>
                     new GetFeedbackResponseDto({
                         id: feedback.id,
-                        preferredName: feedback.preferredName,
-                        email: feedback.email,
+                        userName: feedback.user.name,
+                        userEmail: feedback.user.email,
                         feedbackText: feedback.feedbackText,
                         cohortId: feedback.cohort.id,
                         userId: feedback.user.id,
@@ -189,8 +187,8 @@ export class FeedbackService {
                 (feedback) =>
                     new GetFeedbackResponseDto({
                         id: feedback.id,
-                        preferredName: feedback.preferredName,
-                        email: feedback.email,
+                        userName: feedback.user.name,
+                        userEmail: feedback.user.email,
                         feedbackText: feedback.feedbackText,
                         cohortId: feedback.cohort.id,
                         userId: feedback.user.id,
@@ -219,8 +217,8 @@ export class FeedbackService {
                 (feedback) =>
                     new GetFeedbackResponseDto({
                         id: feedback.id,
-                        preferredName: feedback.preferredName,
-                        email: feedback.email,
+                        userName: feedback.user.name,
+                        userEmail: feedback.user.email,
                         feedbackText: feedback.feedbackText,
                         cohortId: feedback.cohort.id,
                         userId: feedback.user.id,
