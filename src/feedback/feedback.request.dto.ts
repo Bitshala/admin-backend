@@ -1,14 +1,12 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateFeedbackRequestDto {
-    @IsUUID()
+    @IsString()
     @IsNotEmpty()
-    userId!: string;
+    feedbackText!: string;
+}
 
-    @IsUUID()
-    @IsNotEmpty()
-    cohortId!: string;
-
+export class UpdateFeedbackRequestDto {
     @IsString()
     @IsNotEmpty()
     feedbackText!: string;

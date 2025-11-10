@@ -4,6 +4,7 @@ import {
     Get,
     Param,
     ParseUUIDPipe,
+    Patch,
     Post,
     Query,
     UsePipes,
@@ -16,7 +17,10 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { FeedbackService } from '@/feedback/feedback.service';
-import { CreateFeedbackRequestDto } from '@/feedback/feedback.request.dto';
+import {
+    CreateFeedbackRequestDto,
+    UpdateFeedbackRequestDto,
+} from '@/feedback/feedback.request.dto';
 import {
     CreateFeedbackResponseDto,
     GetFeedbackResponseDto,
@@ -34,13 +38,14 @@ import { UserRole } from '@/common/enum';
 export class FeedbackController {
     constructor(private readonly feedbackService: FeedbackService) {}
 
-    @Post()
+    @Post(':cohortId')
     @ApiOperation({ summary: 'Submit feedback for a cohort' })
     async createFeedback(
         @GetUser() user: User,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Body() body: CreateFeedbackRequestDto,
     ): Promise<CreateFeedbackResponseDto> {
-        return this.feedbackService.createFeedback(user, body);
+        return this.feedbackService.createFeedback(user, cohortId, body);
     }
 
     @Get('me')
@@ -116,5 +121,15 @@ export class FeedbackController {
         @Param('id', new ParseUUIDPipe()) id: string,
     ): Promise<GetFeedbackResponseDto> {
         return this.feedbackService.getFeedbackById(id);
+    }
+
+    @Patch(':id')
+    @ApiOperation({ summary: 'Update my feedback' })
+    async updateFeedback(
+        @GetUser() user: User,
+        @Param('id', new ParseUUIDPipe()) id: string,
+        @Body() body: UpdateFeedbackRequestDto,
+    ): Promise<GetFeedbackResponseDto> {
+        return this.feedbackService.updateFeedback(user, id, body);
     }
 }

@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     Injectable,
     Logger,
     NotFoundException,
@@ -10,7 +11,10 @@ import { Feedback } from '@/entities/feedback.entity';
 import { User } from '@/entities/user.entity';
 import { Cohort } from '@/entities/cohort.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
-import { CreateFeedbackRequestDto } from '@/feedback/feedback.request.dto';
+import {
+    CreateFeedbackRequestDto,
+    UpdateFeedbackRequestDto,
+} from '@/feedback/feedback.request.dto';
 import {
     CreateFeedbackResponseDto,
     GetFeedbackResponseDto,
@@ -32,24 +36,27 @@ export class FeedbackService {
 
     async createFeedback(
         user: User,
+        cohortId: string,
         feedbackData: CreateFeedbackRequestDto,
     ): Promise<CreateFeedbackResponseDto> {
         // Verify cohort exists
-        const cohort: Cohort | null = await this.cohortRepository.findOne({
-            where: { id: feedbackData.cohortId },
-            relations: { users: true },
+        const cohortExists = await this.cohortRepository.exists({
+            where: { id: cohortId },
         });
 
-        if (!cohort) {
+        if (!cohortExists) {
             throw new NotFoundException(
-                `Cohort with id ${feedbackData.cohortId} does not exist.`,
+                `Cohort with id ${cohortId} does not exist.`,
             );
         }
 
         // Check if user is enrolled in the cohort
-        const isEnrolled = cohort.users.some(
-            (enrolledUser) => enrolledUser.id === user.id,
-        );
+        const isEnrolled = await this.cohortRepository.exists({
+            where: {
+                id: cohortId,
+                users: { id: user.id },
+            },
+        });
 
         if (!isEnrolled) {
             throw new BadRequestException(
@@ -58,46 +65,45 @@ export class FeedbackService {
         }
 
         // Check if user has attended at least one week
-        const attendanceCount = await this.groupDiscussionScoreRepository.count(
-            {
-                where: {
-                    user: { id: user.id },
-                    cohort: { id: feedbackData.cohortId },
-                    attendance: true,
-                },
+        const hasAttended = await this.groupDiscussionScoreRepository.exists({
+            where: {
+                user: { id: user.id },
+                cohort: { id: cohortId },
+                attendance: true,
             },
-        );
+        });
 
-        if (attendanceCount === 0) {
+        if (!hasAttended) {
             throw new BadRequestException(
                 `You must attend at least one week before submitting feedback.`,
             );
         }
 
         // Check if user has already submitted feedback for this cohort
-        const existingFeedback = await this.feedbackRepository.findOne({
+        const hasSubmittedFeedback = await this.feedbackRepository.exists({
             where: {
                 user: { id: user.id },
-                cohort: { id: feedbackData.cohortId },
+                cohort: { id: cohortId },
             },
         });
 
-        if (existingFeedback) {
+        if (hasSubmittedFeedback) {
             throw new BadRequestException(
                 `You have already submitted feedback for this cohort.`,
             );
         }
 
         // Create feedback
-        const feedback = new Feedback();
-        feedback.feedbackText = feedbackData.feedbackText;
-        feedback.user = user;
-        feedback.cohort = cohort;
+        const feedback = this.feedbackRepository.create({
+            feedbackText: feedbackData.feedbackText,
+            user: { id: user.id },
+            cohort: { id: cohortId },
+        });
 
         const savedFeedback = await this.feedbackRepository.save(feedback);
 
         this.logger.log(
-            `User ${user.id} submitted feedback for cohort ${feedbackData.cohortId}`,
+            `User ${user.id} submitted feedback for cohort ${cohortId}`,
         );
 
         return new CreateFeedbackResponseDto({
@@ -226,6 +232,50 @@ export class FeedbackService {
                         updatedAt: feedback.updatedAt,
                     }),
             ),
+        });
+    }
+
+    async updateFeedback(
+        user: User,
+        feedbackId: string,
+        updateData: UpdateFeedbackRequestDto,
+    ): Promise<GetFeedbackResponseDto> {
+        // Find the feedback
+        const feedback = await this.feedbackRepository.findOne({
+            where: { id: feedbackId },
+            relations: { user: true, cohort: true },
+        });
+
+        if (!feedback) {
+            throw new NotFoundException(
+                `Feedback with id ${feedbackId} does not exist.`,
+            );
+        }
+
+        // Verify the user owns this feedback
+        if (feedback.user.id !== user.id) {
+            throw new ForbiddenException(
+                `You are not authorized to update this feedback.`,
+            );
+        }
+
+        // Update the feedback
+        feedback.feedbackText = updateData.feedbackText;
+        const updatedFeedback = await this.feedbackRepository.save(feedback);
+
+        this.logger.log(
+            `User ${user.id} updated feedback ${feedbackId} for cohort ${feedback.cohort.id}`,
+        );
+
+        return new GetFeedbackResponseDto({
+            id: updatedFeedback.id,
+            userName: updatedFeedback.user.name,
+            userEmail: updatedFeedback.user.email,
+            feedbackText: updatedFeedback.feedbackText,
+            cohortId: updatedFeedback.cohort.id,
+            userId: updatedFeedback.user.id,
+            createdAt: updatedFeedback.createdAt,
+            updatedAt: updatedFeedback.updatedAt,
         });
     }
 }
