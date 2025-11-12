@@ -1,6 +1,7 @@
 import {
     IsBoolean,
     IsDefined,
+    IsEmail,
     IsInt,
     IsNotEmpty,
     IsNumberString,
@@ -38,6 +39,7 @@ class PostgresConfig {
 class DbConfig {
     @IsDefined()
     @ValidateNested()
+    @Type(() => PostgresConfig)
     postgres: PostgresConfig;
 
     @IsBoolean()
@@ -169,6 +171,49 @@ class AppConfig {
     auth: AppAuthConfig;
 }
 
+class SmtpTransportConfig {
+    @IsString()
+    @IsNotEmpty()
+    host: string;
+
+    @IsInt()
+    @Min(1)
+    @Max(65535)
+    port: number;
+
+    @IsBoolean()
+    secure: boolean;
+
+    @IsString()
+    @IsNotEmpty()
+    user: string;
+
+    @IsString()
+    @IsNotEmpty()
+    pass: string;
+}
+
+class MailFromIdentity {
+    @IsEmail()
+    email: string;
+
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+}
+
+class MailConfig {
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => SmtpTransportConfig)
+    smtp: SmtpTransportConfig;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => MailFromIdentity)
+    from: MailFromIdentity;
+}
+
 export class Config {
     @IsDefined()
     @ValidateNested()
@@ -189,4 +234,9 @@ export class Config {
     @ValidateNested()
     @Type(() => AppConfig)
     app: AppConfig;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => MailConfig)
+    email: MailConfig;
 }
