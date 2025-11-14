@@ -1,0 +1,20 @@
+Hello <%~ it.userName %>,
+
+Welcome to the Bitshala <%~ it.cohortName %> waitlist!
+
+Thank you for your interest in joining our <%~ it.cohortName %> cohort. We're excited to have you on the waitlist!
+
+What happens next?
+- We'll notify you as soon as registration opens for the next cohort
+- You'll receive an email with enrollment instructions and important dates
+- Keep an eye on your inbox - we don't want you to miss out!
+
+In the meantime:
+- Join our community: https://discord.gg/bitshala
+- Explore our resources: https://bitshala.org
+- Follow us for updates: https://twitter.com/bitshala
+
+If you have any questions, feel free to reach out to us.
+
+Best regards,
+The Bitshala Team
