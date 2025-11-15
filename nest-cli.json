@@ -6,6 +6,10 @@
     "deleteOutDir": true,
     "assets": [
       {
+        "include": "../mail-templates/*",
+        "outDir": "./dist/src/mail/mail-templates"
+      },
+      {
         "include": "../config/*",
         "outDir": "./dist/src/config"
       }
