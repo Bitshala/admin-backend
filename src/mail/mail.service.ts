@@ -7,6 +7,7 @@ import { Eta } from 'eta';
 import { MailTemplate } from '@/mail/mail.enum';
 import { accessSync, constants } from 'fs';
 import { TemplateContextMap } from '@/mail/mail.interface';
+import { formatDate } from '@/utils/data.utils';
 
 @Injectable()
 export class MailService implements OnModuleInit {
@@ -122,6 +123,31 @@ export class MailService implements OnModuleInit {
             context: {
                 userName: userName,
                 cohortName: cohortDisplayName,
+            },
+        });
+    }
+
+    async sendCohortJoiningConfirmationEmail(
+        userEmail: string,
+        userName: string,
+        cohortType: CohortType,
+        startDate: Date,
+        endDate: Date,
+        classroomUrl?: string,
+    ): Promise<void> {
+        const cohortDisplayName = this.getCohortDisplayName(cohortType);
+        const subject = `Welcome to ${cohortDisplayName} - Your enrollment is confirmed!`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject: subject,
+            template: MailTemplate.CohortJoiningConfirmation,
+            context: {
+                userName: userName,
+                cohortName: cohortDisplayName,
+                startDate: formatDate(startDate),
+                endDate: formatDate(endDate),
+                classroomUrl: classroomUrl,
             },
         });
     }

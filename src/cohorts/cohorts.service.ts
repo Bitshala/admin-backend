@@ -26,6 +26,7 @@ import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
 import { MailService } from '@/mail/mail.service';
+import { formatDate } from '@/utils/data.utils';
 
 @Injectable()
 export class CohortsService {
@@ -436,6 +437,20 @@ export class CohortsService {
                 };
                 await this.apiTaskRepository.save(apiTask);
             },
+        );
+
+        // Send cohort joining confirmation email
+        const userName =
+            user.name || user.discordGlobalName || user.discordUserName;
+        const classroomUrl = cohort.weeks[0]?.classroomUrl || undefined;
+
+        await this.mailService.sendCohortJoiningConfirmationEmail(
+            user.email,
+            userName,
+            cohort.type,
+            cohort.startDate,
+            cohort.endDate,
+            classroomUrl,
         );
     }
 

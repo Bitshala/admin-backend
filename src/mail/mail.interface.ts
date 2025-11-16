@@ -5,6 +5,15 @@ export interface WelcomeToWaitlistContext {
     cohortName: string;
 }
 
+export interface CohortJoiningConfirmationContext {
+    userName: string;
+    cohortName: string;
+    startDate: string;
+    endDate: string;
+    classroomUrl?: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
+    [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
 }

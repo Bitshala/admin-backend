@@ -1,0 +1,42 @@
+Hello <%~ it.userName %>,
+
+Welcome to Bitshala's <%~ it.cohortName %> Cohort!
+
+Congratulations! You've successfully joined our <%~ it.cohortName %> cohort. We're thrilled to have you as part of our learning community!
+
+Cohort Details:
+- Cohort: <%~ it.cohortName %>
+- Start Date: <%~ it.startDate %>
+- End Date: <%~ it.endDate %>
+
+What's Next?
+
+1. Join the Classroom
+   Access your cohort's classroom and resources:
+   <%~ it.classroomUrl || 'Link will be shared soon' %>
+
+2. Connect on Discord
+   Join our community and meet your cohort members:
+   https://discord.gg/bitshala
+
+3. Prepare for Week 1
+   - Review the course materials
+   - Set up your development environment
+   - Introduce yourself to the cohort
+
+Important Information:
+- Weekly sessions and group discussions will be scheduled
+- Exercise submissions and deadlines will be posted in the classroom
+- Stay active in Discord for announcements and community support
+
+Resources:
+- Course Materials: https://bitshala.org
+- Technical Support: Available on Discord
+- Community Guidelines: https://bitshala.org/guidelines
+
+We're excited to begin this learning journey with you. If you have any questions or need assistance, don't hesitate to reach out to our team on Discord.
+
+Let's start building together!
+
+Best regards,
+The Bitshala Team

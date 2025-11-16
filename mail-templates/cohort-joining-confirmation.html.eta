@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to <%~ it.cohortName %> Cohort - Bitshala</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f7931a;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .success-badge {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .cohort-info {
+            background-color: #fff8e1;
+            border-left: 4px solid #f7931a;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        .cohort-info h2 {
+            color: #f7931a;
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .info-row {
+            display: flex;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #ffe082;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            min-width: 100px;
+        }
+        .info-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        .next-steps {
+            margin: 30px 0;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .step-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #f7931a;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 6px;
+        }
+        .step-number {
+            display: inline-block;
+            background-color: #f7931a;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        .step-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .step-description {
+            color: #5a6c7d;
+            margin-left: 40px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #f7931a;
+            color: white;
+            padding: 14px 32px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+        }
+        .cta-button:hover {
+            background-color: #e08912;
+        }
+        .important-box {
+            background-color: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .important-box h3 {
+            color: #2e7d32;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .important-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .important-box li {
+            margin: 8px 0;
+            color: #1b5e20;
+        }
+        .resources {
+            margin: 25px 0;
+        }
+        .resource-link {
+            display: block;
+            padding: 15px;
+            margin: 12px 0;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #2c3e50;
+            transition: all 0.2s;
+            border: 1px solid #e0e0e0;
+        }
+        .resource-link:hover {
+            background-color: #e9ecef;
+            border-color: #f7931a;
+        }
+        .resource-link strong {
+            color: #f7931a;
+            font-size: 16px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .footer strong {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">₿ Bitshala</div>
+        <div class="success-badge">✓ Enrollment Confirmed</div>
+        <h1>Welcome to the Cohort!</h1>
+    </div>
+
+    <div class="content">
+        <p class="greeting">Hello <%~ it.userName %>,</p>
+
+        <p style="font-size: 16px; line-height: 1.8;">
+            Congratulations! You've successfully joined our <strong><%~ it.cohortName %></strong> cohort.
+            We're thrilled to have you as part of our learning community and can't wait to begin this journey with you!
+        </p>
+    </div>
+
+    <div class="cohort-info">
+        <h2>📅 Your Cohort Details</h2>
+        <div class="info-row">
+            <div class="info-label">Cohort:</div>
+            <div class="info-value"><%~ it.cohortName %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Start Date:</div>
+            <div class="info-value"><%~ it.startDate %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">End Date:</div>
+            <div class="info-value"><%~ it.endDate %></div>
+        </div>
+    </div>
+
+    <div class="next-steps">
+        <div class="section-title">🚀 What's Next?</div>
+
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">1</span>
+                Join the Classroom
+            </div>
+            <div class="step-description">
+                Access your cohort's classroom and resources to get started with the course materials.
+                <% if (it.classroomUrl) { %>
+                <br><br>
+                <a href="<%~ it.classroomUrl %>" class="cta-button">Access Classroom</a>
+                <% } else { %>
+                <br><br>
+                <em>Classroom link will be shared soon</em>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">2</span>
+                Connect on Discord
+            </div>
+            <div class="step-description">
+                Join our community and meet your cohort members. This is where we'll share announcements, discuss topics, and support each other.
+                <br><br>
+                <a href="https://discord.gg/bitshala" class="cta-button">Join Discord</a>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">3</span>
+                Prepare for Week 1
+            </div>
+            <div class="step-description">
+                Review the course materials, set up your development environment, and introduce yourself to the cohort!
+            </div>
+        </div>
+    </div>
+
+    <div class="important-box">
+        <h3>⚡ Important Information</h3>
+        <ul>
+            <li>Weekly sessions and group discussions will be scheduled</li>
+            <li>Exercise submissions and deadlines will be posted in the classroom</li>
+            <li>Stay active in Discord for announcements and community support</li>
+            <li>Don't hesitate to ask questions - we're all here to learn together!</li>
+        </ul>
+    </div>
+
+    <div class="section resources">
+        <div class="section-title">🔗 Helpful Resources</div>
+
+        <a href="https://bitshala.org" class="resource-link">
+            <strong>📚 Course Materials</strong><br>
+            Access all learning resources and documentation
+        </a>
+
+        <a href="https://discord.gg/bitshala" class="resource-link">
+            <strong>💬 Technical Support</strong><br>
+            Get help from our team and community on Discord
+        </a>
+
+        <a href="https://bitshala.org/guidelines" class="resource-link">
+            <strong>📋 Community Guidelines</strong><br>
+            Learn about our community values and expectations
+        </a>
+    </div>
+
+    <div style="text-align: center; margin: 40px 0 20px 0; padding: 30px; background-color: #fef5e7; border-radius: 8px;">
+        <p style="font-size: 18px; color: #2c3e50; margin: 0; font-weight: 600;">
+            We're excited to begin this learning journey with you!
+        </p>
+        <p style="color: #7f8c8d; margin-top: 10px;">
+            Let's start building together 🚀
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>If you have any questions or need assistance, don't hesitate to reach out to our team on Discord.</p>
+        <p><strong>The Bitshala Team</strong></p>
+        <p style="margin-top: 15px; font-size: 12px;">
+            This is an automated message. Please do not reply to this email.
+        </p>
+    </div>
+</div>
+</body>
+</html>
