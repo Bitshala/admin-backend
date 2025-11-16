@@ -25,6 +25,7 @@ import { CohortType } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
+import { MailService } from '@/mail/mail.service';
 
 @Injectable()
 export class CohortsService {
@@ -47,6 +48,7 @@ export class CohortsService {
         private readonly dbTransactionService: DbTransactionService,
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
+        private readonly mailService: MailService,
     ) {
         this.masteringBitcoinDiscordRoleId =
             this.configService.getOrThrow<string>(
@@ -464,6 +466,13 @@ export class CohortsService {
         waitlistEntry.type = body.type;
 
         await this.cohortWaitlistRepository.save(waitlistEntry);
+
+        // Send welcome email to the user
+        await this.mailService.sendWelcomeToWaitlistEmail(
+            user.email,
+            user.name || user.discordGlobalName || user.discordUserName,
+            body.type,
+        );
     }
 
     async getUserWaitlist(user: User): Promise<UserCohortWaitlistResponseDto> {
