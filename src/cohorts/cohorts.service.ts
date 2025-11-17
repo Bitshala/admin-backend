@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cohort } from '@/entities/cohort.entity';
 import { Repository } from 'typeorm';
@@ -26,10 +26,11 @@ import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
 import { MailService } from '@/mail/mail.service';
-import { formatDate } from '@/utils/data.utils';
 
 @Injectable()
 export class CohortsService {
+    private readonly logger = new Logger(CohortsService.name);
+
     private readonly masteringBitcoinDiscordRoleId: string;
     private readonly learningBitcoinFromCommandLineDiscordRoleId: string;
     private readonly programmingBitcoinDiscordRoleId: string;
@@ -444,14 +445,21 @@ export class CohortsService {
             user.name || user.discordGlobalName || user.discordUserName;
         const classroomUrl = cohort.weeks[0]?.classroomUrl || undefined;
 
-        await this.mailService.sendCohortJoiningConfirmationEmail(
-            user.email,
-            userName,
-            cohort.type,
-            cohort.startDate,
-            cohort.endDate,
-            classroomUrl,
-        );
+        try {
+            await this.mailService.sendCohortJoiningConfirmationEmail(
+                user.email,
+                userName,
+                cohort.type,
+                cohort.startDate,
+                cohort.endDate,
+                classroomUrl,
+            );
+        } catch (error) {
+            this.logger.error(
+                `Failed to send cohort joining confirmation email to user ${user.id}: ${error.message}`,
+                error.stack,
+            );
+        }
     }
 
     async joinCohortWaitlist(
@@ -482,12 +490,19 @@ export class CohortsService {
 
         await this.cohortWaitlistRepository.save(waitlistEntry);
 
-        // Send welcome email to the user
-        await this.mailService.sendWelcomeToWaitlistEmail(
-            user.email,
-            user.name || user.discordGlobalName || user.discordUserName,
-            body.type,
-        );
+        try {
+            // Send welcome email to the user
+            await this.mailService.sendWelcomeToWaitlistEmail(
+                user.email,
+                user.name || user.discordGlobalName || user.discordUserName,
+                body.type,
+            );
+        } catch (error) {
+            this.logger.error(
+                `Failed to send welcome to waitlist email to user ${user.id}: ${error.message}`,
+                error.stack,
+            );
+        }
     }
 
     async getUserWaitlist(user: User): Promise<UserCohortWaitlistResponseDto> {
