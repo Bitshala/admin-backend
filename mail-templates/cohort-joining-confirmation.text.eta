@@ -1,42 +1,27 @@
-Hello <%~ it.userName %>,
+🎉 Welcome <%~ it.userName %>!
 
-Welcome to Bitshala's <%~ it.cohortName %> Cohort!
+You've joined the <%~ it.cohortName %>
 
-Congratulations! You've successfully joined our <%~ it.cohortName %> cohort. We're thrilled to have you as part of our learning community!
+We're thrilled to have you onboard! 🚀
 
-Cohort Details:
-- Cohort: <%~ it.cohortName %>
-- Start Date: <%~ it.startDate %>
-- End Date: <%~ it.endDate %>
+Connect with fellow Bitcoiners and developers in our Bitshala Discord community. This is where the magic happens – discussions, collaboration, and learning together.
+
+Register for the private cohort channels with the link below (one-time use):
+
+🚀 Join Discord Server: <%~ it.discordInviteLink %>
+
+If you face any issue while registering, please connect with the Admins on Bitshala Discord: <%~ it.discordSupportLink %>
+
+---
 
 What's Next?
 
-1. Join the Classroom
-   Access your cohort's classroom and resources:
-   <%~ it.classroomUrl || 'Link will be shared soon' %>
+• Click the link above to join your private cohort channels.
+• Introduce yourself in the #introductions channel.
+• Check out the #general and #notice-board channels under the <%~ it.cohortCategory %> category. (Ask Admins if you can't see the channels even after registering.)
+• Stay tuned in the channels for further updates and connect with your peers.
 
-2. Connect on Discord
-   Join our community and meet your cohort members:
-   https://discord.gg/bitshala
+---
 
-3. Prepare for Week 1
-   - Review the course materials
-   - Set up your development environment
-   - Introduce yourself to the cohort
-
-Important Information:
-- Weekly sessions and group discussions will be scheduled
-- Exercise submissions and deadlines will be posted in the classroom
-- Stay active in Discord for announcements and community support
-
-Resources:
-- Course Materials: https://bitshala.org
-- Technical Support: Available on Discord
-- Community Guidelines: https://bitshala.org/guidelines
-
-We're excited to begin this learning journey with you. If you have any questions or need assistance, don't hesitate to reach out to our team on Discord.
-
-Let's start building together!
-
-Best regards,
-The Bitshala Team
+Having trouble with the link?
+Copy and paste this into your browser: <%~ it.discordInviteLink %>

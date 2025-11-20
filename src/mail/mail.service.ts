@@ -7,7 +7,7 @@ import { Eta } from 'eta';
 import { MailTemplate } from '@/mail/mail.enum';
 import { accessSync, constants } from 'fs';
 import { TemplateContextMap } from '@/mail/mail.interface';
-import { formatDate } from '@/utils/data.utils';
+import { DISCORD_INVITE_URL } from '@/common/constants';
 
 @Injectable()
 export class MailService implements OnModuleInit {
@@ -73,6 +73,23 @@ export class MailService implements OnModuleInit {
     private getCohortDisplayName(cohortType: CohortType): string {
         switch (cohortType) {
             case CohortType.MASTERING_BITCOIN:
+                return 'MB Cohort';
+            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
+                return 'LBTCL Cohort';
+            case CohortType.PROGRAMMING_BITCOIN:
+                return 'PB Cohort';
+            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
+                return 'BPD Cohort';
+            default:
+                throw new ServiceError(
+                    `Unknown cohort type encountered: ${cohortType}`,
+                );
+        }
+    }
+
+    private getDiscordChannelCategoryName(cohortType: CohortType): string {
+        switch (cohortType) {
+            case CohortType.MASTERING_BITCOIN:
                 return 'Mastering Bitcoin';
             case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
                 return 'Learning Bitcoin from the Command Line';
@@ -123,6 +140,7 @@ export class MailService implements OnModuleInit {
             context: {
                 userName: userName,
                 cohortName: cohortDisplayName,
+                discordLink: DISCORD_INVITE_URL,
             },
         });
     }
@@ -131,11 +149,9 @@ export class MailService implements OnModuleInit {
         userEmail: string,
         userName: string,
         cohortType: CohortType,
-        startDate: Date,
-        endDate: Date,
-        classroomUrl?: string,
     ): Promise<void> {
         const cohortDisplayName = this.getCohortDisplayName(cohortType);
+        const cohortCategory = this.getDiscordChannelCategoryName(cohortType);
         const subject = `Welcome to ${cohortDisplayName} - Your enrollment is confirmed!`;
 
         return this.sendTemplatedEmail({
@@ -145,9 +161,9 @@ export class MailService implements OnModuleInit {
             context: {
                 userName: userName,
                 cohortName: cohortDisplayName,
-                startDate: formatDate(startDate),
-                endDate: formatDate(endDate),
-                classroomUrl: classroomUrl,
+                discordInviteLink: DISCORD_INVITE_URL,
+                discordSupportLink: DISCORD_INVITE_URL,
+                cohortCategory: cohortCategory,
             },
         });
     }

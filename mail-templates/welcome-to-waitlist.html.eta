@@ -1,172 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Bitshala <%~ it.cohortName %> Waitlist</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 40px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            color: #f7931a;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .greeting {
-            font-size: 18px;
-            color: #34495e;
-            margin-bottom: 20px;
-        }
-        .content {
-            margin-bottom: 30px;
-        }
-        .cohort-badge {
-            display: inline-block;
-            background-color: #f7931a;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            margin: 10px 0;
-        }
-        .section {
-            margin: 25px 0;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        .next-steps {
-            background-color: #ecf0f1;
-            border-left: 4px solid #f7931a;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .next-steps ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .next-steps li {
-            margin: 8px 0;
-        }
-        .resources {
-            margin: 25px 0;
-        }
-        .resource-link {
-            display: block;
-            padding: 12px;
-            margin: 10px 0;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            text-decoration: none;
-            color: #2c3e50;
-            transition: background-color 0.2s;
-        }
-        .resource-link:hover {
-            background-color: #e9ecef;
-        }
-        .resource-link strong {
-            color: #f7931a;
-        }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-        .cta-button {
-            display: inline-block;
-            background-color: #f7931a;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-        .cta-button:hover {
-            background-color: #e08912;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title><%~ it.cohortName %> Waitlist</title>
 </head>
-<body>
-<div class="container">
-    <div class="header">
-        <div class="logo">₿ Bitshala</div>
-        <h1>Welcome to the Waitlist!</h1>
-    </div>
 
-    <div class="content">
-        <p class="greeting">Hello <%~ it.userName %>,</p>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
 
-        <p>Thank you for your interest in joining our cohort:</p>
-        <div class="cohort-badge"><%~ it.cohortName %></div>
+  <!-- FULL HEIGHT WRAPPER FOR CENTERING -->
+  <table role="presentation" width="100%" height="100%" border="0" cellspacing="0" cellpadding="0"
+         style="background-color:#111111;">
+    <tr>
+      <td align="center" valign="middle" style="padding-top:40px;"> <!-- top padding added -->
 
-        <p>We're excited to have you on the waitlist! You've taken the first step towards deepening your Bitcoin knowledge with our community.</p>
-    </div>
+        <!-- MAIN CARD -->
+        <table role="presentation" width="580" cellpadding="0" cellspacing="0" border="0"
+               style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
 
-    <div class="next-steps">
-        <div class="section-title">📋 What happens next?</div>
-        <ul>
-            <li><strong>Stay tuned:</strong> We'll notify you as soon as registration opens for the next cohort</li>
-            <li><strong>Enrollment email:</strong> You'll receive detailed instructions and important dates</li>
-            <li><strong>Keep watching:</strong> Check your inbox regularly - we don't want you to miss out!</li>
-        </ul>
-    </div>
+          <!-- HEADER -->
+          <tr>
+            <td align="center" style="background-color:#000000; padding:28px 20px 24px 20px;">
+              <h1 style="margin:0; font-size:22px; color:#ffffff; font-weight:700;">
+                👋 Welcome <%~ it.userName %>!
+              </h1>
+              <p style="margin:10px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                You've joined the <%~ it.cohortName %> Waitlist
+              </p>
+            </td>
+          </tr>
 
-    <div class="section resources">
-        <div class="section-title">🔗 In the meantime</div>
+          <!-- BODY -->
+          <tr>
+            <td style="padding:28px 36px; color:#eaeaea; font-size:15px; line-height:1.65; text-align:left;">
 
-        <a href="https://discord.gg/bitshala" class="resource-link">
-            <strong>💬 Join our Discord Community</strong><br>
-            Connect with fellow Bitcoin enthusiasts and stay updated
-        </a>
+              <p style="margin:0 0 16px 0;">
+                Thanks for raising your hand! 🙌
+                You're now officially on the <strong><%~ it.cohortName %></strong> waitlist.
+              </p>
 
-        <a href="https://bitshala.org" class="resource-link">
-            <strong>📚 Explore Our Resources</strong><br>
-            Check out our learning materials and content
-        </a>
+              <p style="margin:0 0 20px 0;">
+                Seats for this cohort are limited, and you'll be notified as soon as
+                the next batch or season opens. Keep an eye on your inbox — you won't miss it!
+              </p>
 
-        <a href="https://twitter.com/bitshala" class="resource-link">
-            <strong>🐦 Follow Us on Twitter</strong><br>
-            Get the latest updates and announcements
-        </a>
-    </div>
+              <p style="margin:0 0 14px 0; color:#ffd580; font-weight:600;">
+                Meanwhile, join our Bitshala Discord and get familiar with the community of builders:
+              </p>
 
-    <div class="footer">
-        <p>If you have any questions, feel free to reach out to us.</p>
-        <p><strong>The Bitshala Team</strong></p>
-        <p style="margin-top: 15px; font-size: 12px;">
-            This is an automated message. Please do not reply to this email.
-        </p>
-    </div>
-</div>
+              <!-- BUTTON -->
+              <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:18px auto 10px auto;">
+                <tr>
+                  <td bgcolor="#f7931a" style="border-radius:999px;">
+                    <a href="<%~ it.discordLink %>"
+                       style="display:inline-block; padding:12px 34px; font-size:15px; font-weight:600; color:#000000; text-decoration:none;">
+                      🔗 Join Discord
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:14px 0 0 0; text-align:center; font-size:13px; color:#d0d0d0;">
+                Introduce yourself in <strong style="color:#ffd580;">#introductions</strong>
+                and connect with fellow BOSS builders. 🚀
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:0 36px 32px 36px; font-size:12px; color:#b3b3b3; text-align:left;">
+              <p style="margin:0;">
+                If the button doesn't work, use this link:<br />
+                <span style="word-break:break-all; color:#f9b233;"><%~ it.discordLink %></span>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /MAIN CARD -->
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>

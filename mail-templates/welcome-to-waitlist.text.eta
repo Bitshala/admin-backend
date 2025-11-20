@@ -1,20 +1,19 @@
-Hello <%~ it.userName %>,
+👋 Welcome <%~ it.userName %>!
 
-Welcome to the Bitshala <%~ it.cohortName %> waitlist!
+You've joined the <%~ it.cohortName %> Waitlist
 
-Thank you for your interest in joining our <%~ it.cohortName %> cohort. We're excited to have you on the waitlist!
+Thanks for raising your hand! 🙌
+You're now officially on the <%~ it.cohortName %> waitlist.
 
-What happens next?
-- We'll notify you as soon as registration opens for the next cohort
-- You'll receive an email with enrollment instructions and important dates
-- Keep an eye on your inbox - we don't want you to miss out!
+Seats for this cohort are limited, and you'll be notified as soon as the next batch or season opens. Keep an eye on your inbox — you won't miss it!
 
-In the meantime:
-- Join our community: https://discord.gg/bitshala
-- Explore our resources: https://bitshala.org
-- Follow us for updates: https://twitter.com/bitshala
+Meanwhile, join our Bitshala Discord and get familiar with the community of builders:
 
-If you have any questions, feel free to reach out to us.
+🔗 Join Discord: <%~ it.discordLink %>
 
-Best regards,
-The Bitshala Team
+Introduce yourself in #introductions and connect with fellow BOSS builders. 🚀
+
+---
+
+If the link doesn't work, copy and paste this into your browser:
+<%~ it.discordLink %>

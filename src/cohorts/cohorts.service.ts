@@ -443,16 +443,12 @@ export class CohortsService {
         // Send cohort joining confirmation email
         const userName =
             user.name || user.discordGlobalName || user.discordUserName;
-        const classroomUrl = cohort.weeks[0]?.classroomUrl || undefined;
 
         try {
             await this.mailService.sendCohortJoiningConfirmationEmail(
                 user.email,
                 userName,
                 cohort.type,
-                cohort.startDate,
-                cohort.endDate,
-                classroomUrl,
             );
         } catch (error) {
             this.logger.error(
