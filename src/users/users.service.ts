@@ -147,6 +147,9 @@ export class UsersService {
         if (body.location !== undefined) {
             user.location = body.location;
         }
+        if (body.referral !== undefined) {
+            user.referral = body.referral;
+        }
 
         await this.userRepository.save(user);
         return GetUserResponse.fromEntity(user);

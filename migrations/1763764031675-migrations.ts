@@ -1,0 +1,15 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+export class Migrations1763764031675 implements MigrationInterface {
+    name = 'Migrations1763764031675';
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "user" ADD "referral" character varying(255)`,
+        );
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "referral"`);
+    }
+}

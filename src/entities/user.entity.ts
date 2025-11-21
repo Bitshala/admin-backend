@@ -65,6 +65,9 @@ export class User extends BaseEntity {
     @Column('varchar', { length: 255, nullable: true })
     location!: string | null;
 
+    @Column('varchar', { length: 255, nullable: true })
+    referral!: string | null;
+
     @ManyToMany(() => Cohort, (c) => c.users)
     cohorts!: Cohort[];
 

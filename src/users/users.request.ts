@@ -83,6 +83,11 @@ export class UpdateUserRequest {
     @IsString()
     @MaxLength(255)
     location?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    referral?: string;
 }
 
 export class UpdateUserRoleRequest {

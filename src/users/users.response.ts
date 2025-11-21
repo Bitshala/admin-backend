@@ -18,6 +18,7 @@ export class GetUserResponse {
     whyBitcoin: string | null;
     weeklyCohortCommitmentHours: number | null;
     location: string | null;
+    referral: string | null;
 
     constructor(partial: Partial<GetUserResponse>) {
         Object.assign(this, partial);
@@ -42,6 +43,7 @@ export class GetUserResponse {
             whyBitcoin: user.whyBitcoin,
             weeklyCohortCommitmentHours: user.weeklyCohortCommitmentHours,
             location: user.location,
+            referral: user.referral,
         });
     }
 }
