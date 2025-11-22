@@ -36,9 +36,7 @@ export class GetUserResponse {
             background: user.background,
             githubProfileUrl: user.githubProfileUrl,
             skills: user.skills,
-            firstHeardAboutBitcoinOn:
-                user.firstHeardAboutBitcoinOn?.toISOString().slice(0, 10) ??
-                null,
+            firstHeardAboutBitcoinOn: user.firstHeardAboutBitcoinOn,
             bitcoinBooksRead: user.bitcoinBooksRead,
             whyBitcoin: user.whyBitcoin,
             weeklyCohortCommitmentHours: user.weeklyCohortCommitmentHours,

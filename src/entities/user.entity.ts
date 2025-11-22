@@ -51,7 +51,7 @@ export class User extends BaseEntity {
     skills!: string[];
 
     @Column({ type: 'date', nullable: true })
-    firstHeardAboutBitcoinOn!: Date | null;
+    firstHeardAboutBitcoinOn!: string | null;
 
     @Column({ type: 'jsonb', default: [] })
     bitcoinBooksRead!: string[];

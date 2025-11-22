@@ -133,7 +133,8 @@ export class UsersService {
                     ? new Date(body.firstHeardAboutBitcoinOn)
                     : null;
             if (date !== null) date.setUTCHours(0, 0, 0, 0);
-            user.firstHeardAboutBitcoinOn = date;
+            user.firstHeardAboutBitcoinOn =
+                date?.toISOString().slice(0, 10) ?? null;
         }
         if (body.bitcoinBooksRead !== undefined) {
             user.bitcoinBooksRead = body.bitcoinBooksRead ?? [];
