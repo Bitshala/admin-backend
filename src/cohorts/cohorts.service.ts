@@ -346,11 +346,17 @@ export class CohortsService {
     }
 
     async addUserToCohort(userId: string, cohortId: string) {
-        const user = await this.userRepository.findOneOrFail({
+        const user: User | null = await this.userRepository.findOne({
             where: {
                 id: userId,
             },
         });
+
+        if (!user) {
+            throw new BadRequestException(
+                `User with id ${userId} does not exist.`,
+            );
+        }
 
         await this.joinCohort(user, cohortId);
     }
@@ -462,9 +468,15 @@ export class CohortsService {
         userId: string,
         cohortId: string,
     ): Promise<void> {
-        const user = await this.userRepository.findOneOrFail({
+        const user: User | null = await this.userRepository.findOne({
             where: { id: userId },
         });
+
+        if (!user) {
+            throw new BadRequestException(
+                `User with id ${userId} does not exist.`,
+            );
+        }
 
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
