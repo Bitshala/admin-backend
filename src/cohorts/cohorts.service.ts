@@ -458,6 +458,53 @@ export class CohortsService {
         }
     }
 
+    async removeUserFromCohort(
+        userId: string,
+        cohortId: string,
+    ): Promise<void> {
+        const user = await this.userRepository.findOneOrFail({
+            where: { id: userId },
+        });
+
+        const cohort: Cohort | null = await this.cohortRepository.findOne({
+            where: { id: cohortId },
+            relations: { users: true },
+        });
+
+        if (!cohort) {
+            throw new BadRequestException(
+                `Cohort with id ${cohortId} does not exist.`,
+            );
+        }
+
+        const isEnrolled =
+            cohort.users?.some((enrolledUser) => enrolledUser.id === user.id) ??
+            false;
+
+        if (!isEnrolled) {
+            throw new BadRequestException('User is not enrolled in cohort.');
+        }
+
+        await this.dbTransactionService.execute(
+            async (manager): Promise<void> => {
+                await manager
+                    .createQueryBuilder()
+                    .relation(Cohort, 'users')
+                    .of(cohort.id)
+                    .remove(user.id);
+
+                await manager.delete(GroupDiscussionScore, {
+                    user: { id: user.id },
+                    cohort: { id: cohort.id },
+                });
+                await manager.delete(ExerciseScore, {
+                    user: { id: user.id },
+                    cohort: { id: cohort.id },
+                });
+            },
+        );
+    }
+
     async joinCohortWaitlist(
         user: User,
         body: JoinWaitlistRequestDto,

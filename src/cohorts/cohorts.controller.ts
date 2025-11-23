@@ -137,6 +137,16 @@ export class CohortsController {
         await this.cohortsService.addUserToCohort(userId, cohortId);
     }
 
+    @Post(':cohortId/remove/:userId')
+    @ApiOperation({ summary: 'Remove a user from a cohort' })
+    @Roles(UserRole.ADMIN)
+    async removeUserFromCohort(
+        @Param('userId', new ParseUUIDPipe()) userId: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+    ): Promise<void> {
+        await this.cohortsService.removeUserFromCohort(userId, cohortId);
+    }
+
     @Post('waitlist')
     @ApiOperation({ summary: 'Join the cohort waitlist' })
     async joinCohortWaitlist(
