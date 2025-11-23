@@ -80,6 +80,8 @@ export class MailService implements OnModuleInit {
                 return 'PB Cohort';
             case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
                 return 'BPD Cohort';
+            case CohortType.MASTERING_LIGHTNING_NETWORK:
+                return 'LN Cohort';
             default:
                 throw new ServiceError(
                     `Unknown cohort type encountered: ${cohortType}`,
@@ -97,6 +99,8 @@ export class MailService implements OnModuleInit {
                 return 'Programming Bitcoin';
             case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
                 return 'Bitcoin Protocol Development';
+            case CohortType.MASTERING_LIGHTNING_NETWORK:
+                return 'Mastering the Lightning Network';
             default:
                 throw new ServiceError(
                     `Unknown cohort type encountered: ${cohortType}`,

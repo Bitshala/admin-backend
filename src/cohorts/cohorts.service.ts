@@ -35,6 +35,7 @@ export class CohortsService {
     private readonly learningBitcoinFromCommandLineDiscordRoleId: string;
     private readonly programmingBitcoinDiscordRoleId: string;
     private readonly bitcoinProtocolDevelopmentDiscordRoleId: string;
+    private readonly masteringLightningNetworkDiscordRoleId: string;
 
     constructor(
         @InjectRepository(Cohort)
@@ -67,6 +68,10 @@ export class CohortsService {
         this.bitcoinProtocolDevelopmentDiscordRoleId =
             this.configService.getOrThrow<string>(
                 'discord.roles.bitcoinProtocolDevelopment',
+            );
+        this.masteringLightningNetworkDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.masteringLightningNetwork',
             );
     }
 
@@ -329,6 +334,9 @@ export class CohortsService {
                 break;
             case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
                 roleId = this.bitcoinProtocolDevelopmentDiscordRoleId;
+                break;
+            case CohortType.MASTERING_LIGHTNING_NETWORK:
+                roleId = this.masteringLightningNetworkDiscordRoleId;
                 break;
             default:
                 throw new BadRequestException(

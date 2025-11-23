@@ -80,6 +80,9 @@ class DiscordRolesConfig {
 
     @IsNumberString({ no_symbols: true })
     bitcoinProtocolDevelopment: string;
+
+    @IsNumberString({ no_symbols: true })
+    masteringLightningNetwork: string;
 }
 
 class DiscordConfig {
