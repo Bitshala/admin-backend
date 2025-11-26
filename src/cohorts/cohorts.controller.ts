@@ -139,7 +139,7 @@ export class CohortsController {
 
     @Post(':cohortId/remove/:userId')
     @ApiOperation({ summary: 'Remove a user from a cohort' })
-    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    @Roles(UserRole.ADMIN)
     async removeUserFromCohort(
         @Param('userId', new ParseUUIDPipe()) userId: string,
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
