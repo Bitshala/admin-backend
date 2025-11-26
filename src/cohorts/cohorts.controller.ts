@@ -91,14 +91,14 @@ export class CohortsController {
 
     @Post()
     @ApiOperation({ summary: 'Create a new cohort' })
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async createCohort(@Body() body: CreateCohortRequestDto): Promise<void> {
         await this.cohortsService.createCohort(body);
     }
 
     @Patch(':cohortId')
     @ApiOperation({ summary: 'Update a cohort' })
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async updateCohort(
         @Param('cohortId', new ParseUUIDPipe())
         cohortId: string,
@@ -109,7 +109,7 @@ export class CohortsController {
 
     @Patch('weeks/:cohortWeekId')
     @ApiOperation({ summary: 'Update a cohort week' })
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async updateCohortWeek(
         @Param('cohortWeekId', new ParseUUIDPipe())
         cohortWeekId: string,
@@ -139,7 +139,7 @@ export class CohortsController {
 
     @Post(':cohortId/remove/:userId')
     @ApiOperation({ summary: 'Remove a user from a cohort' })
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async removeUserFromCohort(
         @Param('userId', new ParseUUIDPipe()) userId: string,
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
