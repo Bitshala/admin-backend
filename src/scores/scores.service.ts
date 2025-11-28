@@ -8,6 +8,7 @@ import {
     GetCohortScoresResponseDto,
     GetUsersScoresResponseDto,
     ListScoresForCohortAndWeekResponseDto,
+    TeachingAssistantInfo,
     UsersWeekScoreResponseDto,
     WeeklyScore,
 } from '@/scores/scores.response.dto';
@@ -56,6 +57,7 @@ export class ScoresService {
 
         const groupDiscussionScore = user.groupDiscussionScores[0];
         const exerciseScore = user.exerciseScores[0];
+        const assignedTA = groupDiscussionScore.assignedTeachingAssistant;
 
         return new UsersWeekScoreResponseDto({
             userId: user.id,
@@ -63,6 +65,9 @@ export class ScoresService {
             discordGlobalName: user.discordGlobalName,
             name: user.name,
             weekId: weekId,
+            teachingAssistant: assignedTA
+                ? TeachingAssistantInfo.fromUserEntity(assignedTA)
+                : null,
             groupDiscussionScores: {
                 id: groupDiscussionScore.id,
                 attendance: groupDiscussionScore.attendance,
@@ -120,7 +125,9 @@ export class ScoresService {
                 },
             },
             relations: {
-                groupDiscussionScores: true,
+                groupDiscussionScores: {
+                    assignedTeachingAssistant: true,
+                },
                 exerciseScores: true,
             },
         });

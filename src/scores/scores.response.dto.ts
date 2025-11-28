@@ -1,4 +1,5 @@
 import { CohortType } from '@/common/enum';
+import { User } from '@/entities/user.entity';
 
 export class GroupDiscussionScore {
     id: string;
@@ -51,12 +52,33 @@ export class WeeklyScore {
     }
 }
 
+export class TeachingAssistantInfo {
+    id: string;
+    discordUserName: string;
+    discordGlobalName: string | null;
+    name: string | null;
+
+    constructor(partial: Partial<TeachingAssistantInfo>) {
+        Object.assign(this, partial);
+    }
+
+    static fromUserEntity(user: User): TeachingAssistantInfo {
+        return new TeachingAssistantInfo({
+            id: user.id,
+            discordUserName: user.discordUserName,
+            discordGlobalName: user.discordGlobalName,
+            name: user.name,
+        });
+    }
+}
+
 export class UsersWeekScoreResponseDto extends WeeklyScore {
     // User details
     userId!: string;
     discordUsername!: string;
     discordGlobalName!: string | null;
     name!: string | null;
+    teachingAssistant: TeachingAssistantInfo | null;
 
     constructor(partial: UsersWeekScoreResponseDto) {
         super(partial);
