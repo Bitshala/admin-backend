@@ -502,4 +502,32 @@ export class ScoresService {
         // Save all updates
         await this.groupDiscussionScoreRepository.save(updates);
     }
+
+    async assignSelfToGroup(
+        weekId: string,
+        userId: string,
+        groupNumber: number,
+    ) {
+        const groupDiscussionScores =
+            await this.groupDiscussionScoreRepository.find({
+                where: {
+                    cohortWeek: { id: weekId },
+                    groupNumber: groupNumber,
+                },
+            });
+
+        if (groupDiscussionScores.length === 0) {
+            throw new BadRequestException(
+                `No group found for week ${weekId} and group number ${groupNumber}`,
+            );
+        }
+
+        await this.groupDiscussionScoreRepository.update(
+            {
+                cohortWeek: { id: weekId },
+                groupNumber: groupNumber,
+            },
+            { assignedTeachingAssistant: { id: userId } },
+        );
+    }
 }

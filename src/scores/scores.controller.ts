@@ -3,9 +3,11 @@ import {
     Controller,
     Get,
     Param,
+    ParseIntPipe,
     ParseUUIDPipe,
     Patch,
     Post,
+    Query,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -94,5 +96,23 @@ export class ScoresController {
         @Body() body: AssignGroupsRequestDto,
     ): Promise<void> {
         return this.scoresService.assignGroupsForCohortWeek(weekId, body);
+    }
+
+    // endpoint that lets TAs assign themselves to groups for a specific week
+    @Post('week/:weekId/assign-self-to-group')
+    @ApiOperation({
+        summary: 'Assign self to a group for a specific week',
+    })
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    async assignSelfToGroup(
+        @Param('weekId', ParseUUIDPipe) weekId: string,
+        @Query('groupNumber', ParseIntPipe) groupNumber: number,
+        @GetUser() user: User,
+    ): Promise<void> {
+        return this.scoresService.assignSelfToGroup(
+            weekId,
+            user.id,
+            groupNumber,
+        );
     }
 }

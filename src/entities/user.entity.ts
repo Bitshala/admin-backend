@@ -79,4 +79,10 @@ export class User extends BaseEntity {
 
     @OneToMany(() => CohortWaitlist, (cwl) => cwl.user)
     cohortsWaitlist!: CohortWaitlist[];
+
+    @OneToMany(
+        () => GroupDiscussionScore,
+        (gds) => gds.assignedTeachingAssistant,
+    )
+    assignedGroupDiscussionScores!: GroupDiscussionScore[];
 }

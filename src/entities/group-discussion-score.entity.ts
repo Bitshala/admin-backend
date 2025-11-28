@@ -65,6 +65,9 @@ export class GroupDiscussionScore extends BaseEntity {
     @ManyToOne(() => CohortWeek, (cw) => cw.groupDiscussionScores)
     cohortWeek!: CohortWeek;
 
+    @ManyToOne(() => User, (u) => u.assignedGroupDiscussionScores)
+    assignedTeachingAssistant!: User;
+
     /**
      * Computes the participant's TOTAL score for this record.
      * Scoring Breakdown:
