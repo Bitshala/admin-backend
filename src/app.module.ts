@@ -25,6 +25,7 @@ import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from '@/common/logger.config';
 import { FeedbackModule } from '@/feedback/feedback.module';
 import { MailModule } from '@/mail/mail.module';
+import { TeachingAssistantsModule } from '@/teaching-assistants/teaching-assistants.module';
 
 @Module({
     imports: [
@@ -78,6 +79,7 @@ import { MailModule } from '@/mail/mail.module';
         TaskProcessorModule,
         FeedbackModule,
         MailModule,
+        TeachingAssistantsModule,
     ],
     controllers: [AppController],
     providers: [
