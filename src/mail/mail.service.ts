@@ -7,7 +7,8 @@ import { Eta } from 'eta';
 import { MailTemplate } from '@/mail/mail.enum';
 import { accessSync, constants } from 'fs';
 import { TemplateContextMap } from '@/mail/mail.interface';
-import { DISCORD_INVITE_URL } from '@/common/constants';
+import { DISCORD_GENERAL_INVITE_URL } from '@/common/constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MailService implements OnModuleInit {
@@ -17,7 +18,10 @@ export class MailService implements OnModuleInit {
     // we would have to upgrade to TS v5.0+ to use proper types
     private readonly eta: any;
 
-    constructor(private readonly coreService: MailCoreService) {
+    constructor(
+        private readonly coreService: MailCoreService,
+        private readonly configService: ConfigService,
+    ) {
         // we need to use 'any' here because the Eta types are not very good
         // we would have to upgrade to TS v5.0+ to use proper types
         this.eta = new (Eta as any)({
@@ -108,6 +112,35 @@ export class MailService implements OnModuleInit {
         }
     }
 
+    private getCohortInviteLink(cohortType: CohortType): string {
+        switch (cohortType) {
+            case CohortType.MASTERING_BITCOIN:
+                return this.configService.getOrThrow<string>(
+                    'discord.inviteUrls.masteringBitcoin',
+                );
+            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
+                return this.configService.getOrThrow<string>(
+                    'discord.inviteUrls.learningBitcoinFromCommandLine',
+                );
+            case CohortType.PROGRAMMING_BITCOIN:
+                return this.configService.getOrThrow<string>(
+                    'discord.inviteUrls.programmingBitcoin',
+                );
+            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
+                return this.configService.getOrThrow<string>(
+                    'discord.inviteUrls.bitcoinProtocolDevelopment',
+                );
+            case CohortType.MASTERING_LIGHTNING_NETWORK:
+                return this.configService.getOrThrow<string>(
+                    'discord.inviteUrls.masteringLightningNetwork',
+                );
+            default:
+                throw new ServiceError(
+                    `Unknown cohort type encountered: ${cohortType}`,
+                );
+        }
+    }
+
     private async sendTemplatedEmail<K extends MailTemplate>(options: {
         to: string;
         from?: string;
@@ -144,7 +177,7 @@ export class MailService implements OnModuleInit {
             context: {
                 userName: userName,
                 cohortName: cohortDisplayName,
-                discordLink: DISCORD_INVITE_URL,
+                discordLink: DISCORD_GENERAL_INVITE_URL,
             },
         });
     }
@@ -156,6 +189,7 @@ export class MailService implements OnModuleInit {
     ): Promise<void> {
         const cohortDisplayName = this.getCohortDisplayName(cohortType);
         const cohortCategory = this.getDiscordChannelCategoryName(cohortType);
+        const discordInviteLink = this.getCohortInviteLink(cohortType);
         const subject = `Welcome to ${cohortDisplayName} - Your enrollment is confirmed!`;
 
         return this.sendTemplatedEmail({
@@ -165,8 +199,8 @@ export class MailService implements OnModuleInit {
             context: {
                 userName: userName,
                 cohortName: cohortDisplayName,
-                discordInviteLink: DISCORD_INVITE_URL,
-                discordSupportLink: DISCORD_INVITE_URL,
+                discordInviteLink: discordInviteLink,
+                discordSupportLink: discordInviteLink,
                 cohortCategory: cohortCategory,
             },
         });

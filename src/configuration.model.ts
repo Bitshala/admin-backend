@@ -85,6 +85,48 @@ class DiscordRolesConfig {
     masteringLightningNetwork: string;
 }
 
+class DiscordInviteUrlsConfig {
+    @IsUrl({
+        protocols: ['https'],
+        require_protocol: true,
+        require_tld: true,
+        host_whitelist: ['discord.gg'],
+    })
+    masteringBitcoin: string;
+
+    @IsUrl({
+        protocols: ['https'],
+        require_protocol: true,
+        require_tld: true,
+        host_whitelist: ['discord.gg'],
+    })
+    learningBitcoinFromCommandLine: string;
+
+    @IsUrl({
+        protocols: ['https'],
+        require_protocol: true,
+        require_tld: true,
+        host_whitelist: ['discord.gg'],
+    })
+    programmingBitcoin: string;
+
+    @IsUrl({
+        protocols: ['https'],
+        require_protocol: true,
+        require_tld: true,
+        host_whitelist: ['discord.gg'],
+    })
+    bitcoinProtocolDevelopment: string;
+
+    @IsUrl({
+        protocols: ['https'],
+        require_protocol: true,
+        require_tld: true,
+        host_whitelist: ['discord.gg'],
+    })
+    masteringLightningNetwork: string;
+}
+
 class DiscordConfig {
     @IsString()
     @IsNotEmpty()
@@ -132,6 +174,11 @@ class DiscordConfig {
     @ValidateNested()
     @Type(() => DiscordRolesConfig)
     roles: DiscordRolesConfig;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => DiscordInviteUrlsConfig)
+    inviteUrls: DiscordInviteUrlsConfig;
 }
 
 class AppAuthConfig {

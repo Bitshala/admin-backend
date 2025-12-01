@@ -18,4 +18,4 @@ export const EXERCISE_MAX = {
     structure: 20,
 } as const;
 
-export const DISCORD_INVITE_URL = 'https://discord.gg/3h8ggyZW';
+export const DISCORD_GENERAL_INVITE_URL = 'https://discord.gg/benPDVcurg';

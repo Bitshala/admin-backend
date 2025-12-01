@@ -31,6 +31,12 @@ discord:
     programmingBitcoin: '1165952193556389928'
     bitcoinProtocolDevelopment: '1221081628021887009'
     masteringLightningNetwork: '1394917163957227671'
+  inviteUrls:
+    masteringBitcoin: https://discord.gg/PRYytp69TG
+    learningBitcoinFromCommandLine: https://discord.gg/FCH4dCwyEk
+    programmingBitcoin: https://discord.gg/MHcvqQsDHY
+    bitcoinProtocolDevelopment: https://discord.gg/VT8tGxHZEC
+    masteringLightningNetwork: https://discord.gg/3vweqyFcnR
 app:
   baseUrl: 'http://localhost:3000'
   frontEndUrl: 'http://localhost:5173'
