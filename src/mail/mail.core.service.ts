@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
 
 @Injectable()
 export class MailCoreService
@@ -36,13 +36,18 @@ export class MailCoreService
 
         this.from = `"${fromName}" <${fromEmail}>`;
 
-        this.transporter = nodemailer.createTransport({
+        this.transporter = createTransport({
             host: smtpHost,
             port: smtpPort,
             secure: smtpSecure,
             auth: {
                 user: smtpUser,
                 pass: smtpPass,
+            },
+            tls: {
+                rejectUnauthorized: !['dev', 'test', 'e2e'].includes(
+                    process.env.NODE_ENV || '',
+                ),
             },
         });
     }

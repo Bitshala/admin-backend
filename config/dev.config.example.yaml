@@ -49,11 +49,11 @@ app:
     sessionTtlSeconds: 604800 # 7 days
 email:
   smtp:
-    host: smtp.gmail.com # SMTP server host (e.g., smtp.gmail.com, smtp.sendgrid.net)
-    port: 587 # SMTP port (587 for TLS, 465 for SSL)
-    secure: false # true for SSL (port 465), false for TLS (port 587)
-    user: your-email@gmail.com # SMTP username/email
-    pass: your-app-password # SMTP password or app-specific password
+    host: localhost
+    port: 1025
+    secure: true
+    user: admin
+    pass: password
   from:
     email: noreply@bitshala.org # Sender email address
     name: Bitshala # Sender name

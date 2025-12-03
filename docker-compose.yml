@@ -12,3 +12,10 @@ services:
     image: redis:latest
     ports:
       - '6379:6379'
+  mailcrab:
+    image: marlonb/mailcrab:latest
+    environment:
+      ENABLE_TLS_AUTH: true
+    ports:
+      - "1080:1080"
+      - "1025:1025"
