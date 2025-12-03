@@ -485,22 +485,29 @@ export class ScoresService {
             return b.totalScore - a.totalScore; // Then sort by total score
         });
 
-        // Assign groups using round-robin for top performers
         const updates: GroupDiscussionScore[] = [];
         const totalNumberOfGroups = body.groupsAvailable;
         const participantsPerWeek = body.participantsPerWeek; // participants per group
         const totalCapacity = totalNumberOfGroups * participantsPerWeek;
 
         for (let i = 0; i < eligibleUsers.length; i++) {
-            const { currentWeekGD } = eligibleUsers[i];
+            const { currentWeekGD, wasPresentPreviousWeek } = eligibleUsers[i];
 
+            // Skip users who were not present in the previous week, they go to group 0
+            if (!wasPresentPreviousWeek) continue;
+
+            // Assign groups based on performance
+            // All top performers up to capacity are assigned to the same group
+            // Everyone beyond capacity gets evenly distributed between groups
             if (i < totalCapacity) {
                 // Blocks of size participantsPerWeek map to groups 1..totalNumberOfGroups
                 currentWeekGD.groupNumber =
                     Math.floor(i / participantsPerWeek) + 1;
             } else {
-                // Everyone beyond capacity goes to the overflow group
-                currentWeekGD.groupNumber = totalNumberOfGroups + 1;
+                // Distribute remaining users evenly across all groups
+                const overflowIndex = i - totalCapacity;
+                currentWeekGD.groupNumber =
+                    (overflowIndex % totalNumberOfGroups) + 1;
             }
 
             updates.push(currentWeekGD);
