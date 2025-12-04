@@ -7,6 +7,7 @@ import { User } from '@/entities/user.entity';
 import {
     GetCohortScoresResponseDto,
     GetUsersScoresResponseDto,
+    LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
     TeachingAssistantInfo,
     UsersWeekScoreResponseDto,
@@ -543,5 +544,74 @@ export class ScoresService {
             },
             { assignedTeachingAssistant: { id: userId } },
         );
+    }
+
+    private userWithScoresToLeaderboardEntryDto(
+        user: User,
+    ): LeaderboardEntryDto {
+        if (
+            !user.groupDiscussionScores ||
+            !user.exerciseScores ||
+            user.groupDiscussionScores.length === 0 ||
+            user.exerciseScores.length === 0
+        ) {
+            throw new ServiceError(`Missing scores for user ${user.id}`);
+        }
+
+        const groupDiscussionTotalScore = user.groupDiscussionScores.reduce(
+            (acc, x) => acc + x.totalScore,
+            0,
+        );
+        const groupDiscussionMaxTotalScore = user.groupDiscussionScores.reduce(
+            (acc, x) => acc + x.maxScore,
+            0,
+        );
+        const exerciseTotalScore = user.exerciseScores.reduce(
+            (acc, x) => acc + x.totalScore,
+            0,
+        );
+        const exerciseMaxTotalScore = user.exerciseScores.reduce(
+            (acc, x) => acc + x.maxScore,
+            0,
+        );
+
+        return new LeaderboardEntryDto({
+            userId: user.id,
+            discordUsername: user.discordUserName,
+            discordGlobalName: user.discordGlobalName,
+            name: user.name,
+            groupDiscussionTotalScore: groupDiscussionTotalScore,
+            groupDiscussionMaxTotalScore: groupDiscussionMaxTotalScore,
+            exerciseTotalScore: exerciseTotalScore,
+            exerciseMaxTotalScore: exerciseMaxTotalScore,
+            totalScore: groupDiscussionTotalScore + exerciseTotalScore,
+            maxTotalScore: groupDiscussionMaxTotalScore + exerciseMaxTotalScore,
+        });
+    }
+
+    async getCohortLeaderboard(
+        cohortId: string,
+    ): Promise<LeaderboardEntryDto[]> {
+        const usersWithScores = await this.userRepository.find({
+            where: {
+                groupDiscussionScores: {
+                    cohort: { id: cohortId },
+                },
+                exerciseScores: {
+                    cohort: { id: cohortId },
+                },
+            },
+            relations: {
+                groupDiscussionScores: true,
+                exerciseScores: true,
+            },
+        });
+
+        return usersWithScores
+            .map<LeaderboardEntryDto>(
+                (u) => this.userWithScoresToLeaderboardEntryDto(u),
+                this,
+            )
+            .sort((a, b) => b.totalScore - a.totalScore);
     }
 }

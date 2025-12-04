@@ -86,6 +86,23 @@ export class UsersWeekScoreResponseDto extends WeeklyScore {
     }
 }
 
+export class LeaderboardEntryDto {
+    userId!: string;
+    discordUsername!: string;
+    discordGlobalName!: string | null;
+    name!: string | null;
+    groupDiscussionTotalScore!: number;
+    groupDiscussionMaxTotalScore!: number;
+    exerciseTotalScore!: number;
+    exerciseMaxTotalScore!: number;
+    totalScore!: number;
+    maxTotalScore!: number;
+
+    constructor(partial: LeaderboardEntryDto) {
+        Object.assign(this, partial);
+    }
+}
+
 export class ListScoresForCohortAndWeekResponseDto {
     scores!: UsersWeekScoreResponseDto[];
 

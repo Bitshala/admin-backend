@@ -15,6 +15,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ScoresService } from '@/scores/scores.service';
 import {
     GetUsersScoresResponseDto,
+    LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
 } from '@/scores/scores.response.dto';
 import { Roles } from '@/auth/roles.decorator';
@@ -43,6 +44,17 @@ export class ScoresController {
         @Param('weekId', new ParseUUIDPipe()) weekId: string,
     ): Promise<ListScoresForCohortAndWeekResponseDto> {
         return this.scoresService.listScoresForCohortAndWeek(cohortId, weekId);
+    }
+
+    @Get('cohort/:cohortId/leaderboard')
+    @ApiOperation({
+        summary:
+            'Get aggregated scores for a cohort across all weeks for leaderboard',
+    })
+    async getCohortLeaderboard(
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+    ): Promise<LeaderboardEntryDto[]> {
+        return this.scoresService.getCohortLeaderboard(cohortId);
     }
 
     @Patch('user/:userId/cohort/:cohortId/week/:weekId')
