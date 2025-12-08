@@ -97,6 +97,8 @@ export class LeaderboardEntryDto {
     exerciseMaxTotalScore!: number;
     totalScore!: number;
     maxTotalScore!: number;
+    totalAttendance!: number;
+    maxAttendance!: number;
 
     constructor(partial: LeaderboardEntryDto) {
         Object.assign(this, partial);

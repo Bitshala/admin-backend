@@ -574,6 +574,11 @@ export class ScoresService {
             (acc, x) => acc + x.maxScore,
             0,
         );
+        const totalAttendance = user.groupDiscussionScores.reduce(
+            (acc, x) => acc + (x.attendance ? 1 : 0),
+            0,
+        );
+        const maxAttendance = user.groupDiscussionScores.length;
 
         return new LeaderboardEntryDto({
             userId: user.id,
@@ -586,6 +591,8 @@ export class ScoresService {
             exerciseMaxTotalScore: exerciseMaxTotalScore,
             totalScore: groupDiscussionTotalScore + exerciseTotalScore,
             maxTotalScore: groupDiscussionMaxTotalScore + exerciseMaxTotalScore,
+            totalAttendance: totalAttendance,
+            maxAttendance: maxAttendance,
         });
     }
 
