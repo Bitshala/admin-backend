@@ -13,6 +13,8 @@ import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
 import {
     GetCohortResponseDto,
+    ListAvailableCohortsResponseDto,
+    PublicCohortResponseDto,
     UserCohortWaitlistResponseDto,
 } from '@/cohorts/cohorts.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
@@ -105,6 +107,27 @@ export class CohortsService {
         });
     }
 
+    private mapLatestCohortsToPublicCohortResponseDto(
+        cohorts: Cohort[],
+        type: CohortType,
+    ): PublicCohortResponseDto | null {
+        return (
+            cohorts
+                .filter((cohort) => cohort.type === type)
+                .map(
+                    (cohort) =>
+                        new PublicCohortResponseDto({
+                            type: cohort.type,
+                            season: cohort.season,
+                            startDate: cohort.startDate.toISOString(),
+                            endDate: cohort.endDate.toISOString(),
+                            registrationDeadline:
+                                cohort.registrationDeadline.toISOString(),
+                        }),
+                )[0] || null
+        );
+    }
+
     async listCohorts(
         query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
@@ -140,6 +163,43 @@ export class CohortsService {
                     }),
             ),
         });
+    }
+
+    async listPublicCohorts(): Promise<ListAvailableCohortsResponseDto> {
+        const latestCohorts = await this.cohortRepository
+            .createQueryBuilder('c')
+            .distinctOn(['c.type'])
+            .orderBy('c.type', 'ASC')
+            .addOrderBy('c.season', 'DESC')
+            .getMany();
+
+        return {
+            [CohortType.MASTERING_LIGHTNING_NETWORK]:
+                this.mapLatestCohortsToPublicCohortResponseDto(
+                    latestCohorts,
+                    CohortType.MASTERING_LIGHTNING_NETWORK,
+                ),
+            [CohortType.MASTERING_BITCOIN]:
+                this.mapLatestCohortsToPublicCohortResponseDto(
+                    latestCohorts,
+                    CohortType.MASTERING_BITCOIN,
+                ),
+            [CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE]:
+                this.mapLatestCohortsToPublicCohortResponseDto(
+                    latestCohorts,
+                    CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE,
+                ),
+            [CohortType.PROGRAMMING_BITCOIN]:
+                this.mapLatestCohortsToPublicCohortResponseDto(
+                    latestCohorts,
+                    CohortType.PROGRAMMING_BITCOIN,
+                ),
+            [CohortType.BITCOIN_PROTOCOL_DEVELOPMENT]:
+                this.mapLatestCohortsToPublicCohortResponseDto(
+                    latestCohorts,
+                    CohortType.BITCOIN_PROTOCOL_DEVELOPMENT,
+                ),
+        };
     }
 
     async listMyCohorts(
