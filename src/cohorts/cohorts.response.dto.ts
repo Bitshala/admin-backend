@@ -40,6 +40,34 @@ export class GetCohortResponseDto {
     }
 }
 
+export class PublicCohortResponseDto {
+    type!: string;
+    season!: number;
+    startDate!: string;
+    endDate!: string;
+    registrationDeadline!: string;
+
+    constructor(obj: PublicCohortResponseDto) {
+        this.type = obj.type;
+        this.season = obj.season;
+        this.startDate = obj.startDate;
+        this.endDate = obj.endDate;
+        this.registrationDeadline = obj.registrationDeadline;
+    }
+}
+
+export class ListAvailableCohortsResponseDto {
+    [CohortType.MASTERING_LIGHTNING_NETWORK]: PublicCohortResponseDto | null;
+    [CohortType.MASTERING_BITCOIN]: PublicCohortResponseDto | null;
+    [CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE]: PublicCohortResponseDto | null;
+    [CohortType.PROGRAMMING_BITCOIN]: PublicCohortResponseDto | null;
+    [CohortType.BITCOIN_PROTOCOL_DEVELOPMENT]: PublicCohortResponseDto | null;
+
+    constructor(obj: ListAvailableCohortsResponseDto) {
+        Object.assign(this, obj);
+    }
+}
+
 export class UserCohortWaitlistResponseDto {
     cohortWaitlist!: CohortType[];
 }

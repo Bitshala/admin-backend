@@ -24,11 +24,13 @@ import {
 } from '@/cohorts/cohorts.request.dto';
 import {
     GetCohortResponseDto,
+    ListAvailableCohortsResponseDto,
     UserCohortWaitlistResponseDto,
 } from '@/cohorts/cohorts.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { Roles } from '@/auth/roles.decorator';
+import { Public } from '@/auth/public-route.decorator';
 import { UserRole } from '@/common/enum';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
@@ -58,6 +60,17 @@ export class CohortsController {
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         return this.cohortsService.listCohorts(query);
+    }
+
+    @Public()
+    @Get('available')
+    @ApiOperation({
+        summary: 'List available cohorts (public endpoint)',
+        description:
+            'Get a list of cohorts with their start date, end date, season, and registration deadline without authentication',
+    })
+    async listAvailableCohorts(): Promise<ListAvailableCohortsResponseDto> {
+        return this.cohortsService.listPublicCohorts();
     }
 
     @Get('me')
