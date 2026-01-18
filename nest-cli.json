@@ -12,6 +12,10 @@
       {
         "include": "../config/*",
         "outDir": "./dist/src/config"
+      },
+      {
+        "include": "../assets/**/*",
+        "outDir": "./dist/src/assets"
       }
     ],
     "plugins": [
