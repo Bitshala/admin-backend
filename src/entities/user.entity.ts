@@ -11,6 +11,7 @@ import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { BaseEntity } from '@/entities/base.entity';
 import { UserRole } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
+import { Certificate } from '@/entities/certificate.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -85,4 +86,7 @@ export class User extends BaseEntity {
         (gds) => gds.assignedTeachingAssistant,
     )
     assignedGroupDiscussionScores!: GroupDiscussionScore[];
+
+    @OneToMany(() => Certificate, (c) => c.user)
+    certificates!: Certificate[];
 }

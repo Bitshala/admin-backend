@@ -13,6 +13,7 @@ import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { BaseEntity } from '@/entities/base.entity';
 import { CohortType } from '@/common/enum';
+import { Certificate } from '@/entities/certificate.entity';
 
 @Entity()
 @Unique(['type', 'season'])
@@ -47,4 +48,7 @@ export class Cohort extends BaseEntity {
 
     @OneToMany(() => ExerciseScore, (es) => es.cohort)
     exerciseScores!: ExerciseScore[];
+
+    @OneToMany(() => Certificate, (c) => c.cohort)
+    certificates!: Certificate[];
 }

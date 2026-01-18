@@ -15,3 +15,8 @@ export enum UserRole {
     TEACHING_ASSISTANT = 'TEACHING_ASSISTANT',
     STUDENT = 'STUDENT',
 }
+
+export enum CertificateType {
+    PARTICIPANT = 'PARTICIPANT',
+    PERFORMER = 'PERFORMER',
+}
