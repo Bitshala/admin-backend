@@ -26,6 +26,7 @@ import { winstonConfig } from '@/common/logger.config';
 import { FeedbackModule } from '@/feedback/feedback.module';
 import { MailModule } from '@/mail/mail.module';
 import { TeachingAssistantsModule } from '@/teaching-assistants/teaching-assistants.module';
+import { CertificatesModule } from '@/certificates/certificates.module';
 
 @Module({
     imports: [
@@ -80,6 +81,7 @@ import { TeachingAssistantsModule } from '@/teaching-assistants/teaching-assista
         FeedbackModule,
         MailModule,
         TeachingAssistantsModule,
+        CertificatesModule,
     ],
     controllers: [AppController],
     providers: [
