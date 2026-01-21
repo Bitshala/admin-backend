@@ -1,20 +1,39 @@
-export class CalendarResponseDto {
-    id: string;
-    googleCalendarId: string;
-    cohortId: string;
-    summary: string | null;
-    timezone: string | null;
-    createdAt: string;
-    updatedAt: string;
+import { ApiProperty } from '@nestjs/swagger';
 
-    constructor(obj: CalendarResponseDto) {
+export class CohortOptionDto {
+    @ApiProperty({ description: 'Cohort UUID' })
+    id: string;
+
+    @ApiProperty({
+        description: 'Cohort display name',
+        example: 'Mastering Bitcoin S1',
+    })
+    name: string;
+
+    @ApiProperty({ description: 'Cohort start date' })
+    startDate: string;
+
+    @ApiProperty({ description: 'Cohort end date' })
+    endDate: string;
+
+    @ApiProperty({ description: 'Whether a calendar exists for this cohort' })
+    hasCalendar: boolean;
+
+    constructor(obj: CohortOptionDto) {
         this.id = obj.id;
-        this.googleCalendarId = obj.googleCalendarId;
-        this.cohortId = obj.cohortId;
-        this.summary = obj.summary;
-        this.timezone = obj.timezone;
-        this.createdAt = obj.createdAt;
-        this.updatedAt = obj.updatedAt;
+        this.name = obj.name;
+        this.startDate = obj.startDate;
+        this.endDate = obj.endDate;
+        this.hasCalendar = obj.hasCalendar;
+    }
+}
+
+export class ListCohortOptionsResponseDto {
+    @ApiProperty({ type: [CohortOptionDto] })
+    items: CohortOptionDto[];
+
+    constructor(items: CohortOptionDto[]) {
+        this.items = items;
     }
 }
 

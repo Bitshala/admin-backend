@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
     IsArray,
     IsDateString,
@@ -8,6 +9,7 @@ import {
     IsOptional,
     IsString,
     IsUUID,
+    Matches,
     Max,
     Min,
 } from 'class-validator';
@@ -18,18 +20,60 @@ export enum CalendarRole {
     OWNER = 'owner',
 }
 
+export enum DayOfWeek {
+    SUNDAY = 'SU',
+    MONDAY = 'MO',
+    TUESDAY = 'TU',
+    WEDNESDAY = 'WE',
+    THURSDAY = 'TH',
+    FRIDAY = 'FR',
+    SATURDAY = 'SA',
+}
+
 export class CreateCalendarRequestDto {
+    @ApiProperty({
+        description: 'Select a cohort from the dropdown',
+        example: 'uuid-here',
+    })
     @IsUUID()
     cohortId: string;
 
+    @ApiProperty({
+        description: 'Time of day for the recurring event (24-hour format)',
+        example: '18:00',
+    })
     @IsString()
-    @IsNotEmpty()
-    summary: string;
+    @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+        message: 'Time must be in HH:mm format (24-hour)',
+    })
+    eventTime: string;
 
+    @ApiProperty({
+        description: 'Day of week for the recurring event',
+        enum: DayOfWeek,
+        example: DayOfWeek.MONDAY,
+    })
+    @IsEnum(DayOfWeek)
+    dayOfWeek: DayOfWeek;
+
+    @ApiProperty({
+        description: 'Duration of each event in minutes',
+        example: 60,
+        default: 60,
+        required: false,
+    })
     @IsOptional()
-    @IsString()
-    description?: string;
+    @IsInt()
+    @Min(15)
+    @Max(480)
+    eventDurationMinutes?: number;
 
+    @ApiProperty({
+        description: 'Timezone for the calendar',
+        example: 'America/New_York',
+        default: 'UTC',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     timezone?: string;
@@ -114,10 +158,4 @@ export class ListEventsQueryDto {
     @IsOptional()
     @IsDateString()
     timeMax?: string;
-
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Max(2500)
-    maxResults?: number;
 }

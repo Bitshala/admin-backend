@@ -11,7 +11,12 @@ import {
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiParam,
+    ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from '@/auth/roles.decorator';
 import { UserRole } from '@/common/enum';
 import { GoogleCalendarService } from '@/google-calendar/google-calendar.service';
@@ -23,8 +28,8 @@ import {
     UpdateEventRequestDto,
 } from '@/google-calendar/google-calendar.request.dto';
 import {
-    CalendarResponseDto,
     EventResponseDto,
+    ListCohortOptionsResponseDto,
     ListEventsResponseDto,
 } from '@/google-calendar/google-calendar.response.dto';
 
@@ -38,82 +43,82 @@ export class GoogleCalendarController {
         private readonly googleCalendarService: GoogleCalendarService,
     ) {}
 
+    @Get('cohorts')
+    @ApiOperation({
+        summary: 'List cohorts for calendar creation',
+        description: 'Returns cohorts with their calendar status',
+    })
+    async listCohortOptions(): Promise<ListCohortOptionsResponseDto> {
+        return this.googleCalendarService.listCohortOptions();
+    }
+
     @Post()
-    @ApiOperation({ summary: 'Create a calendar for a cohort' })
+    @ApiOperation({
+        summary: 'Create a calendar for a cohort with recurring events',
+    })
     async createCalendar(
         @Body() body: CreateCalendarRequestDto,
-    ): Promise<CalendarResponseDto> {
+    ): Promise<void> {
         return this.googleCalendarService.createCalendar(body);
     }
 
-    @Get(':id')
-    @ApiOperation({ summary: 'Get calendar details' })
-    async getCalendar(
-        @Param('id', new ParseUUIDPipe()) id: string,
-    ): Promise<CalendarResponseDto> {
-        return this.googleCalendarService.getCalendar(id);
-    }
-
-    @Delete(':id')
-    @ApiOperation({ summary: 'Delete a calendar' })
+    @Delete(':cohortId')
+    @ApiOperation({ summary: 'Delete a cohort calendar' })
+    @ApiParam({ name: 'cohortId', description: 'Cohort UUID' })
     async deleteCalendar(
-        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
     ): Promise<void> {
-        return this.googleCalendarService.deleteCalendar(id);
+        return this.googleCalendarService.deleteCalendar(cohortId);
     }
 
-    @Post(':id/share')
+    @Post(':cohortId/share')
     @ApiOperation({ summary: 'Share calendar with a user' })
+    @ApiParam({ name: 'cohortId', description: 'Cohort UUID' })
     async shareCalendar(
-        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Body() body: ShareCalendarRequestDto,
     ): Promise<void> {
-        return this.googleCalendarService.shareCalendar(id, body);
+        return this.googleCalendarService.shareCalendar(cohortId, body);
     }
 
-    @Post(':id/events')
-    @ApiOperation({ summary: 'Create an event in a calendar' })
+    @Post(':cohortId/events')
+    @ApiOperation({ summary: 'Create an event in a cohort calendar' })
+    @ApiParam({ name: 'cohortId', description: 'Cohort UUID' })
     async createEvent(
-        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Body() body: CreateEventRequestDto,
     ): Promise<EventResponseDto> {
-        return this.googleCalendarService.createEvent(id, body);
+        return this.googleCalendarService.createEvent(cohortId, body);
     }
 
-    @Get(':id/events')
-    @ApiOperation({ summary: 'List events in a calendar' })
+    @Get(':cohortId/events')
+    @ApiOperation({ summary: 'List events in a cohort calendar' })
+    @ApiParam({ name: 'cohortId', description: 'Cohort UUID' })
     async listEvents(
-        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Query() query: ListEventsQueryDto,
     ): Promise<ListEventsResponseDto> {
-        return this.googleCalendarService.listEvents(id, query);
+        return this.googleCalendarService.listEvents(cohortId, query);
     }
 
-    @Get(':id/events/:eventId')
-    @ApiOperation({ summary: 'Get a single event' })
-    async getEvent(
-        @Param('id', new ParseUUIDPipe()) id: string,
-        @Param('eventId') eventId: string,
-    ): Promise<EventResponseDto> {
-        return this.googleCalendarService.getEvent(id, eventId);
-    }
-
-    @Patch(':id/events/:eventId')
+    @Patch(':cohortId/events/:eventId')
     @ApiOperation({ summary: 'Update an event' })
+    @ApiParam({ name: 'cohortId', description: 'Cohort UUID' })
     async updateEvent(
-        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Param('eventId') eventId: string,
         @Body() body: UpdateEventRequestDto,
     ): Promise<EventResponseDto> {
-        return this.googleCalendarService.updateEvent(id, eventId, body);
+        return this.googleCalendarService.updateEvent(cohortId, eventId, body);
     }
 
-    @Delete(':id/events/:eventId')
+    @Delete(':cohortId/events/:eventId')
     @ApiOperation({ summary: 'Delete an event' })
+    @ApiParam({ name: 'cohortId', description: 'Cohort UUID' })
     async deleteEvent(
-        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Param('eventId') eventId: string,
     ): Promise<void> {
-        return this.googleCalendarService.deleteEvent(id, eventId);
+        return this.googleCalendarService.deleteEvent(cohortId, eventId);
     }
 }

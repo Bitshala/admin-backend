@@ -26,8 +26,8 @@ Update the `docker-compose.yml` file if necessary.
 
 ### Start the application
 1. Start the database using Docker: `docker compose up -d`
-2. Export environment variables: `export DB_POSTGRES_DATABASE_NAME=bitshala;DB_POSTGRES_HOST=localhost;DB_POSTGRES_PASSWORD=password;DB_POSTGRES_PORT=5432;DB_POSTGRES_USERNAME=root`
-3. Run the database migrations: `npm run typeorm:migration:run`
+2. Export environment variables: `export DB_POSTGRES_DATABASE_NAME=bitshala;export DB_POSTGRES_HOST=localhost;export DB_POSTGRES_PASSWORD=password;export DB_POSTGRES_PORT=5432; export DB_POSTGRES_USERNAME=root`
+3. Run the database migrations: `npm run migration:run`
 4. Start the application in development mode: `npm run start:dev`
 
 ### Stop the application
