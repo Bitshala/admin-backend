@@ -1,3 +1,4 @@
+import { Calendar } from '@/entities/calendar.entity';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
@@ -8,6 +9,7 @@ import { Feedback } from '@/entities/feedback.entity';
 
 export const entities = [
     APITask,
+    Calendar,
     Cohort,
     CohortWeek,
     ExerciseScore,
