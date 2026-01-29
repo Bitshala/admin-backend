@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { UsersService } from '@/users/users.service';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
@@ -20,6 +20,13 @@ export class UsersController {
     @ApiOperation({ summary: 'Get current user profile' })
     getMe(@GetUser() user: User) {
         return this.usersService.getMe(user);
+    }
+
+    @Get(':id')
+    @ApiOperation({ summary: 'Get user profile by ID' })
+    @Roles(UserRole.ADMIN, UserRole.TEACHING_ASSISTANT)
+    getUserById(@Param('id') id: string) {
+        return this.usersService.getUserById(id);
     }
 
     @Patch('me')

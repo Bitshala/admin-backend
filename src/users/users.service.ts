@@ -105,6 +105,11 @@ export class UsersService {
         return GetUserResponse.fromEntity(user);
     }
 
+    async getUserById(userId: string): Promise<GetUserResponse> {
+        const user = await this.findByUserId(userId);
+        return GetUserResponse.fromEntity(user);
+    }
+
     async updateMe(
         user: User,
         body: UpdateUserRequest,
