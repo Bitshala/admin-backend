@@ -437,16 +437,18 @@ export class CohortsService {
 
                     groupDiscussionScores.push(groupDiscussionScore);
 
-                    const exerciseScore = new ExerciseScore();
-                    exerciseScore.user = user;
-                    exerciseScore.cohort = cohort;
-                    exerciseScore.cohortWeek = week;
+                    if (cohort.hasExercises) {
+                        const exerciseScore = new ExerciseScore();
+                        exerciseScore.user = user;
+                        exerciseScore.cohort = cohort;
+                        exerciseScore.cohortWeek = week;
 
-                    exerciseScores.push(exerciseScore);
+                        exerciseScores.push(exerciseScore);
+                    }
                 }
 
                 await manager.save(groupDiscussionScores);
-                await manager.save(exerciseScores);
+                if (cohort.hasExercises) await manager.save(exerciseScores);
 
                 if (waitlistEntry) await manager.remove(waitlistEntry);
 
