@@ -22,6 +22,9 @@ export class Migrations1769754841293 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "cohort" ALTER COLUMN "hasExercises" SET NOT NULL`,
         );
+        await queryRunner.query(
+            `DELETE FROM exercise_score WHERE "cohortId" IN (SELECT id FROM cohort WHERE type = 'MASTERING_BITCOIN')`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
