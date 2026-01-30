@@ -46,7 +46,7 @@ export class AttendanceScore {
 export class WeeklyScore {
     weekId!: string;
     groupDiscussionScores!: GroupDiscussionScore;
-    exerciseScores!: ExerciseScore;
+    exerciseScores!: ExerciseScore | null;
     attendanceScores!: AttendanceScore;
     totalScore!: number;
     maxTotalScore!: number;

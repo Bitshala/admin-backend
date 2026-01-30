@@ -42,22 +42,22 @@ export class ScoresService {
     ): UsersWeekScoreResponseDto {
         if (
             !user.groupDiscussionScores ||
-            !user.exerciseScores ||
-            user.groupDiscussionScores.length === 0 ||
-            user.exerciseScores.length === 0
+            user.groupDiscussionScores.length === 0
         ) {
             throw new ServiceError(`Missing scores for user ${user.id}`);
         }
 
         if (
             user.groupDiscussionScores.length > 1 ||
-            user.exerciseScores.length > 1
+            (user.exerciseScores && user.exerciseScores.length > 1)
         ) {
             throw new ServiceError(`Multiple scores found for user ${user.id}`);
         }
 
         const groupDiscussionScore = user.groupDiscussionScores[0];
-        const exerciseScore = user.exerciseScores[0];
+        const exerciseScore = user.exerciseScores
+            ? user.exerciseScores[0]
+            : null;
         const assignedTA = groupDiscussionScore.assignedTeachingAssistant;
 
         return new UsersWeekScoreResponseDto({
@@ -94,13 +94,15 @@ export class ScoresService {
                 maxTotalScore: groupDiscussionScore.maxScaledScore,
                 groupNumber: groupDiscussionScore.groupNumber,
             },
-            exerciseScores: {
-                id: exerciseScore.id,
-                isSubmitted: exerciseScore.isSubmitted,
-                isPassing: exerciseScore.isPassing,
-                totalScore: exerciseScore.scaledScore,
-                maxTotalScore: exerciseScore.maxScaledScore,
-            },
+            exerciseScores: exerciseScore
+                ? {
+                      id: exerciseScore.id,
+                      isSubmitted: exerciseScore.isSubmitted,
+                      isPassing: exerciseScore.isPassing,
+                      totalScore: exerciseScore.scaledScore,
+                      maxTotalScore: exerciseScore.maxScaledScore,
+                  }
+                : null,
             attendanceScores: {
                 totalScore: groupDiscussionScore.scaledAttendanceScore,
                 maxTotalScore: groupDiscussionScore.maxScaledAttendanceScore,
@@ -108,11 +110,11 @@ export class ScoresService {
             totalScore:
                 groupDiscussionScore.scaledScore +
                 groupDiscussionScore.scaledAttendanceScore +
-                exerciseScore.scaledScore,
+                (exerciseScore?.scaledScore ?? 0),
             maxTotalScore:
                 groupDiscussionScore.maxScaledScore +
                 groupDiscussionScore.maxScaledAttendanceScore +
-                exerciseScore.maxScaledScore,
+                (exerciseScore?.maxScaledScore ?? 0),
         });
     }
 
@@ -120,24 +122,48 @@ export class ScoresService {
         cohortId: string,
         cohortWeekId: string,
     ): Promise<ListScoresForCohortAndWeekResponseDto> {
-        const usersWithScores = await this.userRepository.find({
-            where: {
-                groupDiscussionScores: {
-                    cohort: { id: cohortId },
-                    cohortWeek: { id: cohortWeekId },
-                },
-                exerciseScores: {
-                    cohort: { id: cohortId },
-                    cohortWeek: { id: cohortWeekId },
-                },
-            },
-            relations: {
-                groupDiscussionScores: {
-                    assignedTeachingAssistant: true,
-                },
-                exerciseScores: true,
-            },
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
         });
+
+        if (!cohort) {
+            throw new BadRequestException(
+                `Cohort with id ${cohortId} not found`,
+            );
+        }
+
+        const usersWithScores = cohort.hasExercises
+            ? await this.userRepository.find({
+                  where: {
+                      groupDiscussionScores: {
+                          cohort: { id: cohortId },
+                          cohortWeek: { id: cohortWeekId },
+                      },
+                      exerciseScores: {
+                          cohort: { id: cohortId },
+                          cohortWeek: { id: cohortWeekId },
+                      },
+                  },
+                  relations: {
+                      groupDiscussionScores: {
+                          assignedTeachingAssistant: true,
+                      },
+                      exerciseScores: true,
+                  },
+              })
+            : await this.userRepository.find({
+                  where: {
+                      groupDiscussionScores: {
+                          cohort: { id: cohortId },
+                          cohortWeek: { id: cohortWeekId },
+                      },
+                  },
+                  relations: {
+                      groupDiscussionScores: {
+                          assignedTeachingAssistant: true,
+                      },
+                  },
+              });
 
         return new ListScoresForCohortAndWeekResponseDto({
             scores: usersWithScores
@@ -198,16 +224,10 @@ export class ScoresService {
             );
         }
 
-        const exerciseScore = user.exerciseScores.find(
+        const exerciseScore = user.exerciseScores?.find(
             (score) =>
                 score.cohort.id === cohortId && score.cohortWeek.id === weekId,
         );
-
-        if (!exerciseScore) {
-            throw new ServiceError(
-                `Exercise score for user ${userId} in cohort ${cohortId} and week ${weekId} not found`,
-            );
-        }
 
         if (body.attendance !== undefined)
             groupDiscussionScore.attendance = body.attendance;
@@ -229,38 +249,63 @@ export class ScoresService {
 
         await this.groupDiscussionScoreRepository.save(groupDiscussionScore);
 
-        if (body.isSubmitted !== undefined)
-            exerciseScore.isSubmitted = body.isSubmitted;
-        if (body.isPassing !== undefined)
-            exerciseScore.isPassing = body.isPassing;
+        if (exerciseScore) {
+            if (body.isSubmitted !== undefined)
+                exerciseScore.isSubmitted = body.isSubmitted;
+            if (body.isPassing !== undefined)
+                exerciseScore.isPassing = body.isPassing;
 
-        await this.exerciseScoreRepository.save(exerciseScore);
+            await this.exerciseScoreRepository.save(exerciseScore);
+        }
     }
 
     async getUserScores(id: string): Promise<GetUsersScoresResponseDto> {
-        const cohorts = await this.cohortRepository.find({
-            where: {
-                users: { id: id },
-                weeks: {
-                    groupDiscussionScores: {
-                        user: { id: id },
+        const cohorts = (
+            await Promise.all([
+                this.cohortRepository.find({
+                    where: {
+                        users: { id: id },
+                        hasExercises: true,
+                        weeks: {
+                            groupDiscussionScores: {
+                                user: { id: id },
+                            },
+                            exerciseScores: {
+                                user: { id: id },
+                            },
+                        },
                     },
-                    exerciseScores: {
-                        user: { id: id },
+                    relations: {
+                        weeks: {
+                            groupDiscussionScores: {
+                                user: true,
+                            },
+                            exerciseScores: {
+                                user: true,
+                            },
+                        },
                     },
-                },
-            },
-            relations: {
-                weeks: {
-                    groupDiscussionScores: {
-                        user: true,
+                }),
+                this.cohortRepository.find({
+                    where: {
+                        users: { id: id },
+                        hasExercises: false,
+                        weeks: {
+                            groupDiscussionScores: {
+                                user: { id: id },
+                            },
+                        },
                     },
-                    exerciseScores: {
-                        user: true,
+                    relations: {
+                        weeks: {
+                            groupDiscussionScores: {
+                                user: true,
+                            },
+                        },
                     },
-                },
-            },
-        });
+                }),
+            ])
+        ).flat();
 
         const cohortScore: GetCohortScoresResponseDto[] = [];
         let totalScore = 0;
@@ -275,11 +320,11 @@ export class ScoresService {
                 const groupDiscussionScore = week.groupDiscussionScores.find(
                     (score) => score.user.id === id,
                 );
-                const exerciseScore = week.exerciseScores.find(
+                const exerciseScore = week.exerciseScores?.find(
                     (score) => score.user.id === id,
                 );
 
-                if (groupDiscussionScore && exerciseScore) {
+                if (groupDiscussionScore) {
                     const weeklyScore = new WeeklyScore({
                         weekId: week.id,
                         groupDiscussionScores: {
@@ -315,13 +360,15 @@ export class ScoresService {
                             maxTotalScore: groupDiscussionScore.maxScaledScore,
                             groupNumber: groupDiscussionScore.groupNumber,
                         },
-                        exerciseScores: {
-                            id: exerciseScore.id,
-                            isSubmitted: exerciseScore.isSubmitted,
-                            isPassing: exerciseScore.isPassing,
-                            totalScore: exerciseScore.scaledScore,
-                            maxTotalScore: exerciseScore.maxScaledScore,
-                        },
+                        exerciseScores: exerciseScore
+                            ? {
+                                  id: exerciseScore.id,
+                                  isSubmitted: exerciseScore.isSubmitted,
+                                  isPassing: exerciseScore.isPassing,
+                                  totalScore: exerciseScore.scaledScore,
+                                  maxTotalScore: exerciseScore.maxScaledScore,
+                              }
+                            : null,
                         attendanceScores: {
                             totalScore:
                                 groupDiscussionScore.scaledAttendanceScore,
@@ -331,11 +378,11 @@ export class ScoresService {
                         totalScore:
                             groupDiscussionScore.scaledScore +
                             groupDiscussionScore.scaledAttendanceScore +
-                            exerciseScore.scaledScore,
+                            (exerciseScore?.scaledScore ?? 0),
                         maxTotalScore:
                             groupDiscussionScore.maxScaledScore +
                             groupDiscussionScore.maxScaledAttendanceScore +
-                            exerciseScore.maxScaledScore,
+                            (exerciseScore?.maxScaledScore ?? 0),
                     });
 
                     weeklyScores.push(weeklyScore);
@@ -558,9 +605,7 @@ export class ScoresService {
     ): LeaderboardEntryDto {
         if (
             !user.groupDiscussionScores ||
-            !user.exerciseScores ||
-            user.groupDiscussionScores.length === 0 ||
-            user.exerciseScores.length === 0
+            user.groupDiscussionScores.length === 0
         ) {
             throw new ServiceError(`Missing scores for user ${user.id}`);
         }
@@ -573,14 +618,14 @@ export class ScoresService {
             (acc, x) => acc + x.maxScaledScore,
             0,
         );
-        const exerciseTotalScore = user.exerciseScores.reduce(
-            (acc, x) => acc + x.scaledScore,
-            0,
-        );
-        const exerciseMaxTotalScore = user.exerciseScores.reduce(
-            (acc, x) => acc + x.maxScaledScore,
-            0,
-        );
+        const exerciseTotalScore =
+            user.exerciseScores?.reduce((acc, x) => acc + x.scaledScore, 0) ??
+            0;
+        const exerciseMaxTotalScore =
+            user.exerciseScores?.reduce(
+                (acc, x) => acc + x.maxScaledScore,
+                0,
+            ) ?? 0;
         const attendanceTotalScore = user.groupDiscussionScores.reduce(
             (acc, x) => acc + x.scaledAttendanceScore,
             0,
@@ -622,20 +667,41 @@ export class ScoresService {
     async getCohortLeaderboard(
         cohortId: string,
     ): Promise<LeaderboardEntryDto[]> {
-        const usersWithScores = await this.userRepository.find({
-            where: {
-                groupDiscussionScores: {
-                    cohort: { id: cohortId },
-                },
-                exerciseScores: {
-                    cohort: { id: cohortId },
-                },
-            },
-            relations: {
-                groupDiscussionScores: true,
-                exerciseScores: true,
-            },
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
         });
+
+        if (!cohort) {
+            throw new BadRequestException(
+                `Cohort with id ${cohortId} not found`,
+            );
+        }
+
+        const usersWithScores = cohort.hasExercises
+            ? await this.userRepository.find({
+                  where: {
+                      groupDiscussionScores: {
+                          cohort: { id: cohortId },
+                      },
+                      exerciseScores: {
+                          cohort: { id: cohortId },
+                      },
+                  },
+                  relations: {
+                      groupDiscussionScores: true,
+                      exerciseScores: true,
+                  },
+              })
+            : await this.userRepository.find({
+                  where: {
+                      groupDiscussionScores: {
+                          cohort: { id: cohortId },
+                      },
+                  },
+                  relations: {
+                      groupDiscussionScores: true,
+                  },
+              });
 
         return usersWithScores
             .map<LeaderboardEntryDto>(
