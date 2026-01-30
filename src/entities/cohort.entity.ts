@@ -36,6 +36,9 @@ export class Cohort extends BaseEntity {
     @Column('timestamptz')
     endDate!: Date;
 
+    @Column('boolean')
+    hasExercises!: boolean;
+
     @ManyToMany(() => User, (u) => u.cohorts)
     @JoinTable()
     users!: User[];

@@ -10,9 +10,24 @@ export class Migrations1769754841293 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "exercise_score" DROP COLUMN "hasGoodStructure"`,
         );
+        await queryRunner.query(
+            `ALTER TABLE "cohort" ADD "hasExercises" boolean`,
+        );
+        await queryRunner.query(
+            `UPDATE "cohort" SET "hasExercises" = true WHERE type != 'MASTERING_BITCOIN'`,
+        );
+        await queryRunner.query(
+            `UPDATE "cohort" SET "hasExercises" = false WHERE type = 'MASTERING_BITCOIN'`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "cohort" ALTER COLUMN "hasExercises" SET NOT NULL`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "cohort" DROP COLUMN "hasExercises"`,
+        );
         await queryRunner.query(
             `ALTER TABLE "exercise_score" ADD "hasGoodStructure" boolean NOT NULL DEFAULT false`,
         );
