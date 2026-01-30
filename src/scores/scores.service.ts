@@ -90,23 +90,29 @@ export class ScoresService {
                 bonusFollowupScore: groupDiscussionScore.bonusFollowupScore,
                 maxBonusFollowupScore:
                     groupDiscussionScore.maxBonusFollowupScore,
-                totalScore: groupDiscussionScore.totalScore,
-                maxTotalScore: groupDiscussionScore.maxScore,
+                totalScore: groupDiscussionScore.scaledScore,
+                maxTotalScore: groupDiscussionScore.maxScaledScore,
                 groupNumber: groupDiscussionScore.groupNumber,
             },
             exerciseScores: {
                 id: exerciseScore.id,
                 isSubmitted: exerciseScore.isSubmitted,
                 isPassing: exerciseScore.isPassing,
-                hasGoodDocumentation: exerciseScore.hasGoodDocumentation,
-                hasGoodStructure: exerciseScore.hasGoodStructure,
-                totalScore: exerciseScore.totalScore,
-                maxTotalScore: exerciseScore.maxScore,
+                totalScore: exerciseScore.scaledScore,
+                maxTotalScore: exerciseScore.maxScaledScore,
+            },
+            attendanceScores: {
+                totalScore: groupDiscussionScore.scaledAttendanceScore,
+                maxTotalScore: groupDiscussionScore.maxScaledAttendanceScore,
             },
             totalScore:
-                groupDiscussionScore.totalScore + exerciseScore.totalScore,
+                groupDiscussionScore.scaledScore +
+                groupDiscussionScore.scaledAttendanceScore +
+                exerciseScore.scaledScore,
             maxTotalScore:
-                groupDiscussionScore.maxScore + exerciseScore.maxScore,
+                groupDiscussionScore.maxScaledScore +
+                groupDiscussionScore.maxScaledAttendanceScore +
+                exerciseScore.maxScaledScore,
         });
     }
 
@@ -227,10 +233,6 @@ export class ScoresService {
             exerciseScore.isSubmitted = body.isSubmitted;
         if (body.isPassing !== undefined)
             exerciseScore.isPassing = body.isPassing;
-        if (body.hasGoodDocumentation !== undefined)
-            exerciseScore.hasGoodDocumentation = body.hasGoodDocumentation;
-        if (body.hasGoodStructure !== undefined)
-            exerciseScore.hasGoodStructure = body.hasGoodStructure;
 
         await this.exerciseScoreRepository.save(exerciseScore);
     }
@@ -309,26 +311,31 @@ export class ScoresService {
                                 groupDiscussionScore.bonusFollowupScore,
                             maxBonusFollowupScore:
                                 groupDiscussionScore.maxBonusFollowupScore,
-                            totalScore: groupDiscussionScore.totalScore,
-                            maxTotalScore: groupDiscussionScore.maxScore,
+                            totalScore: groupDiscussionScore.scaledScore,
+                            maxTotalScore: groupDiscussionScore.maxScaledScore,
                             groupNumber: groupDiscussionScore.groupNumber,
                         },
                         exerciseScores: {
                             id: exerciseScore.id,
                             isSubmitted: exerciseScore.isSubmitted,
                             isPassing: exerciseScore.isPassing,
-                            hasGoodDocumentation:
-                                exerciseScore.hasGoodDocumentation,
-                            hasGoodStructure: exerciseScore.hasGoodStructure,
-                            totalScore: exerciseScore.totalScore,
-                            maxTotalScore: exerciseScore.maxScore,
+                            totalScore: exerciseScore.scaledScore,
+                            maxTotalScore: exerciseScore.maxScaledScore,
+                        },
+                        attendanceScores: {
+                            totalScore:
+                                groupDiscussionScore.scaledAttendanceScore,
+                            maxTotalScore:
+                                groupDiscussionScore.maxScaledAttendanceScore,
                         },
                         totalScore:
-                            groupDiscussionScore.totalScore +
-                            exerciseScore.totalScore,
+                            groupDiscussionScore.scaledScore +
+                            groupDiscussionScore.scaledAttendanceScore +
+                            exerciseScore.scaledScore,
                         maxTotalScore:
-                            groupDiscussionScore.maxScore +
-                            exerciseScore.maxScore,
+                            groupDiscussionScore.maxScaledScore +
+                            groupDiscussionScore.maxScaledAttendanceScore +
+                            exerciseScore.maxScaledScore,
                     });
 
                     weeklyScores.push(weeklyScore);
@@ -468,7 +475,7 @@ export class ScoresService {
                 );
 
             const wasPresentPreviousWeek = previousWeekGD.attendance;
-            const score = previousWeekGD.totalScore;
+            const score = previousWeekGD.scaledScore;
 
             eligibleUsers.push({
                 user,
@@ -559,19 +566,27 @@ export class ScoresService {
         }
 
         const groupDiscussionTotalScore = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + x.totalScore,
+            (acc, x) => acc + x.scaledScore,
             0,
         );
         const groupDiscussionMaxTotalScore = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + x.maxScore,
+            (acc, x) => acc + x.maxScaledScore,
             0,
         );
         const exerciseTotalScore = user.exerciseScores.reduce(
-            (acc, x) => acc + x.totalScore,
+            (acc, x) => acc + x.scaledScore,
             0,
         );
         const exerciseMaxTotalScore = user.exerciseScores.reduce(
-            (acc, x) => acc + x.maxScore,
+            (acc, x) => acc + x.maxScaledScore,
+            0,
+        );
+        const attendanceTotalScore = user.groupDiscussionScores.reduce(
+            (acc, x) => acc + x.scaledAttendanceScore,
+            0,
+        );
+        const attendanceMaxTotalScore = user.groupDiscussionScores.reduce(
+            (acc, x) => acc + x.maxScaledAttendanceScore,
             0,
         );
         const totalAttendance = user.groupDiscussionScores.reduce(
@@ -589,8 +604,16 @@ export class ScoresService {
             groupDiscussionMaxTotalScore: groupDiscussionMaxTotalScore,
             exerciseTotalScore: exerciseTotalScore,
             exerciseMaxTotalScore: exerciseMaxTotalScore,
-            totalScore: groupDiscussionTotalScore + exerciseTotalScore,
-            maxTotalScore: groupDiscussionMaxTotalScore + exerciseMaxTotalScore,
+            attendanceTotalScore: attendanceTotalScore,
+            attendanceMaxTotalScore: attendanceMaxTotalScore,
+            totalScore:
+                groupDiscussionTotalScore +
+                attendanceTotalScore +
+                exerciseTotalScore,
+            maxTotalScore:
+                groupDiscussionMaxTotalScore +
+                attendanceMaxTotalScore +
+                exerciseMaxTotalScore,
             totalAttendance: totalAttendance,
             maxAttendance: maxAttendance,
         });
@@ -619,6 +642,11 @@ export class ScoresService {
                 (u) => this.userWithScoresToLeaderboardEntryDto(u),
                 this,
             )
-            .sort((a, b) => b.totalScore - a.totalScore);
+            .sort((a, b) => {
+                // sort by exercise total score desc, then by total score desc
+                if (b.exerciseTotalScore !== a.exerciseTotalScore)
+                    return b.exerciseTotalScore - a.exerciseTotalScore;
+                return b.totalScore - a.totalScore;
+            });
     }
 }

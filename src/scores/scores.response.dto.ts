@@ -30,8 +30,6 @@ export class ExerciseScore {
     id: string;
     isSubmitted: boolean;
     isPassing: boolean;
-    hasGoodDocumentation: boolean;
-    hasGoodStructure: boolean;
     totalScore: number;
     maxTotalScore: number;
 
@@ -40,10 +38,16 @@ export class ExerciseScore {
     }
 }
 
+export class AttendanceScore {
+    totalScore!: number;
+    maxTotalScore!: number;
+}
+
 export class WeeklyScore {
     weekId!: string;
     groupDiscussionScores!: GroupDiscussionScore;
     exerciseScores!: ExerciseScore;
+    attendanceScores!: AttendanceScore;
     totalScore!: number;
     maxTotalScore!: number;
 
@@ -95,6 +99,8 @@ export class LeaderboardEntryDto {
     groupDiscussionMaxTotalScore!: number;
     exerciseTotalScore!: number;
     exerciseMaxTotalScore!: number;
+    attendanceTotalScore!: number;
+    attendanceMaxTotalScore!: number;
     totalScore!: number;
     maxTotalScore!: number;
     totalAttendance!: number;

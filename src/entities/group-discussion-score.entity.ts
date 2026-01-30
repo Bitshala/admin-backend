@@ -3,7 +3,7 @@ import { User } from '@/entities/user.entity';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { BaseEntity } from '@/entities/base.entity';
-import { BONUS_MAX, GD_MAX } from '@/common/constants';
+import { BONUS_MAX, GD_MAX, SCALING_FACTOR } from '@/common/constants';
 import { calculateRatio } from '@/utils/math.utils';
 
 @Entity()
@@ -120,5 +120,41 @@ export class GroupDiscussionScore extends BaseEntity {
             Object.values(GD_MAX).reduce((acc, score) => acc + score, 0) +
             Object.values(BONUS_MAX).reduce((acc, score) => acc + score, 0)
         );
+    }
+
+    /**
+     * Computes the scaled score based on the total score and maximum score.
+     * The scaled score is calculated to fit within the defined scaling factor for group discussions.
+     * Returns a rounded integer value.
+     */
+    get scaledScore(): number {
+        return Math.round(
+            (this.totalScore / this.maxScore) * SCALING_FACTOR.GD,
+        );
+    }
+
+    /**
+     * Returns the maximum possible scaled score for this entity.
+     * This is a static value based on the defined scaling factor for group discussions.
+     */
+    get maxScaledScore(): number {
+        return SCALING_FACTOR.GD;
+    }
+
+    /**
+     * Computes the scaled attendance score.
+     * If the participant attended, they receive the full attendance scaling factor; otherwise, they receive zero.
+     * Returns the attendance score.
+     */
+    get scaledAttendanceScore(): number {
+        return this.attendance ? SCALING_FACTOR.ATTENDANCE : 0;
+    }
+
+    /**
+     * Returns the maximum possible scaled attendance score for this entity.
+     * This is a static value based on the defined scaling factor for attendance.
+     */
+    get maxScaledAttendanceScore(): number {
+        return SCALING_FACTOR.ATTENDANCE;
     }
 }
