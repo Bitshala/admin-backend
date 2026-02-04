@@ -1,5 +1,6 @@
 import { CertificateTextPosition } from '@/certificates/certificates.interfaces';
 import { rgb } from 'pdf-lib';
+import { TopPerformerRank } from '@/common/enum';
 
 /**
  * Position and size configuration for the participant's name on the certificate
@@ -36,6 +37,8 @@ export const CERTIFICATE_FONT_CONSTRAINTS = {
 } as const;
 
 /**
- * Number of top performers to be recognized on certificates
+ * Number of top performers to be recognized on certificates. Defined by the number of ranks in TopPerformerRank enum.
  */
-export const TOP_PERFORMER_CUTOFF = 3;
+export const TOP_PERFORMER_CUTOFF = Object.keys(TopPerformerRank).filter(
+    (key) => isNaN(Number(key)),
+).length;

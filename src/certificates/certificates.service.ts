@@ -64,6 +64,16 @@ export class CertificatesService {
                 id: entry.userId,
             } as User;
 
+            if (certificateType === CertificateType.PERFORMER) {
+                certificateEntity.rank = index + 1;
+            } else {
+                certificateEntity.rank = null;
+            }
+
+            certificateEntity.withExercises =
+                entry.exerciseMaxTotalScore > 0 &&
+                entry.exerciseTotalScore === entry.exerciseMaxTotalScore;
+
             return certificateEntity;
         });
 
