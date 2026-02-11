@@ -238,6 +238,10 @@ export class CohortsService {
 
                 await manager.save(cohort);
 
+                const weekDataMap = new Map(
+                    (cohortData.weekData ?? []).map((wd) => [wd.week, wd]),
+                );
+
                 for (
                     let weekNumber = 0;
                     weekNumber <= cohortData.weeks;
@@ -247,6 +251,16 @@ export class CohortsService {
                     week.id = randomUUID();
                     week.week = weekNumber;
                     week.cohort = cohort;
+
+                    const wd = weekDataMap.get(weekNumber);
+                    if (wd) {
+                        week.classroomUrl = wd.classroomUrl ?? null;
+                        week.classroomInviteLink =
+                            wd.classroomInviteLink ?? null;
+                        week.classroomAssignmentId =
+                            wd.classroomAssignmentId ?? null;
+                    }
+
                     cohort.weeks.push(week);
                 }
 
@@ -261,6 +275,7 @@ export class CohortsService {
     ): Promise<void> {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
+            relations: { weeks: true },
         });
 
         if (!cohort) {
@@ -288,6 +303,34 @@ export class CohortsService {
         }
 
         await this.cohortRepository.save(cohort);
+
+        if (cohortData.weekData?.length) {
+            const weekMap = new Map(
+                cohort.weeks.map((w) => [w.week, w]),
+            );
+
+            const weeksToUpdate: CohortWeek[] = [];
+            for (const wd of cohortData.weekData) {
+                const week = weekMap.get(wd.week);
+                if (!week) {
+                    throw new BadRequestException(
+                        `Week ${wd.week} does not exist for cohort ${cohortId}.`,
+                    );
+                }
+                if (wd.classroomUrl !== undefined) {
+                    week.classroomUrl = wd.classroomUrl;
+                }
+                if (wd.classroomInviteLink !== undefined) {
+                    week.classroomInviteLink = wd.classroomInviteLink;
+                }
+                if (wd.classroomAssignmentId !== undefined) {
+                    week.classroomAssignmentId = wd.classroomAssignmentId;
+                }
+                weeksToUpdate.push(week);
+            }
+
+            await this.cohortWeekRepository.save(weeksToUpdate);
+        }
     }
 
     async updateCohortWeek(

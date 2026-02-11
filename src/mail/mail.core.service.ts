@@ -61,7 +61,13 @@ export class MailCoreService
                 `Error verifying email transporter connection: ${error.message}`,
                 error.stack,
             );
-            throw error;
+            // Only throw in production - allow dev/test to continue without mail server
+            if (!['dev', 'test', 'e2e'].includes(process.env.NODE_ENV || '')) {
+                throw error;
+            }
+            this.logger.warn(
+                'Email transporter verification failed - emails will not work until SMTP server is available.',
+            );
         }
     }
 

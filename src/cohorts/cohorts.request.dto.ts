@@ -8,8 +8,30 @@ import {
     IsString,
     Max,
     Min,
+    ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { CohortType } from '@/common/enum';
+
+export class CohortWeekClassroomDataDto {
+    @IsInt()
+    @Min(0)
+    week!: number;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    classroomUrl?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    classroomInviteLink?: string;
+
+    @IsOptional()
+    @IsInt()
+    classroomAssignmentId?: number;
+}
 
 export class UpdateCohortRequestDto {
     @IsOptional()
@@ -23,6 +45,11 @@ export class UpdateCohortRequestDto {
     @IsOptional()
     @IsDateString({ strict: true })
     registrationDeadline?: string;
+
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => CohortWeekClassroomDataDto)
+    weekData?: CohortWeekClassroomDataDto[];
 }
 
 export class CreateCohortRequestDto {
@@ -49,6 +76,11 @@ export class CreateCohortRequestDto {
 
     @IsBoolean()
     hasExercises!: boolean;
+
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => CohortWeekClassroomDataDto)
+    weekData?: CohortWeekClassroomDataDto[];
 }
 
 export class UpdateCohortWeekRequestDto {
