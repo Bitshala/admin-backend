@@ -47,6 +47,10 @@ export class UpdateCohortRequestDto {
     registrationDeadline?: string;
 
     @IsOptional()
+    @IsInt()
+    classroomId?: number;
+
+    @IsOptional()
     @ValidateNested({ each: true })
     @Type(() => CohortWeekClassroomDataDto)
     weekData?: CohortWeekClassroomDataDto[];
@@ -76,6 +80,10 @@ export class CreateCohortRequestDto {
 
     @IsBoolean()
     hasExercises!: boolean;
+
+    @IsOptional()
+    @IsInt()
+    classroomId?: number;
 
     @IsOptional()
     @ValidateNested({ each: true })

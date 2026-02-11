@@ -29,6 +29,7 @@ export class GetCohortResponseDto {
     endDate!: string;
     registrationDeadline!: string;
     hasExercises!: boolean;
+    classroomId!: number | null;
     weeks!: GetCohortWeekResponseDto[];
 
     constructor(obj: GetCohortResponseDto) {
@@ -38,6 +39,7 @@ export class GetCohortResponseDto {
         this.startDate = obj.startDate;
         this.endDate = obj.endDate;
         this.registrationDeadline = obj.registrationDeadline;
+        this.classroomId = obj.classroomId;
         this.weeks = obj.weeks
             .map((week) => new GetCohortWeekResponseDto(week))
             .sort((a, b) => a.week - b.week);
@@ -52,6 +54,7 @@ export class GetCohortResponseDto {
             endDate: cohort.endDate.toISOString(),
             registrationDeadline: cohort.registrationDeadline.toISOString(),
             hasExercises: cohort.hasExercises,
+            classroomId: cohort.classroomId ?? null,
             weeks: cohort.weeks.map((week) => ({
                 id: week.id,
                 week: week.week,

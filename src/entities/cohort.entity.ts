@@ -39,6 +39,9 @@ export class Cohort extends BaseEntity {
     @Column('boolean')
     hasExercises!: boolean;
 
+    @Column('int', { nullable: true })
+    classroomId!: number | null;
+
     @ManyToMany(() => User, (u) => u.cohorts)
     @JoinTable()
     users!: User[];

@@ -234,6 +234,7 @@ export class CohortsService {
                 cohort.endDate = endDate;
                 cohort.registrationDeadline = registrationDeadline;
                 cohort.hasExercises = cohortData.hasExercises;
+                cohort.classroomId = cohortData.classroomId ?? null;
                 cohort.weeks = [];
 
                 await manager.save(cohort);
@@ -301,13 +302,14 @@ export class CohortsService {
             registrationDeadline.setUTCHours(0, 0, 0, 0);
             cohort.registrationDeadline = registrationDeadline;
         }
+        if (cohortData.classroomId !== undefined) {
+            cohort.classroomId = cohortData.classroomId;
+        }
 
         await this.cohortRepository.save(cohort);
 
         if (cohortData.weekData?.length) {
-            const weekMap = new Map(
-                cohort.weeks.map((w) => [w.week, w]),
-            );
+            const weekMap = new Map(cohort.weeks.map((w) => [w.week, w]));
 
             const weeksToUpdate: CohortWeek[] = [];
             for (const wd of cohortData.weekData) {
