@@ -71,6 +71,10 @@ export class UpdateCohortWeekRequestDto {
     @IsString()
     @IsNotEmpty()
     classroomInviteLink!: string | undefined;
+
+    @IsOptional()
+    @IsInt()
+    classroomAssignmentId!: number | undefined;
 }
 
 export class JoinWaitlistRequestDto {

@@ -264,6 +264,12 @@ class MailConfig {
     from: MailFromIdentity;
 }
 
+class GitHubConfig {
+    @IsString()
+    @IsNotEmpty()
+    token: string;
+}
+
 export class Config {
     @IsDefined()
     @ValidateNested()
@@ -289,4 +295,9 @@ export class Config {
     @ValidateNested()
     @Type(() => MailConfig)
     email: MailConfig;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => GitHubConfig)
+    github?: GitHubConfig;
 }

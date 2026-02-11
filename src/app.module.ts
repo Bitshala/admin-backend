@@ -27,6 +27,7 @@ import { FeedbackModule } from '@/feedback/feedback.module';
 import { MailModule } from '@/mail/mail.module';
 import { TeachingAssistantsModule } from '@/teaching-assistants/teaching-assistants.module';
 import { CertificatesModule } from '@/certificates/certificates.module';
+import { ExerciseGradesModule } from '@/exercise-grades/exercise-grades.module';
 
 @Module({
     imports: [
@@ -82,6 +83,7 @@ import { CertificatesModule } from '@/certificates/certificates.module';
         MailModule,
         TeachingAssistantsModule,
         CertificatesModule,
+        ExerciseGradesModule,
     ],
     controllers: [AppController],
     providers: [

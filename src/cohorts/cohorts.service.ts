@@ -317,6 +317,10 @@ export class CohortsService {
         if (cohortWeekData.classroomInviteLink) {
             cohortWeek.classroomInviteLink = cohortWeekData.classroomInviteLink;
         }
+        if (cohortWeekData.classroomAssignmentId !== undefined) {
+            cohortWeek.classroomAssignmentId =
+                cohortWeekData.classroomAssignmentId;
+        }
 
         await this.cohortWeekRepository.save(cohortWeek);
     }

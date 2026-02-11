@@ -32,6 +32,9 @@ export class CohortWeek extends BaseEntity {
     @Column('text', { nullable: true })
     classroomInviteLink!: string | null;
 
+    @Column('int', { nullable: true })
+    classroomAssignmentId!: number | null;
+
     @ManyToOne(() => Cohort, (c) => c.weeks)
     cohort!: Cohort;
 
