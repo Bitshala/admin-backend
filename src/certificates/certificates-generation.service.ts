@@ -44,6 +44,8 @@ export class CertificatesGenerationService {
     private async initializePDFDocument(
         cohortType: CohortType,
         certificateType: CertificateType,
+        withExercises: boolean,
+        rank: number | null,
     ): Promise<{
         pdfDocument: PDFDocument;
         nautigalFont: PDFFont;
@@ -52,6 +54,8 @@ export class CertificatesGenerationService {
         const template = this.certificatesCacheService.getCertificateTemplate(
             cohortType,
             certificateType,
+            withExercises,
+            rank,
         );
 
         // Load a PDFDocument from the template
@@ -76,10 +80,17 @@ export class CertificatesGenerationService {
         cohortType: CohortType,
         certificateType: CertificateType,
         date: Date,
+        withExercises: boolean,
+        rank: number | null,
     ): Promise<Buffer> {
         try {
             const { pdfDocument, nautigalFont, robotoFont } =
-                await this.initializePDFDocument(cohortType, certificateType);
+                await this.initializePDFDocument(
+                    cohortType,
+                    certificateType,
+                    withExercises,
+                    rank,
+                );
 
             // Get the first page of the document
             const pages = pdfDocument.getPages();
@@ -140,6 +151,8 @@ export class CertificatesGenerationService {
             certificate.cohort.type,
             certificate.type,
             certificate.cohort.endDate,
+            certificate.withExercises,
+            certificate.rank,
         );
     }
 }
