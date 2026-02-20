@@ -20,6 +20,7 @@ import {
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { User } from '@/entities/user.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
+import { Attendance } from '@/entities/attendance.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
@@ -426,16 +427,24 @@ export class CohortsService {
 
                 await manager.save(cohort);
 
+                const attendances: Attendance[] = [];
                 const groupDiscussionScores: GroupDiscussionScore[] = [];
                 const exerciseScores: ExerciseScore[] = [];
 
                 for (const week of cohort.weeks) {
-                    const groupDiscussionScore = new GroupDiscussionScore();
-                    groupDiscussionScore.user = user;
-                    groupDiscussionScore.cohort = cohort;
-                    groupDiscussionScore.cohortWeek = week;
+                    const attendance = new Attendance();
+                    attendance.user = user;
+                    attendance.cohort = cohort;
+                    attendance.cohortWeek = week;
+                    attendances.push(attendance);
 
-                    groupDiscussionScores.push(groupDiscussionScore);
+                    if (week.week > 0) {
+                        const groupDiscussionScore = new GroupDiscussionScore();
+                        groupDiscussionScore.user = user;
+                        groupDiscussionScore.cohort = cohort;
+                        groupDiscussionScore.cohortWeek = week;
+                        groupDiscussionScores.push(groupDiscussionScore);
+                    }
 
                     if (cohort.hasExercises) {
                         const exerciseScore = new ExerciseScore();
@@ -447,6 +456,7 @@ export class CohortsService {
                     }
                 }
 
+                await manager.save(attendances);
                 await manager.save(groupDiscussionScores);
                 if (cohort.hasExercises) await manager.save(exerciseScores);
 
@@ -521,6 +531,10 @@ export class CohortsService {
                     .of(cohort.id)
                     .remove(user.id);
 
+                await manager.delete(Attendance, {
+                    user: { id: user.id },
+                    cohort: { id: cohort.id },
+                });
                 await manager.delete(GroupDiscussionScore, {
                     user: { id: user.id },
                     cohort: { id: cohort.id },

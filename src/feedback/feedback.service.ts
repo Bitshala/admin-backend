@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { Feedback } from '@/entities/feedback.entity';
 import { User } from '@/entities/user.entity';
 import { Cohort } from '@/entities/cohort.entity';
-import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
+import { Attendance } from '@/entities/attendance.entity';
 import {
     CreateFeedbackRequestDto,
     UpdateFeedbackRequestDto,
@@ -30,8 +30,8 @@ export class FeedbackService {
         private readonly feedbackRepository: Repository<Feedback>,
         @InjectRepository(Cohort)
         private readonly cohortRepository: Repository<Cohort>,
-        @InjectRepository(GroupDiscussionScore)
-        private readonly groupDiscussionScoreRepository: Repository<GroupDiscussionScore>,
+        @InjectRepository(Attendance)
+        private readonly attendanceRepository: Repository<Attendance>,
     ) {}
 
     async createFeedback(
@@ -65,11 +65,11 @@ export class FeedbackService {
         }
 
         // Check if user has attended at least one week
-        const hasAttended = await this.groupDiscussionScoreRepository.exists({
+        const hasAttended = await this.attendanceRepository.exists({
             where: {
                 user: { id: user.id },
                 cohort: { id: cohortId },
-                attendance: true,
+                attended: true,
             },
         });
 

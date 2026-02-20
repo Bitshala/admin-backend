@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
+import { Attendance } from '@/entities/attendance.entity';
 import { Repository } from 'typeorm';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { User } from '@/entities/user.entity';
@@ -9,7 +10,6 @@ import {
     GetUsersScoresResponseDto,
     LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
-    TeachingAssistantInfo,
     UsersWeekScoreResponseDto,
     WeeklyScore,
 } from '@/scores/scores.response.dto';
@@ -34,89 +34,9 @@ export class ScoresService {
         private readonly groupDiscussionScoreRepository: Repository<GroupDiscussionScore>,
         @InjectRepository(ExerciseScore)
         private readonly exerciseScoreRepository: Repository<ExerciseScore>,
+        @InjectRepository(Attendance)
+        private readonly attendanceRepository: Repository<Attendance>,
     ) {}
-
-    private userWithScoreToUsersScoreDto(
-        user: User,
-        weekId: string,
-    ): UsersWeekScoreResponseDto {
-        if (
-            !user.groupDiscussionScores ||
-            user.groupDiscussionScores.length === 0
-        ) {
-            throw new ServiceError(`Missing scores for user ${user.id}`);
-        }
-
-        if (
-            user.groupDiscussionScores.length > 1 ||
-            (user.exerciseScores && user.exerciseScores.length > 1)
-        ) {
-            throw new ServiceError(`Multiple scores found for user ${user.id}`);
-        }
-
-        const groupDiscussionScore = user.groupDiscussionScores[0];
-        const exerciseScore = user.exerciseScores
-            ? user.exerciseScores[0]
-            : null;
-        const assignedTA = groupDiscussionScore.assignedTeachingAssistant;
-
-        return new UsersWeekScoreResponseDto({
-            userId: user.id,
-            discordUsername: user.discordUserName,
-            discordGlobalName: user.discordGlobalName,
-            name: user.name,
-            weekId: weekId,
-            teachingAssistant: assignedTA
-                ? TeachingAssistantInfo.fromUserEntity(assignedTA)
-                : null,
-            groupDiscussionScores: {
-                id: groupDiscussionScore.id,
-                attendance: groupDiscussionScore.attendance,
-                communicationScore: groupDiscussionScore.communicationScore,
-                maxCommunicationScore:
-                    groupDiscussionScore.maxCommunicationScore,
-                depthOfAnswerScore: groupDiscussionScore.depthOfAnswerScore,
-                maxDepthOfAnswerScore:
-                    groupDiscussionScore.maxDepthOfAnswerScore,
-                technicalBitcoinFluencyScore:
-                    groupDiscussionScore.technicalBitcoinFluencyScore,
-                maxTechnicalBitcoinFluencyScore:
-                    groupDiscussionScore.maxTechnicalBitcoinFluencyScore,
-                engagementScore: groupDiscussionScore.engagementScore,
-                maxEngagementScore: groupDiscussionScore.maxEngagementScore,
-                isBonusAttempted: groupDiscussionScore.isBonusAttempted,
-                bonusAnswerScore: groupDiscussionScore.bonusAnswerScore,
-                maxBonusAnswerScore: groupDiscussionScore.maxBonusAnswerScore,
-                bonusFollowupScore: groupDiscussionScore.bonusFollowupScore,
-                maxBonusFollowupScore:
-                    groupDiscussionScore.maxBonusFollowupScore,
-                totalScore: groupDiscussionScore.scaledScore,
-                maxTotalScore: groupDiscussionScore.maxScaledScore,
-                groupNumber: groupDiscussionScore.groupNumber,
-            },
-            exerciseScores: exerciseScore
-                ? {
-                      id: exerciseScore.id,
-                      isSubmitted: exerciseScore.isSubmitted,
-                      isPassing: exerciseScore.isPassing,
-                      totalScore: exerciseScore.scaledScore,
-                      maxTotalScore: exerciseScore.maxScaledScore,
-                  }
-                : null,
-            attendanceScores: {
-                totalScore: groupDiscussionScore.scaledAttendanceScore,
-                maxTotalScore: groupDiscussionScore.maxScaledAttendanceScore,
-            },
-            totalScore:
-                groupDiscussionScore.scaledScore +
-                groupDiscussionScore.scaledAttendanceScore +
-                (exerciseScore?.scaledScore ?? 0),
-            maxTotalScore:
-                groupDiscussionScore.maxScaledScore +
-                groupDiscussionScore.maxScaledAttendanceScore +
-                (exerciseScore?.maxScaledScore ?? 0),
-        });
-    }
 
     async listScoresForCohortAndWeek(
         cohortId: string,
@@ -139,6 +59,10 @@ export class ScoresService {
                           cohort: { id: cohortId },
                           cohortWeek: { id: cohortWeekId },
                       },
+                      attendances: {
+                          cohort: { id: cohortId },
+                          cohortWeek: { id: cohortWeekId },
+                      },
                       exerciseScores: {
                           cohort: { id: cohortId },
                           cohortWeek: { id: cohortWeekId },
@@ -148,6 +72,7 @@ export class ScoresService {
                       groupDiscussionScores: {
                           assignedTeachingAssistant: true,
                       },
+                      attendances: true,
                       exerciseScores: true,
                   },
               })
@@ -157,31 +82,36 @@ export class ScoresService {
                           cohort: { id: cohortId },
                           cohortWeek: { id: cohortWeekId },
                       },
+                      attendances: {
+                          cohort: { id: cohortId },
+                          cohortWeek: { id: cohortWeekId },
+                      },
                   },
                   relations: {
                       groupDiscussionScores: {
                           assignedTeachingAssistant: true,
                       },
+                      attendances: true,
                   },
               });
 
         return new ListScoresForCohortAndWeekResponseDto({
             scores: usersWithScores
-                .map<UsersWeekScoreResponseDto>(
-                    (u) => this.userWithScoreToUsersScoreDto(u, cohortWeekId),
-                    this,
+                .map<UsersWeekScoreResponseDto>((u) =>
+                    UsersWeekScoreResponseDto.fromUserWithScore(
+                        u,
+                        cohortWeekId,
+                    ),
                 )
                 .sort((a, b) => {
+                    const aGroup = a.groupDiscussionScores?.groupNumber ?? null;
+                    const bGroup = b.groupDiscussionScores?.groupNumber ?? null;
                     if (
-                        a.groupDiscussionScores.groupNumber !== null &&
-                        b.groupDiscussionScores.groupNumber !== null &&
-                        a.groupDiscussionScores.groupNumber !==
-                            b.groupDiscussionScores.groupNumber
+                        aGroup !== null &&
+                        bGroup !== null &&
+                        aGroup !== bGroup
                     ) {
-                        return (
-                            a.groupDiscussionScores.groupNumber -
-                            b.groupDiscussionScores.groupNumber
-                        );
+                        return aGroup - bGroup;
                     }
 
                     return a.userId.localeCompare(b.userId);
@@ -195,59 +125,65 @@ export class ScoresService {
         weekId: string,
         body: UpdateScoresRequestDto,
     ): Promise<void> {
-        const user = await this.userRepository.findOne({
-            where: { id: userId },
-            relations: {
-                groupDiscussionScores: {
-                    cohort: true,
-                    cohortWeek: true,
-                },
-                exerciseScores: {
-                    cohort: true,
-                    cohortWeek: true,
-                },
-            },
-        });
+        const [attendance, groupDiscussionScore, exerciseScore] =
+            await Promise.all([
+                this.attendanceRepository.findOne({
+                    where: {
+                        user: { id: userId },
+                        cohort: { id: cohortId },
+                        cohortWeek: { id: weekId },
+                    },
+                }),
+                this.groupDiscussionScoreRepository.findOne({
+                    where: {
+                        user: { id: userId },
+                        cohort: { id: cohortId },
+                        cohortWeek: { id: weekId },
+                    },
+                }),
+                this.exerciseScoreRepository.findOne({
+                    where: {
+                        user: { id: userId },
+                        cohort: { id: cohortId },
+                        cohortWeek: { id: weekId },
+                    },
+                }),
+            ]);
 
-        if (!user) {
-            throw new ServiceError(`User with id ${userId} not found`);
-        }
-
-        const groupDiscussionScore = user.groupDiscussionScores.find(
-            (score) =>
-                score.cohort.id === cohortId && score.cohortWeek.id === weekId,
-        );
-
-        if (!groupDiscussionScore) {
+        if (!attendance) {
             throw new ServiceError(
-                `Group discussion score for user ${userId} in cohort ${cohortId} and week ${weekId} not found`,
+                `Attendance for user ${userId} in cohort ${cohortId} and week ${weekId} not found`,
             );
         }
+        if (body.attendance !== undefined) {
+            attendance.attended = body.attendance;
+            await this.attendanceRepository.save(attendance);
+        }
 
-        const exerciseScore = user.exerciseScores?.find(
-            (score) =>
-                score.cohort.id === cohortId && score.cohortWeek.id === weekId,
-        );
+        if (groupDiscussionScore) {
+            if (body.communicationScore !== undefined)
+                groupDiscussionScore.communicationScore =
+                    body.communicationScore;
+            if (body.depthOfAnswerScore !== undefined)
+                groupDiscussionScore.depthOfAnswerScore =
+                    body.depthOfAnswerScore;
+            if (body.technicalBitcoinFluencyScore !== undefined)
+                groupDiscussionScore.technicalBitcoinFluencyScore =
+                    body.technicalBitcoinFluencyScore;
+            if (body.engagementScore !== undefined)
+                groupDiscussionScore.engagementScore = body.engagementScore;
+            if (body.isBonusAttempted !== undefined)
+                groupDiscussionScore.isBonusAttempted = body.isBonusAttempted;
+            if (body.bonusAnswerScore !== undefined)
+                groupDiscussionScore.bonusAnswerScore = body.bonusAnswerScore;
+            if (body.bonusFollowupScore !== undefined)
+                groupDiscussionScore.bonusFollowupScore =
+                    body.bonusFollowupScore;
 
-        if (body.attendance !== undefined)
-            groupDiscussionScore.attendance = body.attendance;
-        if (body.communicationScore !== undefined)
-            groupDiscussionScore.communicationScore = body.communicationScore;
-        if (body.depthOfAnswerScore !== undefined)
-            groupDiscussionScore.depthOfAnswerScore = body.depthOfAnswerScore;
-        if (body.technicalBitcoinFluencyScore !== undefined)
-            groupDiscussionScore.technicalBitcoinFluencyScore =
-                body.technicalBitcoinFluencyScore;
-        if (body.engagementScore !== undefined)
-            groupDiscussionScore.engagementScore = body.engagementScore;
-        if (body.isBonusAttempted !== undefined)
-            groupDiscussionScore.isBonusAttempted = body.isBonusAttempted;
-        if (body.bonusAnswerScore !== undefined)
-            groupDiscussionScore.bonusAnswerScore = body.bonusAnswerScore;
-        if (body.bonusFollowupScore !== undefined)
-            groupDiscussionScore.bonusFollowupScore = body.bonusFollowupScore;
-
-        await this.groupDiscussionScoreRepository.save(groupDiscussionScore);
+            await this.groupDiscussionScoreRepository.save(
+                groupDiscussionScore,
+            );
+        }
 
         if (exerciseScore) {
             if (body.isSubmitted !== undefined)
@@ -267,6 +203,9 @@ export class ScoresService {
                         users: { id: id },
                         hasExercises: true,
                         weeks: {
+                            attendances: {
+                                user: { id: id },
+                            },
                             groupDiscussionScores: {
                                 user: { id: id },
                             },
@@ -277,6 +216,9 @@ export class ScoresService {
                     },
                     relations: {
                         weeks: {
+                            attendances: {
+                                user: true,
+                            },
                             groupDiscussionScores: {
                                 user: true,
                             },
@@ -291,6 +233,9 @@ export class ScoresService {
                         users: { id: id },
                         hasExercises: false,
                         weeks: {
+                            attendances: {
+                                user: { id: id },
+                            },
                             groupDiscussionScores: {
                                 user: { id: id },
                             },
@@ -298,6 +243,9 @@ export class ScoresService {
                     },
                     relations: {
                         weeks: {
+                            attendances: {
+                                user: true,
+                            },
                             groupDiscussionScores: {
                                 user: true,
                             },
@@ -317,73 +265,25 @@ export class ScoresService {
             let cohortMaxTotalScore = 0;
 
             for (const week of cohort.weeks) {
-                const groupDiscussionScore = week.groupDiscussionScores.find(
-                    (score) => score.user.id === id,
+                const attendance = week.attendances?.find(
+                    (a) => a.user.id === id,
                 );
-                const exerciseScore = week.exerciseScores?.find(
-                    (score) => score.user.id === id,
-                );
+                const groupDiscussionScore =
+                    week.groupDiscussionScores?.find(
+                        (score) => score.user.id === id,
+                    ) ?? null;
+                const exerciseScore =
+                    week.exerciseScores?.find(
+                        (score) => score.user.id === id,
+                    ) ?? null;
 
-                if (groupDiscussionScore) {
-                    const weeklyScore = new WeeklyScore({
-                        weekId: week.id,
-                        groupDiscussionScores: {
-                            id: groupDiscussionScore.id,
-                            attendance: groupDiscussionScore.attendance,
-                            communicationScore:
-                                groupDiscussionScore.communicationScore,
-                            maxCommunicationScore:
-                                groupDiscussionScore.maxCommunicationScore,
-                            depthOfAnswerScore:
-                                groupDiscussionScore.depthOfAnswerScore,
-                            maxDepthOfAnswerScore:
-                                groupDiscussionScore.maxDepthOfAnswerScore,
-                            technicalBitcoinFluencyScore:
-                                groupDiscussionScore.technicalBitcoinFluencyScore,
-                            maxTechnicalBitcoinFluencyScore:
-                                groupDiscussionScore.maxTechnicalBitcoinFluencyScore,
-                            engagementScore:
-                                groupDiscussionScore.engagementScore,
-                            maxEngagementScore:
-                                groupDiscussionScore.maxEngagementScore,
-                            isBonusAttempted:
-                                groupDiscussionScore.isBonusAttempted,
-                            bonusAnswerScore:
-                                groupDiscussionScore.bonusAnswerScore,
-                            maxBonusAnswerScore:
-                                groupDiscussionScore.maxBonusAnswerScore,
-                            bonusFollowupScore:
-                                groupDiscussionScore.bonusFollowupScore,
-                            maxBonusFollowupScore:
-                                groupDiscussionScore.maxBonusFollowupScore,
-                            totalScore: groupDiscussionScore.scaledScore,
-                            maxTotalScore: groupDiscussionScore.maxScaledScore,
-                            groupNumber: groupDiscussionScore.groupNumber,
-                        },
-                        exerciseScores: exerciseScore
-                            ? {
-                                  id: exerciseScore.id,
-                                  isSubmitted: exerciseScore.isSubmitted,
-                                  isPassing: exerciseScore.isPassing,
-                                  totalScore: exerciseScore.scaledScore,
-                                  maxTotalScore: exerciseScore.maxScaledScore,
-                              }
-                            : null,
-                        attendanceScores: {
-                            totalScore:
-                                groupDiscussionScore.scaledAttendanceScore,
-                            maxTotalScore:
-                                groupDiscussionScore.maxScaledAttendanceScore,
-                        },
-                        totalScore:
-                            groupDiscussionScore.scaledScore +
-                            groupDiscussionScore.scaledAttendanceScore +
-                            (exerciseScore?.scaledScore ?? 0),
-                        maxTotalScore:
-                            groupDiscussionScore.maxScaledScore +
-                            groupDiscussionScore.maxScaledAttendanceScore +
-                            (exerciseScore?.maxScaledScore ?? 0),
-                    });
+                if (attendance) {
+                    const weeklyScore = WeeklyScore.fromScores(
+                        week.id,
+                        attendance,
+                        groupDiscussionScore,
+                        exerciseScore,
+                    );
 
                     weeklyScores.push(weeklyScore);
                     cohortTotalScore += weeklyScore.totalScore;
@@ -417,7 +317,6 @@ export class ScoresService {
         currentWeekId: string,
         body: AssignGroupsRequestDto,
     ): Promise<void> {
-        // First, check if this is week 0 - if so, set all groups to 1
         const currentWeek = await this.cohortWeekRepository.findOne({
             where: { id: currentWeekId },
             relations: { cohort: true },
@@ -427,57 +326,35 @@ export class ScoresService {
             throw new ServiceError(`Week with id ${currentWeekId} not found`);
         }
 
+        // Week 0 has no GD records, nothing to assign groups for
+        if (currentWeek.week === 0) {
+            return;
+        }
+
         // Get all users in the cohort with their scores for current week
         const currentWeekUsers = await this.userRepository.find({
             where: {
-                groupDiscussionScores: {
+                attendances: {
                     cohortWeek: { id: currentWeekId },
                 },
-                exerciseScores: {
+                groupDiscussionScores: {
                     cohortWeek: { id: currentWeekId },
                 },
             },
             relations: {
-                groupDiscussionScores: {
+                attendances: {
                     cohortWeek: true,
                 },
-                exerciseScores: {
+                groupDiscussionScores: {
                     cohortWeek: true,
                 },
             },
         });
 
-        // Filter users to only those with scores for the current week
+        // Filter users to only those with attendance for the current week
         const usersWithCurrentWeekScores = currentWeekUsers.filter((user) =>
-            user.groupDiscussionScores.some(
-                (score) => score.cohortWeek.id === currentWeekId,
-            ),
+            user.attendances.some((a) => a.cohortWeek.id === currentWeekId),
         );
-
-        // If this is week 0, set all groups to null
-        if (currentWeek.week === 0) {
-            const groupDiscussionScoreIds: string[] = [];
-
-            for (const user of usersWithCurrentWeekScores) {
-                const currentWeekGD = user.groupDiscussionScores.find(
-                    (score) => score.cohortWeek.id === currentWeekId,
-                );
-
-                if (!currentWeekGD)
-                    throw new ServiceError(
-                        `Group discussion score for user ${user.id} in week ${currentWeekId} not found`,
-                    );
-
-                groupDiscussionScoreIds.push(currentWeekGD.id);
-            }
-
-            await this.groupDiscussionScoreRepository.update(
-                groupDiscussionScoreIds,
-                { groupNumber: 0 },
-            );
-
-            return;
-        }
 
         const previousWeek = await this.cohortWeekRepository.findOne({
             where: {
@@ -485,6 +362,7 @@ export class ScoresService {
                 week: currentWeek.week - 1,
             },
             relations: {
+                attendances: { user: true },
                 groupDiscussionScores: { user: true },
             },
         });
@@ -507,8 +385,13 @@ export class ScoresService {
                 (score) => score.cohortWeek.id === currentWeekId,
             );
 
-            // Check if user was present in previous week
-            const previousWeekGD = previousWeek.groupDiscussionScores.find(
+            // Check if user was present in the previous week via attendances
+            const previousAttendance = previousWeek.attendances.find(
+                (a) => a.user.id === user.id,
+            );
+
+            // Previous week GD may not exist (e.g., week 0)
+            const previousWeekGD = previousWeek.groupDiscussionScores?.find(
                 (score) => score.user.id === user.id,
             );
 
@@ -516,13 +399,13 @@ export class ScoresService {
                 throw new ServiceError(
                     `Group discussion score for user ${user.id} in week ${currentWeekId} not found`,
                 );
-            if (!previousWeekGD)
+            if (!previousAttendance)
                 throw new ServiceError(
-                    `Group discussion score for user ${user.id} in previous week ${previousWeek.id} not found`,
+                    `Attendance for user ${user.id} in previous week ${previousWeek.id} not found`,
                 );
 
-            const wasPresentPreviousWeek = previousWeekGD.attendance;
-            const score = previousWeekGD.scaledScore;
+            const wasPresentPreviousWeek = previousAttendance.attended;
+            const score = previousWeekGD?.scaledScore ?? 0;
 
             eligibleUsers.push({
                 user,
@@ -555,7 +438,7 @@ export class ScoresService {
             // All top performers up to capacity are assigned to the same group
             // Everyone beyond capacity gets evenly distributed between groups
             if (i < totalCapacity) {
-                // Blocks of size participantsPerWeek map to groups 1..totalNumberOfGroups
+                // Blocks of size participantsPerWeek map to groups 1...totalNumberOfGroups
                 currentWeekGD.groupNumber =
                     Math.floor(i / participantsPerWeek) + 1;
             } else {
@@ -600,70 +483,6 @@ export class ScoresService {
         );
     }
 
-    private userWithScoresToLeaderboardEntryDto(
-        user: User,
-    ): LeaderboardEntryDto {
-        if (
-            !user.groupDiscussionScores ||
-            user.groupDiscussionScores.length === 0
-        ) {
-            throw new ServiceError(`Missing scores for user ${user.id}`);
-        }
-
-        const groupDiscussionTotalScore = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + x.scaledScore,
-            0,
-        );
-        const groupDiscussionMaxTotalScore = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + x.maxScaledScore,
-            0,
-        );
-        const exerciseTotalScore =
-            user.exerciseScores?.reduce((acc, x) => acc + x.scaledScore, 0) ??
-            0;
-        const exerciseMaxTotalScore =
-            user.exerciseScores?.reduce(
-                (acc, x) => acc + x.maxScaledScore,
-                0,
-            ) ?? 0;
-        const attendanceTotalScore = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + x.scaledAttendanceScore,
-            0,
-        );
-        const attendanceMaxTotalScore = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + x.maxScaledAttendanceScore,
-            0,
-        );
-        const totalAttendance = user.groupDiscussionScores.reduce(
-            (acc, x) => acc + (x.attendance ? 1 : 0),
-            0,
-        );
-        const maxAttendance = user.groupDiscussionScores.length;
-
-        return new LeaderboardEntryDto({
-            userId: user.id,
-            discordUsername: user.discordUserName,
-            discordGlobalName: user.discordGlobalName,
-            name: user.name,
-            groupDiscussionTotalScore: groupDiscussionTotalScore,
-            groupDiscussionMaxTotalScore: groupDiscussionMaxTotalScore,
-            exerciseTotalScore: exerciseTotalScore,
-            exerciseMaxTotalScore: exerciseMaxTotalScore,
-            attendanceTotalScore: attendanceTotalScore,
-            attendanceMaxTotalScore: attendanceMaxTotalScore,
-            totalScore:
-                groupDiscussionTotalScore +
-                attendanceTotalScore +
-                exerciseTotalScore,
-            maxTotalScore:
-                groupDiscussionMaxTotalScore +
-                attendanceMaxTotalScore +
-                exerciseMaxTotalScore,
-            totalAttendance: totalAttendance,
-            maxAttendance: maxAttendance,
-        });
-    }
-
     async getCohortLeaderboard(
         cohortId: string,
     ): Promise<LeaderboardEntryDto[]> {
@@ -680,6 +499,9 @@ export class ScoresService {
         const usersWithScores = cohort.hasExercises
             ? await this.userRepository.find({
                   where: {
+                      attendances: {
+                          cohort: { id: cohortId },
+                      },
                       groupDiscussionScores: {
                           cohort: { id: cohortId },
                       },
@@ -688,25 +510,29 @@ export class ScoresService {
                       },
                   },
                   relations: {
+                      attendances: true,
                       groupDiscussionScores: true,
                       exerciseScores: true,
                   },
               })
             : await this.userRepository.find({
                   where: {
+                      attendances: {
+                          cohort: { id: cohortId },
+                      },
                       groupDiscussionScores: {
                           cohort: { id: cohortId },
                       },
                   },
                   relations: {
+                      attendances: true,
                       groupDiscussionScores: true,
                   },
               });
 
         return usersWithScores
-            .map<LeaderboardEntryDto>(
-                (u) => this.userWithScoresToLeaderboardEntryDto(u),
-                this,
+            .map<LeaderboardEntryDto>((u) =>
+                LeaderboardEntryDto.fromUserWithScores(u),
             )
             .sort((a, b) => {
                 // sort by exercise total score desc, then by total score desc

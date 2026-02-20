@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@/entities/user.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
+import { Attendance } from '@/entities/attendance.entity';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 
@@ -14,6 +15,7 @@ import { CohortWeek } from '@/entities/cohort-week.entity';
             User,
             GroupDiscussionScore,
             ExerciseScore,
+            Attendance,
             Cohort,
             CohortWeek,
         ]),
