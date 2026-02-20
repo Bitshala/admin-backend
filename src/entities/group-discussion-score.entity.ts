@@ -11,9 +11,6 @@ export class GroupDiscussionScore extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column('boolean', { default: false })
-    attendance!: boolean;
-
     @Column('int', { default: 0 })
     communicationScore!: number;
 
@@ -139,22 +136,5 @@ export class GroupDiscussionScore extends BaseEntity {
      */
     get maxScaledScore(): number {
         return SCALING_FACTOR.GD;
-    }
-
-    /**
-     * Computes the scaled attendance score.
-     * If the participant attended, they receive the full attendance scaling factor; otherwise, they receive zero.
-     * Returns the attendance score.
-     */
-    get scaledAttendanceScore(): number {
-        return this.attendance ? SCALING_FACTOR.ATTENDANCE : 0;
-    }
-
-    /**
-     * Returns the maximum possible scaled attendance score for this entity.
-     * This is a static value based on the defined scaling factor for attendance.
-     */
-    get maxScaledAttendanceScore(): number {
-        return SCALING_FACTOR.ATTENDANCE;
     }
 }

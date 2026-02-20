@@ -11,6 +11,7 @@ import { User } from '@/entities/user.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
+import { Attendance } from '@/entities/attendance.entity';
 import { BaseEntity } from '@/entities/base.entity';
 import { CohortType } from '@/common/enum';
 import { Certificate } from '@/entities/certificate.entity';
@@ -48,6 +49,9 @@ export class Cohort extends BaseEntity {
 
     @OneToMany(() => GroupDiscussionScore, (gds) => gds.cohort)
     groupDiscussionScores!: GroupDiscussionScore[];
+
+    @OneToMany(() => Attendance, (a) => a.cohort)
+    attendances!: Attendance[];
 
     @OneToMany(() => ExerciseScore, (es) => es.cohort)
     exerciseScores!: ExerciseScore[];
