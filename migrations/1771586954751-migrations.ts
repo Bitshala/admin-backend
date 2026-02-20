@@ -38,9 +38,50 @@ export class Migrations1771586954751 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "group_discussion_score" DROP COLUMN "attendance"`,
         );
+        await queryRunner.query(
+            `CREATE TYPE "public"."cohort_week_type_enum" AS ENUM('ORIENTATION', 'GROUP_DISCUSSION', 'GRADUATION')`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" ADD "type" "public"."cohort_week_type_enum"`,
+        );
+        await queryRunner.query(
+            `UPDATE "cohort_week" SET "type" = 'ORIENTATION' WHERE "week" = 0`,
+        );
+        await queryRunner.query(
+            `UPDATE "cohort_week" SET "type" = 'GROUP_DISCUSSION' WHERE "week" > 0`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" ALTER COLUMN "type" SET NOT NULL`,
+        );
+
+        // Create a GRADUATION week for each existing cohort (week = max week + 1)
+        await queryRunner.query(
+            `INSERT INTO "cohort_week" ("week", "type", "cohortId")
+             SELECT MAX("week") + 1, 'GRADUATION', "cohortId" FROM "cohort_week" GROUP BY "cohortId"`,
+        );
+        // Create attendance records for all cohort users for the new graduation weeks
+        await queryRunner.query(
+            `INSERT INTO "attendance" ("userId", "cohortId", "cohortWeekId")
+             SELECT cu."userId", cu."cohortId", cw."id" FROM "cohort_users_user" cu
+             INNER JOIN "cohort_week" cw ON cw."cohortId" = cu."cohortId"
+             WHERE cw."type" = 'GRADUATION'`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        // Remove attendance records for graduation weeks
+        await queryRunner.query(
+            `DELETE FROM "attendance" WHERE "cohortWeekId" IN (
+            SELECT "id" FROM "cohort_week" WHERE "type" = 'GRADUATION'
+             )`,
+        );
+        // Remove the GRADUATION weeks added by this migration
+        await queryRunner.query(
+            `DELETE FROM "cohort_week" WHERE "type" = 'GRADUATION'`,
+        );
+
+        await queryRunner.query(`ALTER TABLE "cohort_week" DROP COLUMN "type"`);
+        await queryRunner.query(`DROP TYPE "public"."cohort_week_type_enum"`);
         await queryRunner.query(
             `ALTER TABLE "group_discussion_score" ADD "attendance" boolean NOT NULL DEFAULT false`,
         );

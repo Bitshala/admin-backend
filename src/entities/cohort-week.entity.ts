@@ -11,6 +11,7 @@ import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { Attendance } from '@/entities/attendance.entity';
 import { BaseEntity } from '@/entities/base.entity';
+import { CohortWeekType } from '@/common/enum';
 
 @Entity()
 @Unique(['cohort', 'week'])
@@ -20,6 +21,9 @@ export class CohortWeek extends BaseEntity {
 
     @Column('int')
     week!: number;
+
+    @Column({ type: 'enum', enum: CohortWeekType })
+    type!: CohortWeekType;
 
     @Column('jsonb', { default: [] })
     questions!: string[];

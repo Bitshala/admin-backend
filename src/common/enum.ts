@@ -26,3 +26,9 @@ export enum TopPerformerRank {
     SECOND = 2,
     THIRD = 3,
 }
+
+export enum CohortWeekType {
+    ORIENTATION = 'ORIENTATION',
+    GROUP_DISCUSSION = 'GROUP_DISCUSSION',
+    GRADUATION = 'GRADUATION',
+}
