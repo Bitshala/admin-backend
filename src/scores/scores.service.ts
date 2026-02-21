@@ -20,6 +20,7 @@ import {
 } from '@/scores/scores.request.dto';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
+import { CohortWeekType } from '@/common/enum';
 
 @Injectable()
 export class ScoresService {
@@ -42,58 +43,56 @@ export class ScoresService {
         cohortId: string,
         cohortWeekId: string,
     ): Promise<ListScoresForCohortAndWeekResponseDto> {
-        const cohort = await this.cohortRepository.findOne({
-            where: { id: cohortId },
+        const cohortWeek = await this.cohortWeekRepository.findOne({
+            where: {
+                id: cohortWeekId,
+                cohort: {
+                    id: cohortId,
+                },
+            },
+            relations: { cohort: true },
         });
 
-        if (!cohort) {
+        if (!cohortWeek) {
             throw new BadRequestException(
-                `Cohort with id ${cohortId} not found`,
+                `Cohort week with id ${cohortWeekId} not found for cohort ${cohortId}`,
             );
         }
 
-        const usersWithScores = cohort.hasExercises
-            ? await this.userRepository.find({
-                  where: {
-                      groupDiscussionScores: {
-                          cohort: { id: cohortId },
-                          cohortWeek: { id: cohortWeekId },
-                      },
-                      attendances: {
-                          cohort: { id: cohortId },
-                          cohortWeek: { id: cohortWeekId },
-                      },
-                      exerciseScores: {
-                          cohort: { id: cohortId },
-                          cohortWeek: { id: cohortWeekId },
-                      },
-                  },
-                  relations: {
-                      groupDiscussionScores: {
-                          assignedTeachingAssistant: true,
-                      },
-                      attendances: true,
-                      exerciseScores: true,
-                  },
-              })
-            : await this.userRepository.find({
-                  where: {
-                      groupDiscussionScores: {
-                          cohort: { id: cohortId },
-                          cohortWeek: { id: cohortWeekId },
-                      },
-                      attendances: {
-                          cohort: { id: cohortId },
-                          cohortWeek: { id: cohortWeekId },
-                      },
-                  },
-                  relations: {
-                      groupDiscussionScores: {
-                          assignedTeachingAssistant: true,
-                      },
-                      attendances: true,
-                  },
-              });
+        const hasExercise = cohortWeek.hasExercise;
+        const hasGroupDiscussion =
+            cohortWeek.type === CohortWeekType.GROUP_DISCUSSION;
+        const usersWithScores = await this.userRepository.find({
+            where: {
+                attendances: {
+                    cohort: { id: cohortId },
+                    cohortWeek: { id: cohortWeekId },
+                },
+                ...(hasGroupDiscussion && {
+                    groupDiscussionScores: {
+                        cohort: { id: cohortId },
+                        cohortWeek: { id: cohortWeekId },
+                    },
+                    ...(hasExercise && {
+                        exerciseScores: {
+                            cohort: { id: cohortId },
+                            cohortWeek: { id: cohortWeekId },
+                        },
+                    }),
+                }),
+            },
+            relations: {
+                attendances: true,
+                ...(hasGroupDiscussion && {
+                    groupDiscussionScores: {
+                        assignedTeachingAssistant: true,
+                    },
+                    ...(hasExercise && {
+                        exerciseScores: true,
+                    }),
+                }),
+            },
+        });
 
         return new ListScoresForCohortAndWeekResponseDto({
             scores: usersWithScores
