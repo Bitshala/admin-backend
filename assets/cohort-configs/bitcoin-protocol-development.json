@@ -1,0 +1,10 @@
+{
+  "gdSessions": 5,
+  "weeks": [
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] }
+  ]
+}

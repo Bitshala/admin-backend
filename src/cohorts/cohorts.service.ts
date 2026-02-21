@@ -29,6 +29,7 @@ import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
 import { MailService } from '@/mail/mail.service';
+import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 
 @Injectable()
 export class CohortsService {
@@ -55,6 +56,7 @@ export class CohortsService {
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
         private readonly mailService: MailService,
+        private readonly cohortConfigService: CohortsConfigService,
     ) {
         this.masteringBitcoinDiscordRoleId =
             this.configService.getOrThrow<string>(
@@ -190,31 +192,45 @@ export class CohortsService {
     }
 
     async createCohort(cohortData: CreateCohortRequestDto): Promise<void> {
+        const config = this.cohortConfigService.getConfig(cohortData.type);
+        const totalWeeks = config.gdSessions + 2; // orientation + GD weeks + graduation
+
         await this.dbTransactionService.execute(
             async (manager): Promise<void> => {
+                // Auto-calculate season
+                const result = await manager
+                    .createQueryBuilder(Cohort, 'c')
+                    .select('MAX(c.season)', 'maxSeason')
+                    .where('c.type = :type', { type: cohortData.type })
+                    .getRawOne();
+                const season: number = (result?.maxSeason ?? 0) + 1;
+
                 const cohortAlreadyExists: boolean = await manager.exists(
                     Cohort,
                     {
                         where: {
                             type: cohortData.type,
-                            season: cohortData.season,
+                            season: season,
                         },
                     },
                 );
 
                 if (cohortAlreadyExists) {
                     throw new BadRequestException(
-                        `Cohort of type ${cohortData.type} and season ${cohortData.season} already exists.`,
+                        `Cohort of type ${cohortData.type} and season ${season} already exists.`,
                     );
                 }
+
                 const startDate = new Date(cohortData.startDate);
                 startDate.setUTCHours(0, 0, 0, 0);
                 const registrationDeadline = new Date(
                     cohortData.registrationDeadline,
                 );
                 registrationDeadline.setUTCHours(0, 0, 0, 0);
-                const endDate = new Date(cohortData.endDate + 'T00:00:00Z');
-                endDate.setUTCHours(0, 0, 0, 0);
+
+                // Calculate endDate: startDate + totalWeeks * 7 days
+                const endDate = new Date(startDate);
+                endDate.setUTCDate(endDate.getUTCDate() + totalWeeks * 7);
 
                 if (registrationDeadline >= endDate) {
                     throw new BadRequestException(
@@ -227,27 +243,48 @@ export class CohortsService {
                     );
                 }
 
+                const hasExercises = config.weeks.some((w) => w.hasExercise);
+
                 const cohort = new Cohort();
                 cohort.id = randomUUID();
                 cohort.type = cohortData.type;
-                cohort.season = cohortData.season;
+                cohort.season = season;
                 cohort.startDate = startDate;
                 cohort.endDate = endDate;
                 cohort.registrationDeadline = registrationDeadline;
-                cohort.hasExercises = cohortData.hasExercises;
+                cohort.hasExercises = hasExercises;
                 cohort.weeks = [];
 
                 await manager.save(cohort);
 
                 for (
                     let weekNumber = 0;
-                    weekNumber <= cohortData.weeks;
+                    weekNumber < totalWeeks;
                     weekNumber++
                 ) {
                     const week: CohortWeek = new CohortWeek();
                     week.id = randomUUID();
                     week.week = weekNumber;
                     week.cohort = cohort;
+
+                    if (weekNumber === 0) {
+                        week.type = CohortWeekType.ORIENTATION;
+                        week.hasExercise = false;
+                        week.questions = [];
+                        week.bonusQuestion = [];
+                    } else if (weekNumber <= config.gdSessions) {
+                        const weekConfig = config.weeks[weekNumber - 1];
+                        week.type = CohortWeekType.GROUP_DISCUSSION;
+                        week.hasExercise = weekConfig.hasExercise;
+                        week.questions = weekConfig.questions;
+                        week.bonusQuestion = weekConfig.bonusQuestions;
+                    } else {
+                        week.type = CohortWeekType.GRADUATION;
+                        week.hasExercise = false;
+                        week.questions = [];
+                        week.bonusQuestion = [];
+                    }
+
                     cohort.weeks.push(week);
                 }
 
@@ -274,10 +311,11 @@ export class CohortsService {
             const startDate = new Date(cohortData.startDate);
             startDate.setUTCHours(0, 0, 0, 0);
             cohort.startDate = startDate;
-        }
-        if (cohortData.endDate) {
-            const endDate = new Date(cohortData.endDate);
-            endDate.setUTCHours(0, 0, 0, 0);
+
+            const config = this.cohortConfigService.getConfig(cohort.type);
+            const totalWeeks = config.gdSessions + 2;
+            const endDate = new Date(startDate);
+            endDate.setUTCDate(endDate.getUTCDate() + totalWeeks * 7);
             cohort.endDate = endDate;
         }
         if (cohortData.registrationDeadline) {

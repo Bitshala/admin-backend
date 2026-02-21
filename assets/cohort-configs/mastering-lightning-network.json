@@ -1,0 +1,13 @@
+{
+  "gdSessions": 8,
+  "weeks": [
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "questions": [], "bonusQuestions": [] }
+  ]
+}
