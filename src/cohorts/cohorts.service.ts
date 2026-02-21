@@ -24,7 +24,7 @@ import { Attendance } from '@/entities/attendance.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
-import { CohortType } from '@/common/enum';
+import { CohortType, CohortWeekType } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
@@ -438,7 +438,7 @@ export class CohortsService {
                     attendance.cohortWeek = week;
                     attendances.push(attendance);
 
-                    if (week.week > 0) {
+                    if (week.type === CohortWeekType.GROUP_DISCUSSION) {
                         const groupDiscussionScore = new GroupDiscussionScore();
                         groupDiscussionScore.user = user;
                         groupDiscussionScore.cohort = cohort;
