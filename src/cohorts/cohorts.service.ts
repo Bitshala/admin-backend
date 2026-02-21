@@ -446,7 +446,7 @@ export class CohortsService {
                         groupDiscussionScores.push(groupDiscussionScore);
                     }
 
-                    if (cohort.hasExercises) {
+                    if (week.hasExercise) {
                         const exerciseScore = new ExerciseScore();
                         exerciseScore.user = user;
                         exerciseScore.cohort = cohort;
@@ -458,7 +458,8 @@ export class CohortsService {
 
                 await manager.save(attendances);
                 await manager.save(groupDiscussionScores);
-                if (cohort.hasExercises) await manager.save(exerciseScores);
+                if (exerciseScores.length > 0)
+                    await manager.save(exerciseScores);
 
                 if (waitlistEntry) await manager.remove(waitlistEntry);
 
