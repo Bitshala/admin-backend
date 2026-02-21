@@ -66,9 +66,29 @@ export class Migrations1771586954751 implements MigrationInterface {
              INNER JOIN "cohort_week" cw ON cw."cohortId" = cu."cohortId"
              WHERE cw."type" = 'GRADUATION'`,
         );
+
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" ADD "hasExercise" boolean`,
+        );
+        // Default all weeks to false
+        await queryRunner.query(
+            `UPDATE "cohort_week" SET "hasExercise" = false`,
+        );
+        // Set hasExercise to true for GROUP_DISCUSSION weeks in cohorts that have exercises
+        await queryRunner.query(
+            `UPDATE "cohort_week" cw SET "hasExercise" = true
+             FROM "cohort" c WHERE cw."cohortId" = c."id" AND c."hasExercises" = true AND cw."type" = 'GROUP_DISCUSSION'`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" ALTER COLUMN "hasExercise" SET NOT NULL`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" DROP COLUMN "hasExercise"`,
+        );
+
         // Remove attendance records for graduation weeks
         await queryRunner.query(
             `DELETE FROM "attendance" WHERE "cohortWeekId" IN (

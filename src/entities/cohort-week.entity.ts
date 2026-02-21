@@ -25,6 +25,9 @@ export class CohortWeek extends BaseEntity {
     @Column({ type: 'enum', enum: CohortWeekType })
     type!: CohortWeekType;
 
+    @Column('boolean')
+    hasExercise!: boolean;
+
     @Column('jsonb', { default: [] })
     questions!: string[];
 
