@@ -31,13 +31,7 @@ export class MailService implements OnModuleInit {
     }
 
     private getTemplateBaseDirectory(): string {
-        switch (process.env.NODE_ENV) {
-            case 'e2e':
-                return join(__dirname, '..', 'mail-templates');
-            case 'dev':
-            default:
-                return join(__dirname, 'mail-templates');
-        }
+        return join(__dirname, '..', 'assets', 'mail-templates');
     }
 
     private assertFileExists(filePath: string): void {
