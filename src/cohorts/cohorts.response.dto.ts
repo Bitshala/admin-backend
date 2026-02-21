@@ -1,9 +1,11 @@
-import { CohortType } from '@/common/enum';
+import { CohortType, CohortWeekType } from '@/common/enum';
 import { Cohort } from '@/entities/cohort.entity';
 
 export class GetCohortWeekResponseDto {
     id!: string;
     week!: number;
+    type!: CohortWeekType;
+    hasExercise!: boolean;
     questions!: string[];
     bonusQuestion!: string[];
     classroomUrl!: string | null;
@@ -12,6 +14,8 @@ export class GetCohortWeekResponseDto {
     constructor(obj: GetCohortWeekResponseDto) {
         this.id = obj.id;
         this.week = obj.week;
+        this.type = obj.type;
+        this.hasExercise = obj.hasExercise;
         this.questions = obj.questions;
         this.bonusQuestion = obj.bonusQuestion;
         this.classroomUrl = obj.classroomUrl;
@@ -53,6 +57,8 @@ export class GetCohortResponseDto {
             weeks: cohort.weeks.map((week) => ({
                 id: week.id,
                 week: week.week,
+                type: week.type,
+                hasExercise: week.hasExercise,
                 questions: week.questions || [],
                 bonusQuestion: week.bonusQuestion || [],
                 classroomUrl: week.classroomUrl || null,
