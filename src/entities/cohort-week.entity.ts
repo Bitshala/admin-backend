@@ -1,4 +1,5 @@
 import {
+    Check,
     Entity,
     PrimaryGeneratedColumn,
     Column,
@@ -15,6 +16,7 @@ import { CohortWeekType } from '@/common/enum';
 
 @Entity()
 @Unique(['cohort', 'week'])
+@Check(`NOT "hasExercise" OR "type" = 'GROUP_DISCUSSION'`)
 export class CohortWeek extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;

@@ -100,9 +100,17 @@ export class Migrations1771586954751 implements MigrationInterface {
                     OR (cw."week" IN (2, 4, 6, 8) AND c."type" = 'MASTERING_LIGHTNING_NETWORK')
              )`,
         );
+
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" ADD CONSTRAINT "CHK_04a461693e8644a0b84bd70b41" CHECK (NOT "hasExercise" OR "type" = 'GROUP_DISCUSSION')`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" DROP CONSTRAINT "CHK_04a461693e8644a0b84bd70b41"`,
+        );
+
         // Re-create exercise scores for specific weeks of certain cohort types
         await queryRunner.query(
             `INSERT INTO "exercise_score" ("userId", "cohortId", "cohortWeekId")
