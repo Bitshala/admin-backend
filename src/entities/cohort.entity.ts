@@ -39,6 +39,9 @@ export class Cohort extends BaseEntity {
     @Column('boolean')
     hasExercises!: boolean;
 
+    @Column({ nullable: true })
+    googleCalendarId?: string;
+
     @ManyToMany(() => User, (u) => u.cohorts)
     @JoinTable()
     users!: User[];
