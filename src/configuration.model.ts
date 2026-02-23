@@ -264,6 +264,15 @@ class MailConfig {
     from: MailFromIdentity;
 }
 
+class GoogleConfig {
+    @IsString()
+    @IsNotEmpty()
+    serviceAccountJson: string;
+
+    @IsEmail()
+    adminEmail: string;
+}
+
 export class Config {
     @IsDefined()
     @ValidateNested()
@@ -289,4 +298,9 @@ export class Config {
     @ValidateNested()
     @Type(() => MailConfig)
     email: MailConfig;
+
+    @IsDefined()
+    @ValidateNested()
+    @Type(() => GoogleConfig)
+    google: GoogleConfig;
 }
