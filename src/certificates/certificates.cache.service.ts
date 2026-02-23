@@ -4,6 +4,7 @@ import { accessSync, constants, readFileSync } from 'fs';
 import { ServiceError } from '@/common/errors';
 import { CertificateType, CohortType } from '@/common/enum';
 import { CertificateFonts } from '@/certificates/certificates.enums';
+import { TOP_PERFORMER_CUTOFF } from '@/certificates/certificates.constants';
 
 @Injectable()
 export class CertificatesCacheService {
@@ -12,32 +13,49 @@ export class CertificatesCacheService {
     private readonly robotoFontBytes: Buffer;
 
     // Certificate template cache
-    private readonly participantCertificateTemplates: Map<string, Buffer>;
-    private readonly performerCertificateTemplates: Map<string, Buffer>;
+    private readonly certificateTemplates: Map<string, Buffer>;
 
     constructor() {
-        this.participantCertificateTemplates = new Map();
-        this.performerCertificateTemplates = new Map();
+        this.certificateTemplates = new Map();
 
         // Load certificate templates
-        for (const certificateType of Object.values(CertificateType)) {
-            for (const cohortType of Object.values(CohortType)) {
-                const templatePath = this.templateNameToPaths(
+        for (const cohortType of Object.values(CohortType)) {
+            for (const withExercises of [false, true]) {
+                // Load participant templates
+                const participantPath = this.templateNameToPath(
                     cohortType,
-                    certificateType,
+                    CertificateType.PARTICIPANT,
+                    withExercises,
+                    null,
                 );
-                this.assertFileExists(templatePath);
+                this.assertFileExists(participantPath);
+                this.certificateTemplates.set(
+                    this.templateKey(
+                        cohortType,
+                        CertificateType.PARTICIPANT,
+                        withExercises,
+                        null,
+                    ),
+                    readFileSync(participantPath),
+                );
 
-                const templateBuffer = readFileSync(templatePath);
-                if (certificateType === CertificateType.PARTICIPANT) {
-                    this.participantCertificateTemplates.set(
+                // Load performer templates for each rank
+                for (let rank = 1; rank <= TOP_PERFORMER_CUTOFF; rank++) {
+                    const performerPath = this.templateNameToPath(
                         cohortType,
-                        templateBuffer,
+                        CertificateType.PERFORMER,
+                        withExercises,
+                        rank,
                     );
-                } else if (certificateType === CertificateType.PERFORMER) {
-                    this.performerCertificateTemplates.set(
-                        cohortType,
-                        templateBuffer,
+                    this.assertFileExists(performerPath);
+                    this.certificateTemplates.set(
+                        this.templateKey(
+                            cohortType,
+                            CertificateType.PERFORMER,
+                            withExercises,
+                            rank,
+                        ),
+                        readFileSync(performerPath),
                     );
                 }
             }
@@ -75,17 +93,39 @@ export class CertificatesCacheService {
         }
     }
 
-    private templateNameToPaths(
+    private templateKey(
         cohortType: CohortType,
         certificateType: CertificateType,
+        withExercises: boolean,
+        rank: number | null,
+    ): string {
+        const key = `${certificateType}:${cohortType}:${withExercises}`;
+
+        if (rank !== null) {
+            return `${key}:${rank}`;
+        }
+
+        return key;
+    }
+
+    private templateNameToPath(
+        cohortType: CohortType,
+        certificateType: CertificateType,
+        withExercises: boolean,
+        rank: number | null,
     ): string {
         const baseDir = this.getTemplateBaseDirectory();
+        let fileName = cohortType as string;
 
-        return join(
-            baseDir,
-            certificateType.toLowerCase(),
-            `${cohortType}.pdf`,
-        );
+        if (withExercises) {
+            fileName += '_WITH_EXERCISES';
+        }
+
+        if (rank !== null) {
+            fileName += `_RANK_${rank}`;
+        }
+
+        return join(baseDir, certificateType.toLowerCase(), `${fileName}.pdf`);
     }
 
     private fontNameToPaths(fontName: CertificateFonts): string {
@@ -97,29 +137,30 @@ export class CertificatesCacheService {
     getCertificateTemplate(
         cohortType: CohortType,
         certificateType: CertificateType,
+        withExercises: boolean,
+        rank: number | null,
     ): Buffer {
-        if (certificateType === CertificateType.PARTICIPANT) {
-            const template =
-                this.participantCertificateTemplates.get(cohortType);
-            if (!template) {
-                throw new ServiceError(
-                    `Participant certificate template not found for cohort type: ${cohortType}`,
-                );
-            }
-            return template;
-        } else if (certificateType === CertificateType.PERFORMER) {
-            const template = this.performerCertificateTemplates.get(cohortType);
-            if (!template) {
-                throw new ServiceError(
-                    `Performer certificate template not found for cohort type: ${cohortType}`,
-                );
-            }
-            return template;
-        } else {
+        if (certificateType === CertificateType.PERFORMER && rank === null) {
             throw new ServiceError(
-                `Unknown certificate type: ${certificateType}`,
+                `Rank must be provided for performer certificates`,
             );
         }
+
+        const key = this.templateKey(
+            cohortType,
+            certificateType,
+            withExercises,
+            rank,
+        );
+        const template = this.certificateTemplates.get(key);
+
+        if (!template) {
+            throw new ServiceError(
+                `Certificate template not found for: ${key}`,
+            );
+        }
+
+        return template;
     }
 
     getFontBytes(fontName: CertificateFonts): Buffer {

@@ -1,4 +1,5 @@
 import {
+    IsBoolean,
     IsDateString,
     IsEnum,
     IsInt,
@@ -45,6 +46,9 @@ export class CreateCohortRequestDto {
 
     @IsDateString({ strict: true })
     registrationDeadline!: string;
+
+    @IsBoolean()
+    hasExercises!: boolean;
 }
 
 export class UpdateCohortWeekRequestDto {

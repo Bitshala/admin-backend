@@ -20,3 +20,9 @@ export enum CertificateType {
     PARTICIPANT = 'PARTICIPANT',
     PERFORMER = 'PERFORMER',
 }
+
+export enum TopPerformerRank {
+    FIRST = 1,
+    SECOND = 2,
+    THIRD = 3,
+}

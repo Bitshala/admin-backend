@@ -1,4 +1,5 @@
 import { CohortType } from '@/common/enum';
+import { Cohort } from '@/entities/cohort.entity';
 
 export class GetCohortWeekResponseDto {
     id!: string;
@@ -25,6 +26,7 @@ export class GetCohortResponseDto {
     startDate!: string;
     endDate!: string;
     registrationDeadline!: string;
+    hasExercises!: boolean;
     weeks!: GetCohortWeekResponseDto[];
 
     constructor(obj: GetCohortResponseDto) {
@@ -37,6 +39,26 @@ export class GetCohortResponseDto {
         this.weeks = obj.weeks
             .map((week) => new GetCohortWeekResponseDto(week))
             .sort((a, b) => a.week - b.week);
+    }
+
+    static fromEntity(cohort: Cohort): GetCohortResponseDto {
+        return new GetCohortResponseDto({
+            id: cohort.id,
+            type: cohort.type,
+            season: cohort.season,
+            startDate: cohort.startDate.toISOString(),
+            endDate: cohort.endDate.toISOString(),
+            registrationDeadline: cohort.registrationDeadline.toISOString(),
+            hasExercises: cohort.hasExercises,
+            weeks: cohort.weeks.map((week) => ({
+                id: week.id,
+                week: week.week,
+                questions: week.questions || [],
+                bonusQuestion: week.bonusQuestion || [],
+                classroomUrl: week.classroomUrl || null,
+                classroomInviteLink: week.classroomInviteLink || null,
+            })),
+        });
     }
 }
 

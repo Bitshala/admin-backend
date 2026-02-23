@@ -41,14 +41,6 @@ export class UpdateScoresRequestDto {
     @IsBoolean()
     @IsOptional()
     isPassing?: boolean;
-
-    @IsBoolean()
-    @IsOptional()
-    hasGoodDocumentation?: boolean;
-
-    @IsBoolean()
-    @IsOptional()
-    hasGoodStructure?: boolean;
 }
 
 export class AssignGroupsRequestDto {

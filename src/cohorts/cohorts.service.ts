@@ -89,22 +89,7 @@ export class CohortsService {
             );
         }
 
-        return new GetCohortResponseDto({
-            id: cohort.id,
-            type: cohort.type,
-            season: cohort.season,
-            startDate: cohort.startDate.toISOString(),
-            endDate: cohort.endDate.toISOString(),
-            registrationDeadline: cohort.registrationDeadline.toISOString(),
-            weeks: cohort.weeks.map((week) => ({
-                id: week.id,
-                week: week.week,
-                questions: week.questions || [],
-                bonusQuestion: week.bonusQuestion || [],
-                classroomUrl: week.classroomUrl || null,
-                classroomInviteLink: week.classroomInviteLink || null,
-            })),
-        });
+        return GetCohortResponseDto.fromEntity(cohort);
     }
 
     private mapLatestCohortsToPublicCohortResponseDto(
@@ -141,27 +126,7 @@ export class CohortsService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: cohorts.map(
-                (cohort) =>
-                    new GetCohortResponseDto({
-                        id: cohort.id,
-                        type: cohort.type,
-                        season: cohort.season,
-                        startDate: cohort.startDate.toISOString(),
-                        endDate: cohort.endDate.toISOString(),
-                        registrationDeadline:
-                            cohort.registrationDeadline.toISOString(),
-                        weeks: cohort.weeks.map((week) => ({
-                            id: week.id,
-                            week: week.week,
-                            questions: week.questions || [],
-                            bonusQuestion: week.bonusQuestion || [],
-                            classroomUrl: week.classroomUrl || null,
-                            classroomInviteLink:
-                                week.classroomInviteLink || null,
-                        })),
-                    }),
-            ),
+            records: cohorts.map(GetCohortResponseDto.fromEntity),
         });
     }
 
@@ -219,27 +184,7 @@ export class CohortsService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: cohorts.map(
-                (cohort) =>
-                    new GetCohortResponseDto({
-                        id: cohort.id,
-                        type: cohort.type,
-                        season: cohort.season,
-                        startDate: cohort.startDate.toISOString(),
-                        endDate: cohort.endDate.toISOString(),
-                        registrationDeadline:
-                            cohort.registrationDeadline.toISOString(),
-                        weeks: cohort.weeks.map((week) => ({
-                            id: week.id,
-                            week: week.week,
-                            questions: week.questions || [],
-                            bonusQuestion: week.bonusQuestion || [],
-                            classroomUrl: week.classroomUrl || null,
-                            classroomInviteLink:
-                                week.classroomInviteLink || null,
-                        })),
-                    }),
-            ),
+            records: cohorts.map(GetCohortResponseDto.fromEntity),
         });
     }
 
@@ -288,6 +233,7 @@ export class CohortsService {
                 cohort.startDate = startDate;
                 cohort.endDate = endDate;
                 cohort.registrationDeadline = registrationDeadline;
+                cohort.hasExercises = cohortData.hasExercises;
                 cohort.weeks = [];
 
                 await manager.save(cohort);
@@ -491,16 +437,18 @@ export class CohortsService {
 
                     groupDiscussionScores.push(groupDiscussionScore);
 
-                    const exerciseScore = new ExerciseScore();
-                    exerciseScore.user = user;
-                    exerciseScore.cohort = cohort;
-                    exerciseScore.cohortWeek = week;
+                    if (cohort.hasExercises) {
+                        const exerciseScore = new ExerciseScore();
+                        exerciseScore.user = user;
+                        exerciseScore.cohort = cohort;
+                        exerciseScore.cohortWeek = week;
 
-                    exerciseScores.push(exerciseScore);
+                        exerciseScores.push(exerciseScore);
+                    }
                 }
 
                 await manager.save(groupDiscussionScores);
-                await manager.save(exerciseScores);
+                if (cohort.hasExercises) await manager.save(exerciseScores);
 
                 if (waitlistEntry) await manager.remove(waitlistEntry);
 

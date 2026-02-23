@@ -11,7 +11,10 @@ import { ServiceError } from '@/common/errors';
 import { CertificatesGenerationService } from '@/certificates/certificates-generation.service';
 import { CertificateType } from '@/common/enum';
 import { ScoresService } from '@/scores/scores.service';
-import { TOP_PERFORMER_CUTOFF } from '@/certificates/certificates.constants';
+import {
+    ABSENCE_THRESHOLD_DAYS,
+    TOP_PERFORMER_CUTOFF,
+} from '@/certificates/certificates.constants';
 import { Certificate } from '@/entities/certificate.entity';
 import { User } from '@/entities/user.entity';
 import { GetCertificateResponseDto } from '@/certificates/certificates.response.dto';
@@ -49,23 +52,43 @@ export class CertificatesService {
             cohortId,
         );
 
-        const certificateEntities = leaderboard.map((entry, index) => {
-            const certificateType: CertificateType =
-                index < TOP_PERFORMER_CUTOFF
-                    ? CertificateType.PERFORMER
-                    : CertificateType.PARTICIPANT;
+        const absenceThresholdDays = ABSENCE_THRESHOLD_DAYS[cohort.type];
 
-            const certificateEntity = new Certificate();
-            certificateEntity.type = certificateType;
-            certificateEntity.name =
-                entry.name || entry.discordGlobalName || entry.discordUsername;
-            certificateEntity.cohort = cohort;
-            certificateEntity.user = {
-                id: entry.userId,
-            } as User;
+        const certificateEntities = leaderboard
+            .filter(
+                (entry) =>
+                    entry.totalAttendance >=
+                    entry.maxAttendance - absenceThresholdDays,
+            )
+            .map((entry, index) => {
+                const certificateType: CertificateType =
+                    index < TOP_PERFORMER_CUTOFF
+                        ? CertificateType.PERFORMER
+                        : CertificateType.PARTICIPANT;
 
-            return certificateEntity;
-        });
+                const certificateEntity = new Certificate();
+                certificateEntity.type = certificateType;
+                certificateEntity.name =
+                    entry.name ||
+                    entry.discordGlobalName ||
+                    entry.discordUsername;
+                certificateEntity.cohort = cohort;
+                certificateEntity.user = {
+                    id: entry.userId,
+                } as User;
+
+                if (certificateType === CertificateType.PERFORMER) {
+                    certificateEntity.rank = index + 1;
+                } else {
+                    certificateEntity.rank = null;
+                }
+
+                certificateEntity.withExercises =
+                    entry.exerciseMaxTotalScore > 0 &&
+                    entry.exerciseTotalScore === entry.exerciseMaxTotalScore;
+
+                return certificateEntity;
+            });
 
         // We first delete existing certificates for the cohort to avoid duplicates
         // This is to ensure that if the generation process is re-run, we don't end up with multiple

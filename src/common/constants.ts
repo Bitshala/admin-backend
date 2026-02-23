@@ -14,8 +14,12 @@ export const BONUS_MAX = {
 export const EXERCISE_MAX = {
     submission: 10,
     tests: 50,
-    documentation: 20,
-    structure: 20,
 } as const;
+
+export const SCALING_FACTOR = {
+    ATTENDANCE: 10,
+    GD: 30,
+    EXERCISE: 60,
+};
 
 export const DISCORD_GENERAL_INVITE_URL = 'https://discord.gg/benPDVcurg';
