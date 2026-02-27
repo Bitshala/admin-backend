@@ -326,7 +326,11 @@ export class ScoresService {
         }
 
         // Week 0 has no GD records, nothing to assign groups for
-        if (currentWeek.week === 0) {
+        if (
+            [CohortWeekType.GRADUATION, CohortWeekType.ORIENTATION].includes(
+                currentWeek.type,
+            )
+        ) {
             return;
         }
 
@@ -346,6 +350,7 @@ export class ScoresService {
                 },
                 groupDiscussionScores: {
                     cohortWeek: true,
+                    assignedTeachingAssistant: true,
                 },
             },
         });
@@ -419,13 +424,17 @@ export class ScoresService {
             if (b.wasPresentPreviousWeek !== a.wasPresentPreviousWeek)
                 return b.wasPresentPreviousWeek ? 1 : -1; // Prioritize users with attendance in the previous week
 
-            return b.totalScore - a.totalScore; // Then sort by total score
+            if (b.totalScore !== a.totalScore)
+                return b.totalScore - a.totalScore; // Then sort by total score
+
+            return b.user.id.localeCompare(a.user.id); // Finally, sort by user ID for consistency
         });
 
         const updates: GroupDiscussionScore[] = [];
         const totalNumberOfGroups = body.groupsAvailable;
         const participantsPerWeek = body.participantsPerWeek; // participants per group
         const totalCapacity = totalNumberOfGroups * participantsPerWeek;
+        const taMap: Map<number, User> = new Map();
 
         for (let i = 0; i < eligibleUsers.length; i++) {
             const { currentWeekGD, wasPresentPreviousWeek } = eligibleUsers[i];
@@ -447,7 +456,25 @@ export class ScoresService {
                     (overflowIndex % totalNumberOfGroups) + 1;
             }
 
+            if (
+                currentWeekGD.assignedTeachingAssistant &&
+                !taMap.has(currentWeekGD.groupNumber)
+            ) {
+                taMap.set(
+                    currentWeekGD.groupNumber,
+                    currentWeekGD.assignedTeachingAssistant,
+                );
+            }
+
+            currentWeekGD.assignedTeachingAssistant = null as unknown as User; // Clear existing TA assignment, will reassign after groups are set
+
             updates.push(currentWeekGD);
+        }
+
+        for (const gdScore of updates) {
+            if (gdScore.groupNumber === null) continue;
+            const assignedTA = taMap.get(gdScore.groupNumber);
+            if (assignedTA) gdScore.assignedTeachingAssistant = assignedTA;
         }
 
         // Save all updates
