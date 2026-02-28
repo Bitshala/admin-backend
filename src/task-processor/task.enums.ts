@@ -8,4 +8,5 @@ export enum APITaskStatus {
 
 export enum TaskType {
     ASSIGN_COHORT_ROLE = 'ASSIGN_COHORT_ROLE',
+    SYNC_CLASSROOM_SCORES = 'SYNC_CLASSROOM_SCORES',
 }

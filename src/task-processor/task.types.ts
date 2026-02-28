@@ -6,8 +6,13 @@ export type AssignCohortRoleTaskData = {
     cohortType: CohortType;
 };
 
+export type SyncClassroomScoresTaskData = {
+    cohortId: string;
+};
+
 export type TaskDataMap = {
     [TaskType.ASSIGN_COHORT_ROLE]: AssignCohortRoleTaskData;
+    [TaskType.SYNC_CLASSROOM_SCORES]: SyncClassroomScoresTaskData;
 };
 
 export type TaskData<T extends TaskType> = TaskDataMap[T];
