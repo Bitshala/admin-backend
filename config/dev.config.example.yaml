@@ -47,6 +47,8 @@ app:
     callbackPath: '/auth/discord/callback'
     dashboardRedirectPath: '/health'
     sessionTtlSeconds: 604800 # 7 days
+github:
+  token: '<github_personal_access_token>'
 email:
   smtp:
     host: localhost
