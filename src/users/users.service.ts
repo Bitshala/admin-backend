@@ -39,7 +39,7 @@ export class UsersService {
         return user;
     }
 
-    async createStudentUser(data: {
+    async createUser(data: {
         email: string | null;
         discordUserId: string;
         discordUsername: string;
@@ -69,6 +69,15 @@ export class UsersService {
         return this.userRepository.save(user);
     }
 
+    private roleRank(role: UserRole): number {
+        const ranks: Record<UserRole, number> = {
+            [UserRole.STUDENT]: 0,
+            [UserRole.TEACHING_ASSISTANT]: 1,
+            [UserRole.ADMIN]: 2,
+        };
+        return ranks[role];
+    }
+
     inferUserRoleFromDiscordRoles(roles: string[]): UserRole {
         if (roles.includes(this.adminRoleId)) return UserRole.ADMIN;
         if (roles.includes(this.teachingAssistantRoleId))
@@ -94,10 +103,13 @@ export class UsersService {
             // Only update email if it's not already set
             if (!user.email && data.email) user.email = data.email;
             user.isGuildMember = data.isGuildMember;
-            user.role = this.inferUserRoleFromDiscordRoles(data.roles);
+            const inferredRole = this.inferUserRoleFromDiscordRoles(data.roles);
+            if (this.roleRank(inferredRole) >= this.roleRank(user.role)) {
+                user.role = inferredRole;
+            }
             return this.userRepository.save(user);
         } else {
-            return this.createStudentUser(data);
+            return this.createUser(data);
         }
     }
 
