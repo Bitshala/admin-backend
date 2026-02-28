@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 import { IsValidScore } from '@/validators/is-valid-score';
 
 export class UpdateScoresRequestDto {
@@ -51,4 +51,13 @@ export class AssignGroupsRequestDto {
     @IsInt()
     @Min(1)
     groupsAvailable: number;
+}
+
+export class AssignTAToGroupRequestDto {
+    @IsUUID()
+    userId: string;
+
+    @IsInt()
+    @Min(1)
+    groupNumber: number;
 }

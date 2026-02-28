@@ -3,11 +3,9 @@ import {
     Controller,
     Get,
     Param,
-    ParseIntPipe,
     ParseUUIDPipe,
     Patch,
     Post,
-    Query,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -22,6 +20,7 @@ import { Roles } from '@/auth/roles.decorator';
 import { UserRole } from '@/common/enum';
 import {
     AssignGroupsRequestDto,
+    AssignTAToGroupRequestDto,
     UpdateScoresRequestDto,
 } from '@/scores/scores.request.dto';
 import { GetUser } from '@/decorators/user.decorator';
@@ -110,21 +109,19 @@ export class ScoresController {
         return this.scoresService.assignGroupsForCohortWeek(weekId, body);
     }
 
-    // endpoint that lets TAs assign themselves to groups for a specific week
-    @Post('week/:weekId/assign-self-to-group')
+    @Post('week/:weekId/assign-ta-to-group')
     @ApiOperation({
-        summary: 'Assign self to a group for a specific week',
+        summary: 'Assign a TA to a group for a specific week',
     })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
-    async assignSelfToGroup(
+    async assignTAToGroup(
         @Param('weekId', ParseUUIDPipe) weekId: string,
-        @Query('groupNumber', ParseIntPipe) groupNumber: number,
-        @GetUser() user: User,
+        @Body() body: AssignTAToGroupRequestDto,
     ): Promise<void> {
-        return this.scoresService.assignSelfToGroup(
+        return this.scoresService.assignTAToGroup(
             weekId,
-            user.id,
-            groupNumber,
+            body.userId,
+            body.groupNumber,
         );
     }
 }

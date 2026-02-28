@@ -20,7 +20,7 @@ import {
 } from '@/scores/scores.request.dto';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
-import { CohortWeekType } from '@/common/enum';
+import { CohortWeekType, UserRole } from '@/common/enum';
 
 @Injectable()
 export class ScoresService {
@@ -481,11 +481,24 @@ export class ScoresService {
         await this.groupDiscussionScoreRepository.save(updates);
     }
 
-    async assignSelfToGroup(
-        weekId: string,
-        userId: string,
-        groupNumber: number,
-    ) {
+    async assignTAToGroup(weekId: string, userId: string, groupNumber: number) {
+        const user = await this.userRepository.findOne({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new BadRequestException(`User with id ${userId} not found`);
+        }
+
+        if (
+            user.role !== UserRole.TEACHING_ASSISTANT &&
+            user.role !== UserRole.ADMIN
+        ) {
+            throw new BadRequestException(
+                `User with id ${userId} is not a TA or Admin`,
+            );
+        }
+
         const groupDiscussionScores =
             await this.groupDiscussionScoreRepository.find({
                 where: {
