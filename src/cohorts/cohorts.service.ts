@@ -48,8 +48,6 @@ export class CohortsService {
         private readonly cohortWeekRepository: Repository<CohortWeek>,
         @InjectRepository(CohortWaitlist)
         private readonly cohortWaitlistRepository: Repository<CohortWaitlist>,
-        @InjectRepository(APITask)
-        private readonly apiTaskRepository: Repository<APITask<any>>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly dbTransactionService: DbTransactionService,
@@ -255,6 +253,8 @@ export class CohortsService {
                 cohort.hasExercises = hasExercises;
                 cohort.weeks = [];
 
+                if (hasExercises) cohort.classroomId = config.classroomId;
+
                 await manager.save(cohort);
 
                 for (
@@ -289,6 +289,12 @@ export class CohortsService {
                 }
 
                 await manager.save(cohort.weeks);
+
+                // Create an initial sync task when cohort is created
+                const apiTask = new APITask<TaskType.SYNC_CLASSROOM_SCORES>();
+                apiTask.type = TaskType.SYNC_CLASSROOM_SCORES;
+                apiTask.data = { cohortId: cohort.id };
+                await manager.save(apiTask);
             },
         );
     }
@@ -350,11 +356,9 @@ export class CohortsService {
         if (cohortWeekData.bonusQuestion) {
             cohortWeek.bonusQuestion = cohortWeekData.bonusQuestion;
         }
-        if (cohortWeekData.classroomUrl) {
-            cohortWeek.classroomUrl = cohortWeekData.classroomUrl;
-        }
-        if (cohortWeekData.classroomInviteLink) {
-            cohortWeek.classroomInviteLink = cohortWeekData.classroomInviteLink;
+        if (cohortWeekData.classroomAssignmentId !== undefined) {
+            cohortWeek.classroomAssignmentId =
+                cohortWeekData.classroomAssignmentId;
         }
 
         await this.cohortWeekRepository.save(cohortWeek);
@@ -507,7 +511,7 @@ export class CohortsService {
                     userId: user.id,
                     cohortType: cohort.type,
                 };
-                await this.apiTaskRepository.save(apiTask);
+                await manager.save(apiTask);
             },
         );
 

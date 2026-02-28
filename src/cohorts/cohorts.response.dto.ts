@@ -8,8 +8,8 @@ export class GetCohortWeekResponseDto {
     hasExercise!: boolean;
     questions!: string[];
     bonusQuestion!: string[];
-    classroomUrl!: string | null;
     classroomInviteLink!: string | null;
+    classroomAssignmentUrl!: string | null;
 
     constructor(obj: GetCohortWeekResponseDto) {
         this.id = obj.id;
@@ -18,8 +18,8 @@ export class GetCohortWeekResponseDto {
         this.hasExercise = obj.hasExercise;
         this.questions = obj.questions;
         this.bonusQuestion = obj.bonusQuestion;
-        this.classroomUrl = obj.classroomUrl;
         this.classroomInviteLink = obj.classroomInviteLink;
+        this.classroomAssignmentUrl = obj.classroomAssignmentUrl;
     }
 }
 
@@ -31,6 +31,7 @@ export class GetCohortResponseDto {
     endDate!: string;
     registrationDeadline!: string;
     hasExercises!: boolean;
+    classroomId!: string | null;
     weeks!: GetCohortWeekResponseDto[];
 
     constructor(obj: GetCohortResponseDto) {
@@ -40,6 +41,7 @@ export class GetCohortResponseDto {
         this.startDate = obj.startDate;
         this.endDate = obj.endDate;
         this.registrationDeadline = obj.registrationDeadline;
+        this.classroomId = obj.classroomId;
         this.weeks = obj.weeks
             .map((week) => new GetCohortWeekResponseDto(week))
             .sort((a, b) => a.week - b.week);
@@ -54,6 +56,7 @@ export class GetCohortResponseDto {
             endDate: cohort.endDate.toISOString(),
             registrationDeadline: cohort.registrationDeadline.toISOString(),
             hasExercises: cohort.hasExercises,
+            classroomId: cohort.classroomId ?? null,
             weeks: cohort.weeks.map((week) => ({
                 id: week.id,
                 week: week.week,
@@ -61,8 +64,8 @@ export class GetCohortResponseDto {
                 hasExercise: week.hasExercise,
                 questions: week.questions || [],
                 bonusQuestion: week.bonusQuestion || [],
-                classroomUrl: week.classroomUrl || null,
                 classroomInviteLink: week.classroomInviteLink || null,
+                classroomAssignmentUrl: week.classroomAssignmentUrl ?? null,
             })),
         });
     }

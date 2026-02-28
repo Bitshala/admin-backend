@@ -2,6 +2,7 @@ import {
     IsDateString,
     IsEnum,
     IsNotEmpty,
+    IsNumberString,
     IsOptional,
     IsString,
 } from 'class-validator';
@@ -40,14 +41,12 @@ export class UpdateCohortWeekRequestDto {
     bonusQuestion!: string[] | undefined;
 
     @IsOptional()
-    @IsString()
+    @IsNumberString({
+        no_symbols: true,
+        locale: 'en-US',
+    })
     @IsNotEmpty()
-    classroomUrl!: string | undefined;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    classroomInviteLink!: string | undefined;
+    classroomAssignmentId!: string | undefined;
 }
 
 export class JoinWaitlistRequestDto {

@@ -4,9 +4,11 @@ import {
     IsArray,
     IsBoolean,
     IsInt,
+    IsNumberString,
     IsString,
     Max,
     Min,
+    ValidateIf,
     ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -36,4 +38,13 @@ export class CohortConfig {
     @ValidateNested({ each: true })
     @Type(() => CohortWeekConfig)
     weeks!: CohortWeekConfig[];
+
+    @IsNumberString({
+        no_symbols: true,
+        locale: 'en-US',
+    })
+    @ValidateIf((o: CohortConfig) =>
+        o.weeks.some((week: CohortWeekConfig) => week.hasExercise),
+    )
+    classroomId!: string;
 }

@@ -16,6 +16,9 @@ export class ExerciseScore extends BaseEntity {
     @Column('boolean', { default: false })
     isPassing!: boolean;
 
+    @Column('text', { nullable: true })
+    classroomRepositoryUrl!: string | null;
+
     @ManyToOne(() => User, (u) => u.exerciseScores)
     user!: User;
 

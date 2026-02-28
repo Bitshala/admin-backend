@@ -8,19 +8,12 @@ import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 import { DbTransactionModule } from '@/db-transaction/db-transaction.module';
 import { DiscordClientModule } from '@/discord-client/discord.client.module';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
-import { APITask } from '@/entities/api-task.entity';
 import { User } from '@/entities/user.entity';
 import { MailModule } from '@/mail/mail.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            APITask,
-            Cohort,
-            CohortWeek,
-            CohortWaitlist,
-            User,
-        ]),
+        TypeOrmModule.forFeature([Cohort, CohortWeek, CohortWaitlist, User]),
         DbTransactionModule,
         DiscordClientModule,
         MailModule,
