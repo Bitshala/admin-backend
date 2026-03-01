@@ -6,6 +6,7 @@ import { APITask } from '@/entities/api-task.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { ApiError, ServiceError } from '@/common/errors';
 import { CohortsService } from '@/cohorts/cohorts.service';
+import { GitHubClassroomService } from '@/github-classroom/github-classroom.service';
 
 @Injectable()
 export class APITaskProcessorService {
@@ -15,6 +16,7 @@ export class APITaskProcessorService {
     constructor(
         private readonly dbTransactionService: DbTransactionService,
         private readonly cohortsService: CohortsService,
+        private readonly gitHubClassroomService: GitHubClassroomService,
     ) {}
 
     private async fetchUnprocessedTasks(): Promise<APITask<any>[]> {
@@ -66,6 +68,11 @@ export class APITaskProcessorService {
                     await this.cohortsService.assignDiscordRole(
                         task.data.userId,
                         task.data.cohortType,
+                    );
+                    break;
+                case TaskType.SYNC_CLASSROOM_SCORES:
+                    await this.gitHubClassroomService.handleSyncClassroomTask(
+                        task,
                     );
                     break;
                 default:
