@@ -41,6 +41,15 @@ export class UpdateScoresRequestDto {
     @IsBoolean()
     @IsOptional()
     isPassing?: boolean;
+
+    @IsInt()
+    @Min(0)
+    @IsOptional()
+    groupNumber?: number;
+
+    @IsUUID()
+    @IsOptional()
+    teachingAssistantId?: string;
 }
 
 export class AssignGroupsRequestDto {

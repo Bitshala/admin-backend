@@ -179,6 +179,41 @@ export class ScoresService {
                 groupDiscussionScore.bonusFollowupScore =
                     body.bonusFollowupScore;
 
+            if (body.groupNumber !== undefined)
+                groupDiscussionScore.groupNumber = body.groupNumber;
+
+            if (body.teachingAssistantId !== undefined) {
+                if (body.teachingAssistantId === null) {
+                    groupDiscussionScore.assignedTeachingAssistant =
+                        null as unknown as User;
+                } else {
+                    const teachingAssistant = await this.userRepository.findOne(
+                        {
+                            where: { id: body.teachingAssistantId },
+                        },
+                    );
+
+                    if (!teachingAssistant) {
+                        throw new BadRequestException(
+                            `User with id ${userId} not found`,
+                        );
+                    }
+
+                    if (
+                        teachingAssistant.role !==
+                            UserRole.TEACHING_ASSISTANT &&
+                        teachingAssistant.role !== UserRole.ADMIN
+                    ) {
+                        throw new BadRequestException(
+                            `User with id ${userId} is not a TA or Admin`,
+                        );
+                    }
+
+                    groupDiscussionScore.assignedTeachingAssistant =
+                        teachingAssistant;
+                }
+            }
+
             await this.groupDiscussionScoreRepository.save(
                 groupDiscussionScore,
             );
