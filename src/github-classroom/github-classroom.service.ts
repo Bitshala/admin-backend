@@ -34,11 +34,12 @@ export class GitHubClassroomService {
     private async scheduleNextSync(
         data: SyncClassroomScoresTaskData,
     ): Promise<void> {
-        this.apiTaskRepository.create({
+        const entity = this.apiTaskRepository.create({
             type: TaskType.SYNC_CLASSROOM_SCORES,
             data: data,
             executeOnTime: new Date(Date.now() + SIX_HOURS_MS),
         });
+        await this.apiTaskRepository.save(entity);
     }
 
     async handleSyncClassroomTask(
