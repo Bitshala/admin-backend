@@ -1,6 +1,6 @@
 {
   "gdSessions": 7,
-  "classroomId": "",
+  "classroomId": "0",
   "weeks": [
     { "hasExercise": true, "questions": [], "bonusQuestions": [] },
     { "hasExercise": true, "questions": [], "bonusQuestions": [] },
