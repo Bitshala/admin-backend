@@ -147,6 +147,7 @@ export class TeachingAssistantInfo {
 export class UsersWeekScoreResponseDto extends WeeklyScore {
     // User details
     userId!: string;
+    email!: string | null;
     discordUsername!: string;
     discordGlobalName!: string | null;
     name!: string | null;
@@ -186,6 +187,7 @@ export class UsersWeekScoreResponseDto extends WeeklyScore {
 
         return new UsersWeekScoreResponseDto({
             userId: user.id,
+            email: user.email,
             discordUsername: user.discordUserName,
             discordGlobalName: user.discordGlobalName,
             name: user.name,
