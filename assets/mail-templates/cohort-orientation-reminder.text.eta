@@ -1,0 +1,19 @@
+<%~ it.cohortName %> Orientation Reminder
+
+Hi <%~ it.userName %>,
+
+This is a reminder that you've registered for the <%~ it.cohortName %> Cohort.
+
+Program Structure
+  Begins: <%~ it.startDate %>, <%~ it.startTime %>
+  Repeats: <%~ it.frequency %>
+  Location: <%~ it.location %>
+
+We're kicking things off with an introductory call where you'll meet your fellow participants and TAs. This session marks the official start of the <%~ it.cohortShortName %> cohort. Make sure to attend.
+
+You should have access to <%~ it.cohortShortName %> cohort channels. If you do not, please post a message in the cohort-registration channel and we'll resolve it.
+
+We're excited to have you join us and look forward to seeing you there!
+
+Thanks,
+Bitshala Team

@@ -1,0 +1,24 @@
+Your Next Session is Coming Up — <%~ it.cohortName %> <%~ it.season %>
+
+Hi <%~ it.userName %>,
+
+Your next cohort session is coming up.
+
+<%~ it.cohortName %> <%~ it.season %>
+  <%~ it.sessionDay %>, <%~ it.sessionDate %>
+  <%~ it.sessionTime %>
+  <%~ it.channelName %>
+
+Be there. On time. Ready to explore and learn Bitcoin together!
+
+Every session compounds. Miss one, and the gap shows. Miss two, and you may have to repeat the cohort. But show up consistently, and everything opens up:
+
+- Fellowships and work opportunities in Bitcoin
+- Opportunity to work from Bitspace, join BOSS residencies
+- Certificate to showcase your Bitcoin knowledge & skills
+- Friends and collaborators for life
+- IRL meetups and deep community
+
+Persist. Hoping to see you in the room!
+
+<%~ it.cohortName %> TAs

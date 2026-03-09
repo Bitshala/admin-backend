@@ -14,7 +14,29 @@ export interface CohortJoiningConfirmationContext {
     cohortCategory: string;
 }
 
+export interface CohortOrientationReminderContext {
+    userName: string;
+    cohortName: string;
+    cohortShortName: string;
+    startDate: string;
+    startTime: string;
+    frequency: string;
+    location: string;
+}
+
+export interface CohortGdSessionReminderContext {
+    userName: string;
+    cohortName: string;
+    season: string;
+    sessionDay: string;
+    sessionDate: string;
+    sessionTime: string;
+    channelName: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
     [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
+    [MailTemplate.CohortOrientationReminder]: CohortOrientationReminderContext;
+    [MailTemplate.CohortGdSessionReminder]: CohortGdSessionReminderContext;
 }

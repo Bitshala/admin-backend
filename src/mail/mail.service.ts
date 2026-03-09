@@ -69,17 +69,21 @@ export class MailService implements OnModuleInit {
     }
 
     private getCohortDisplayName(cohortType: CohortType): string {
+        return this.getCohortShortName(cohortType) + ' Cohort';
+    }
+
+    private getCohortShortName(cohortType: CohortType): string {
         switch (cohortType) {
             case CohortType.MASTERING_BITCOIN:
-                return 'MB Cohort';
+                return 'MB';
             case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
-                return 'LBTCL Cohort';
+                return 'LBTCL';
             case CohortType.PROGRAMMING_BITCOIN:
-                return 'PB Cohort';
+                return 'PB';
             case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
-                return 'BPD Cohort';
+                return 'BPD';
             case CohortType.MASTERING_LIGHTNING_NETWORK:
-                return 'LN Cohort';
+                return 'LN';
             default:
                 throw new ServiceError(
                     `Unknown cohort type encountered: ${cohortType}`,
@@ -196,6 +200,63 @@ export class MailService implements OnModuleInit {
                 discordInviteLink: discordInviteLink,
                 discordSupportLink: discordInviteLink,
                 cohortCategory: cohortCategory,
+            },
+        });
+    }
+
+    async sendCohortOrientationReminderEmail(
+        userEmail: string,
+        userName: string,
+        cohortType: CohortType,
+        startDate: string,
+        startTime: string,
+        frequency: string,
+        location: string,
+    ): Promise<void> {
+        const cohortDisplayName = this.getCohortDisplayName(cohortType);
+        const cohortShortName = this.getCohortShortName(cohortType);
+        const subject = `Reminder: ${cohortDisplayName} Orientation — ${startDate}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject: subject,
+            template: MailTemplate.CohortOrientationReminder,
+            context: {
+                userName: userName,
+                cohortName: cohortDisplayName,
+                cohortShortName: cohortShortName,
+                startDate: startDate,
+                startTime: startTime,
+                frequency: frequency,
+                location: location,
+            },
+        });
+    }
+
+    async sendCohortGdSessionReminderEmail(
+        userEmail: string,
+        userName: string,
+        cohortName: string,
+        season: string,
+        sessionDay: string,
+        sessionDate: string,
+        sessionTime: string,
+        channelName: string,
+    ): Promise<void> {
+        const subject = `${cohortName} ${season} — Session on ${sessionDay}, ${sessionDate}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject: subject,
+            template: MailTemplate.CohortGdSessionReminder,
+            context: {
+                userName: userName,
+                cohortName: cohortName,
+                season: season,
+                sessionDay: sessionDay,
+                sessionDate: sessionDate,
+                sessionTime: sessionTime,
+                channelName: channelName,
             },
         });
     }

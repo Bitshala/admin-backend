@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%~ it.cohortName %> Orientation Reminder</title>
+</head>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+  <!-- Full-width background -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111111; padding:24px 0;">
+    <tr>
+      <td align="center">
+
+        <!-- Main card -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
+          <!-- Header strip -->
+          <tr>
+            <td align="center" style="background-color:#000000; padding:24px 24px 20px 24px;">
+              <h1 style="margin:0; font-size:22px; color:#ffffff; font-weight:700;">
+                <%~ it.cohortName %> Orientation
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                Your cohort is about to begin
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body copy -->
+          <tr>
+            <td style="padding:24px 32px 16px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0 0 16px 0;">
+                Hi <strong style="color:#ffd580;"><%~ it.userName %></strong>,
+              </p>
+
+              <p style="margin:0 0 16px 0;">
+                This is a reminder that you've registered for the
+                <strong style="color:#f9b233;"><%~ it.cohortName %></strong> Cohort.
+              </p>
+
+              <!-- Program Structure block -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#262626; border-radius:12px; margin:0 0 20px 0;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <h3 style="margin:0 0 12px 0; font-size:16px; color:#ffd580;">Program Structure</h3>
+                    <table cellpadding="0" cellspacing="0" border="0" style="color:#eaeaea; font-size:14px; line-height:1.8;">
+                      <tr>
+                        <td style="padding-right:8px; vertical-align:top;">Begins:</td>
+                        <td style="font-weight:600;"><%~ it.startDate %>, <%~ it.startTime %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding-right:8px; vertical-align:top;">Repeats:</td>
+                        <td style="font-weight:600;"><%~ it.frequency %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding-right:8px; vertical-align:top;">Location:</td>
+                        <td style="font-weight:600;"><%~ it.location %></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 16px 0;">
+                We're kicking things off with an introductory call where you'll meet your fellow
+                participants and TAs. This session marks the official start of the
+                <strong><%~ it.cohortShortName %></strong> cohort.
+                <strong style="color:#ffd580;">Make sure to attend.</strong>
+              </p>
+
+              <p style="margin:0 0 16px 0;">
+                You should have access to <strong><%~ it.cohortShortName %></strong> cohort channels.
+                If you do not, please post a message in the
+                <strong style="color:#ffd580;">cohort-registration</strong> channel and we'll resolve it.
+              </p>
+
+              <p style="margin:0 0 4px 0;">
+                We're excited to have you join us and look forward to seeing you there!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer / sign-off -->
+          <tr>
+            <td style="padding:0 32px 28px 32px; color:#b3b3b3; font-size:14px; line-height:1.6;">
+              <p style="margin:0;">
+                Thanks,<br />
+                <strong style="color:#eaeaea;">Bitshala Team</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Main card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
