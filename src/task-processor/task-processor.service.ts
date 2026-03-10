@@ -7,6 +7,7 @@ import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { ApiError, ServiceError } from '@/common/errors';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { GitHubClassroomService } from '@/github-classroom/github-classroom.service';
+import { CohortReminderService } from '@/cohorts/cohort-reminder.service';
 
 @Injectable()
 export class APITaskProcessorService {
@@ -17,6 +18,7 @@ export class APITaskProcessorService {
         private readonly dbTransactionService: DbTransactionService,
         private readonly cohortsService: CohortsService,
         private readonly gitHubClassroomService: GitHubClassroomService,
+        private readonly cohortReminderService: CohortReminderService,
     ) {}
 
     private async fetchUnprocessedTasks(): Promise<APITask<any>[]> {
@@ -72,6 +74,11 @@ export class APITaskProcessorService {
                     break;
                 case TaskType.SYNC_CLASSROOM_SCORES:
                     await this.gitHubClassroomService.handleSyncClassroomTask(
+                        task,
+                    );
+                    break;
+                case TaskType.SEND_COHORT_REMINDER_EMAILS:
+                    await this.cohortReminderService.handleSendCohortReminderEmails(
                         task,
                     );
                     break;

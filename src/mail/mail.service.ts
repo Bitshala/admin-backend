@@ -72,7 +72,7 @@ export class MailService implements OnModuleInit {
         return this.getCohortShortName(cohortType) + ' Cohort';
     }
 
-    private getCohortShortName(cohortType: CohortType): string {
+    getCohortShortName(cohortType: CohortType): string {
         switch (cohortType) {
             case CohortType.MASTERING_BITCOIN:
                 return 'MB';

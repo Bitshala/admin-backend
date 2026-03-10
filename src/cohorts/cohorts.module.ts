@@ -5,6 +5,7 @@ import { CohortWeek } from '@/entities/cohort-week.entity';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { CohortsController } from '@/cohorts/cohorts.controller';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
+import { CohortReminderService } from '@/cohorts/cohort-reminder.service';
 import { DbTransactionModule } from '@/db-transaction/db-transaction.module';
 import { DiscordClientModule } from '@/discord-client/discord.client.module';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
@@ -18,8 +19,8 @@ import { MailModule } from '@/mail/mail.module';
         DiscordClientModule,
         MailModule,
     ],
-    providers: [CohortsConfigService, CohortsService],
+    providers: [CohortsConfigService, CohortsService, CohortReminderService],
     controllers: [CohortsController],
-    exports: [CohortsService],
+    exports: [CohortsService, CohortReminderService],
 })
 export class CohortsModule {}
