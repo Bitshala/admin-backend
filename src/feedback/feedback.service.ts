@@ -95,7 +95,13 @@ export class FeedbackService {
 
         // Create feedback
         const feedback = this.feedbackRepository.create({
-            feedbackText: feedbackData.feedbackText,
+            componentRatings: feedbackData.componentRatings ?? null,
+            expectations: feedbackData.expectations ?? null,
+            improvements: feedbackData.improvements ?? null,
+            opportunityInterests: feedbackData.opportunityInterests ?? [],
+            fellowshipInterests: feedbackData.fellowshipInterests ?? [],
+            idealProject: feedbackData.idealProject ?? null,
+            testimonial: feedbackData.testimonial ?? null,
             user: { id: user.id },
             cohort: { id: cohortId },
         });
@@ -124,16 +130,7 @@ export class FeedbackService {
             );
         }
 
-        return new GetFeedbackResponseDto({
-            id: feedback.id,
-            userName: feedback.user.name,
-            userEmail: feedback.user.email,
-            feedbackText: feedback.feedbackText,
-            cohortId: feedback.cohort.id,
-            userId: feedback.user.id,
-            createdAt: feedback.createdAt,
-            updatedAt: feedback.updatedAt,
-        });
+        return GetFeedbackResponseDto.fromEntity(feedback);
     }
 
     async listFeedback(
@@ -148,18 +145,8 @@ export class FeedbackService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: feedbacks.map(
-                (feedback) =>
-                    new GetFeedbackResponseDto({
-                        id: feedback.id,
-                        userName: feedback.user.name,
-                        userEmail: feedback.user.email,
-                        feedbackText: feedback.feedbackText,
-                        cohortId: feedback.cohort.id,
-                        userId: feedback.user.id,
-                        createdAt: feedback.createdAt,
-                        updatedAt: feedback.updatedAt,
-                    }),
+            records: feedbacks.map((feedback) =>
+                GetFeedbackResponseDto.fromEntity(feedback),
             ),
         });
     }
@@ -189,18 +176,8 @@ export class FeedbackService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: feedbacks.map(
-                (feedback) =>
-                    new GetFeedbackResponseDto({
-                        id: feedback.id,
-                        userName: feedback.user.name,
-                        userEmail: feedback.user.email,
-                        feedbackText: feedback.feedbackText,
-                        cohortId: feedback.cohort.id,
-                        userId: feedback.user.id,
-                        createdAt: feedback.createdAt,
-                        updatedAt: feedback.updatedAt,
-                    }),
+            records: feedbacks.map((feedback) =>
+                GetFeedbackResponseDto.fromEntity(feedback),
             ),
         });
     }
@@ -219,18 +196,8 @@ export class FeedbackService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: feedbacks.map(
-                (feedback) =>
-                    new GetFeedbackResponseDto({
-                        id: feedback.id,
-                        userName: feedback.user.name,
-                        userEmail: feedback.user.email,
-                        feedbackText: feedback.feedbackText,
-                        cohortId: feedback.cohort.id,
-                        userId: feedback.user.id,
-                        createdAt: feedback.createdAt,
-                        updatedAt: feedback.updatedAt,
-                    }),
+            records: feedbacks.map((feedback) =>
+                GetFeedbackResponseDto.fromEntity(feedback),
             ),
         });
     }
@@ -260,22 +227,27 @@ export class FeedbackService {
         }
 
         // Update the feedback
-        feedback.feedbackText = updateData.feedbackText;
+        if (updateData.componentRatings !== undefined)
+            feedback.componentRatings = updateData.componentRatings ?? null;
+        if (updateData.expectations !== undefined)
+            feedback.expectations = updateData.expectations;
+        if (updateData.improvements !== undefined)
+            feedback.improvements = updateData.improvements;
+        if (updateData.opportunityInterests !== undefined)
+            feedback.opportunityInterests = updateData.opportunityInterests;
+        if (updateData.fellowshipInterests !== undefined)
+            feedback.fellowshipInterests = updateData.fellowshipInterests;
+        if (updateData.idealProject !== undefined)
+            feedback.idealProject = updateData.idealProject;
+        if (updateData.testimonial !== undefined)
+            feedback.testimonial = updateData.testimonial;
+
         const updatedFeedback = await this.feedbackRepository.save(feedback);
 
         this.logger.log(
             `User ${user.id} updated feedback ${feedbackId} for cohort ${feedback.cohort.id}`,
         );
 
-        return new GetFeedbackResponseDto({
-            id: updatedFeedback.id,
-            userName: updatedFeedback.user.name,
-            userEmail: updatedFeedback.user.email,
-            feedbackText: updatedFeedback.feedbackText,
-            cohortId: updatedFeedback.cohort.id,
-            userId: updatedFeedback.user.id,
-            createdAt: updatedFeedback.createdAt,
-            updatedAt: updatedFeedback.updatedAt,
-        });
+        return GetFeedbackResponseDto.fromEntity(updatedFeedback);
     }
 }
