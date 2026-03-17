@@ -5,6 +5,7 @@ import {
     OnApplicationShutdown,
 } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
+import { Attachment } from 'nodemailer/lib/mailer';
 import { ConfigService } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
 
@@ -83,6 +84,7 @@ export class MailCoreService
         html: string;
         text?: string;
         from?: string;
+        attachments?: Attachment[];
     }): Promise<void> {
         try {
             await this.transporter.sendMail({
@@ -91,6 +93,7 @@ export class MailCoreService
                 subject: options.subject,
                 html: options.html,
                 text: options.text,
+                attachments: options.attachments,
             });
         } catch (error) {
             this.logger.error(error.message, error.stack);

@@ -9,6 +9,7 @@ import { accessSync, constants } from 'fs';
 import { TemplateContextMap } from '@/mail/mail.interface';
 import { DISCORD_GENERAL_INVITE_URL } from '@/common/constants';
 import { ConfigService } from '@nestjs/config';
+import { Attachment } from 'nodemailer/lib/mailer';
 
 @Injectable()
 export class MailService implements OnModuleInit {
@@ -145,6 +146,7 @@ export class MailService implements OnModuleInit {
         subject: string;
         template: K;
         context: TemplateContextMap[K];
+        attachments?: Attachment[];
     }): Promise<void> {
         const templateConfig = this.fileNameToPaths(options.template);
 
@@ -157,6 +159,7 @@ export class MailService implements OnModuleInit {
             subject: options.subject,
             html: html,
             text: text,
+            attachments: options.attachments,
         });
     }
 
@@ -258,6 +261,61 @@ export class MailService implements OnModuleInit {
                 sessionTime: sessionTime,
                 channelName: channelName,
             },
+        });
+    }
+
+    async sendCohortGraduationReminderEmail(
+        userEmail: string,
+        userName: string,
+        cohortName: string,
+        season: string,
+        sessionDate: string,
+        sessionTime: string,
+        channelName: string,
+    ): Promise<void> {
+        const subject = `Bitshala ${cohortName} ${season} Graduation Call Today!`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject: subject,
+            template: MailTemplate.CohortGraduationReminder,
+            context: {
+                userName: userName,
+                cohortName: cohortName,
+                season: season,
+                sessionDate: sessionDate,
+                sessionTime: sessionTime,
+                channelName: channelName,
+            },
+        });
+    }
+
+    async sendCohortCertificateEmail(
+        userEmail: string,
+        userName: string,
+        cohortName: string,
+        season: string,
+        certificateFile: Buffer,
+        certificateFileName: string,
+    ): Promise<void> {
+        const subject = `Your Bitshala ${cohortName} ${season} Certificate 🎓`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject: subject,
+            template: MailTemplate.CohortCertificate,
+            context: {
+                userName: userName,
+                cohortName: cohortName,
+                season: season,
+            },
+            attachments: [
+                {
+                    filename: certificateFileName,
+                    content: certificateFile,
+                    contentType: 'application/pdf',
+                },
+            ],
         });
     }
 }

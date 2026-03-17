@@ -34,9 +34,26 @@ export interface CohortGdSessionReminderContext {
     channelName: string;
 }
 
+export interface CohortGraduationReminderContext {
+    userName: string;
+    cohortName: string;
+    season: string;
+    sessionDate: string;
+    sessionTime: string;
+    channelName: string;
+}
+
+export interface CohortCertificateContext {
+    userName: string;
+    cohortName: string;
+    season: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
     [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
     [MailTemplate.CohortOrientationReminder]: CohortOrientationReminderContext;
     [MailTemplate.CohortGdSessionReminder]: CohortGdSessionReminderContext;
+    [MailTemplate.CohortGraduationReminder]: CohortGraduationReminderContext;
+    [MailTemplate.CohortCertificate]: CohortCertificateContext;
 }
