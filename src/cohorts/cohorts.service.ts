@@ -298,27 +298,27 @@ export class CohortsService {
 
                 // Schedule reminder email tasks for each week (except graduation)
                 const reminderTasks: APITask<TaskType.SEND_COHORT_REMINDER_EMAILS>[] =
-                    [];
-                for (const week of cohort.weeks) {
-                    if (week.type === CohortWeekType.GRADUATION) continue;
+                    cohort.weeks.map((week) => {
+                        const executeOnTime = new Date(startDate);
+                        executeOnTime.setUTCDate(
+                            executeOnTime.getUTCDate() + week.week * 7,
+                        );
+                        // 12:00 PM IST = 06:30 UTC
+                        executeOnTime.setUTCHours(6, 30, 0, 0);
 
-                    const executeOnTime = new Date(startDate);
-                    executeOnTime.setUTCDate(
-                        executeOnTime.getUTCDate() + week.week * 7,
-                    );
-                    // 12:00 PM IST = 06:30 UTC
-                    executeOnTime.setUTCHours(6, 30, 0, 0);
+                        const reminderTask =
+                            new APITask<TaskType.SEND_COHORT_REMINDER_EMAILS>();
+                        reminderTask.type =
+                            TaskType.SEND_COHORT_REMINDER_EMAILS;
+                        reminderTask.data = {
+                            cohortId: cohort.id,
+                            cohortWeekId: week.id,
+                        };
+                        reminderTask.executeOnTime = executeOnTime;
 
-                    const reminderTask =
-                        new APITask<TaskType.SEND_COHORT_REMINDER_EMAILS>();
-                    reminderTask.type = TaskType.SEND_COHORT_REMINDER_EMAILS;
-                    reminderTask.data = {
-                        cohortId: cohort.id,
-                        cohortWeekId: week.id,
-                    };
-                    reminderTask.executeOnTime = executeOnTime;
-                    reminderTasks.push(reminderTask);
-                }
+                        return reminderTask;
+                    });
+
                 await manager.save(reminderTasks);
             },
         );

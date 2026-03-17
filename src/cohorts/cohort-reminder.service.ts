@@ -48,13 +48,6 @@ export class CohortReminderService {
             );
         }
 
-        if (cohortWeek.type === CohortWeekType.GRADUATION) {
-            this.logger.warn(
-                `Skipping reminder for graduation week ${cohortWeekId}`,
-            );
-            return;
-        }
-
         const sessionDate = new Date(cohort.startDate);
         sessionDate.setUTCDate(sessionDate.getUTCDate() + cohortWeek.week * 7);
 
@@ -76,6 +69,12 @@ export class CohortReminderService {
                     cohortWeek.type === CohortWeekType.GROUP_DISCUSSION
                 ) {
                     await this.sendGdSessionReminder(user, cohort, sessionDate);
+                } else if (cohortWeek.type === CohortWeekType.GRADUATION) {
+                    await this.sendGraduationReminder(
+                        user,
+                        cohort,
+                        sessionDate,
+                    );
                 }
             } catch (error) {
                 this.logger.error(
@@ -134,6 +133,35 @@ export class CohortReminderService {
             this.mailService.getCohortShortName(cohort.type),
             season,
             this.formatDayOfWeek(sessionDate),
+            this.formatDate(sessionDate),
+            '8:00 PM IST',
+            `${this.mailService.getCohortShortName(
+                cohort.type,
+            )} channel on the Bitshala Discord server`,
+        );
+    }
+
+    private async sendGraduationReminder(
+        user: User,
+        cohort: Cohort,
+        sessionDate: Date,
+    ): Promise<void> {
+        const userName =
+            user.name || user.discordGlobalName || user.discordUserName;
+        const season = `Season ${cohort.season.toString().padStart(2, '0')}`;
+
+        if (!user.email) {
+            this.logger.warn(
+                `User ${user.id} does not have an email address, skipping graduation reminder`,
+            );
+            return;
+        }
+
+        await this.mailService.sendCohortGraduationReminderEmail(
+            user.email,
+            userName,
+            this.mailService.getCohortShortName(cohort.type),
+            season,
             this.formatDate(sessionDate),
             '8:00 PM IST',
             `${this.mailService.getCohortShortName(
