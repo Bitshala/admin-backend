@@ -8,6 +8,7 @@ import { ApiError, ServiceError } from '@/common/errors';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { GitHubClassroomService } from '@/github-classroom/github-classroom.service';
 import { CohortReminderService } from '@/cohorts/cohort-reminder.service';
+import { CertificatesService } from '@/certificates/certificates.service';
 
 @Injectable()
 export class APITaskProcessorService {
@@ -19,6 +20,7 @@ export class APITaskProcessorService {
         private readonly cohortsService: CohortsService,
         private readonly gitHubClassroomService: GitHubClassroomService,
         private readonly cohortReminderService: CohortReminderService,
+        private readonly certificatesService: CertificatesService,
     ) {}
 
     private async fetchUnprocessedTasks(): Promise<APITask<any>[]> {
@@ -79,6 +81,11 @@ export class APITaskProcessorService {
                     break;
                 case TaskType.SEND_COHORT_REMINDER_EMAILS:
                     await this.cohortReminderService.handleSendCohortReminderEmails(
+                        task,
+                    );
+                    break;
+                case TaskType.SEND_CERTIFICATE_EMAILS:
+                    await this.certificatesService.handleSendCertificateEmails(
                         task,
                     );
                     break;

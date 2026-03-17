@@ -15,10 +15,15 @@ export type SendCohortReminderEmailsTaskData = {
     cohortWeekId: string;
 };
 
+export type SendCertificateEmailsTaskData = {
+    cohortId: string;
+};
+
 export type TaskDataMap = {
     [TaskType.ASSIGN_COHORT_ROLE]: AssignCohortRoleTaskData;
     [TaskType.SYNC_CLASSROOM_SCORES]: SyncClassroomScoresTaskData;
     [TaskType.SEND_COHORT_REMINDER_EMAILS]: SendCohortReminderEmailsTaskData;
+    [TaskType.SEND_CERTIFICATE_EMAILS]: SendCertificateEmailsTaskData;
 };
 
 export type TaskData<T extends TaskType> = TaskDataMap[T];

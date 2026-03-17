@@ -7,9 +7,16 @@ import { CertificatesController } from '@/certificates/certificates.controller';
 import { Certificate } from '@/entities/certificate.entity';
 import { CertificatesCacheService } from '@/certificates/certificates.cache.service';
 import { ScoresModule } from '@/scores/scores.module';
+import { MailModule } from '@/mail/mail.module';
+import { DbTransactionModule } from '@/db-transaction/db-transaction.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Certificate, Cohort]), ScoresModule],
+    imports: [
+        TypeOrmModule.forFeature([Certificate, Cohort]),
+        ScoresModule,
+        MailModule,
+        DbTransactionModule,
+    ],
     providers: [
         CertificatesCacheService,
         CertificatesGenerationService,

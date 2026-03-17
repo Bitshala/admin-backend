@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cohort } from '@/entities/cohort.entity';
+import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { ServiceError } from '@/common/errors';
 import { CertificatesGenerationService } from '@/certificates/certificates-generation.service';
 import { CertificateType } from '@/common/enum';
@@ -19,6 +20,9 @@ import { Certificate } from '@/entities/certificate.entity';
 import { User } from '@/entities/user.entity';
 import { GetCertificateResponseDto } from '@/certificates/certificates.response.dto';
 import { generateCertificateFileName } from '@/certificates/certificates.utils';
+import { APITask } from '@/entities/api-task.entity';
+import { TaskType } from '@/task-processor/task.enums';
+import { MailService } from '@/mail/mail.service';
 
 @Injectable()
 export class CertificatesService {
@@ -31,6 +35,8 @@ export class CertificatesService {
         private readonly cohortRepository: Repository<Cohort>,
         private readonly scoresService: ScoresService,
         private readonly certificatesGenerationService: CertificatesGenerationService,
+        private readonly mailService: MailService,
+        private readonly dbTransactionService: DbTransactionService,
     ) {}
 
     async generateCertificatesForCohort(cohortId: string): Promise<void> {
@@ -92,11 +98,22 @@ export class CertificatesService {
 
         // We first delete existing certificates for the cohort to avoid duplicates
         // This is to ensure that if the generation process is re-run, we don't end up with multiple
-        await this.certificateRepository.delete({ cohort: { id: cohortId } });
-        await this.certificateRepository.save(certificateEntities);
-        this.logger.log(
-            `Saved ${certificateEntities.length} certificate records for cohort ${cohortId}`,
-        );
+        await this.dbTransactionService.execute(async (manager) => {
+            await manager.delete(Certificate, { cohort: { id: cohortId } });
+            await manager.save(Certificate, certificateEntities);
+            this.logger.log(
+                `Saved ${certificateEntities.length} certificate records for cohort ${cohortId}`,
+            );
+
+            const emailTask = new APITask<TaskType.SEND_CERTIFICATE_EMAILS>();
+            emailTask.type = TaskType.SEND_CERTIFICATE_EMAILS;
+            emailTask.data = { cohortId };
+            emailTask.executeOnTime = new Date();
+            await manager.save(emailTask);
+            this.logger.log(
+                `Created SEND_CERTIFICATE_EMAILS task for cohort ${cohortId}`,
+            );
+        });
     }
 
     async getUserCertificateForCohort(
@@ -153,6 +170,73 @@ export class CertificatesService {
         });
 
         return GetCertificateResponseDto.fromEntities(certificates);
+    }
+
+    async handleSendCertificateEmails(
+        task: APITask<TaskType.SEND_CERTIFICATE_EMAILS>,
+    ): Promise<void> {
+        const { cohortId } = task.data;
+
+        const certificates = await this.certificateRepository.find({
+            where: { cohort: { id: cohortId } },
+            relations: { cohort: true, user: true },
+        });
+
+        if (certificates.length === 0) {
+            this.logger.warn(
+                `No certificates found for cohort ${cohortId}, skipping email send`,
+            );
+            return;
+        }
+
+        const cohort = certificates[0].cohort;
+        const cohortShortName = this.mailService.getCohortShortName(
+            cohort.type,
+        );
+        const season = `Season ${cohort.season.toString().padStart(2, '0')}`;
+
+        this.logger.log(
+            `Sending certificate emails to ${certificates.length} users for cohort ${cohortId}`,
+        );
+
+        for (const certificate of certificates) {
+            const user = certificate.user;
+
+            if (!user.email) {
+                this.logger.warn(
+                    `User ${user.id} does not have an email address, skipping certificate email`,
+                );
+                continue;
+            }
+
+            try {
+                const pdfBuffer =
+                    await this.certificatesGenerationService.generateCertificateFromEntity(
+                        certificate,
+                    );
+
+                const userName =
+                    user.name || user.discordGlobalName || user.discordUserName;
+                const fileName = generateCertificateFileName(
+                    user.id,
+                    cohort.type,
+                );
+
+                await this.mailService.sendCohortCertificateEmail(
+                    user.email,
+                    userName,
+                    cohortShortName,
+                    season,
+                    pdfBuffer,
+                    fileName,
+                );
+            } catch (error) {
+                this.logger.error(
+                    `Failed to send certificate email to ${user.email}: ${error?.message}`,
+                    error?.stack,
+                );
+            }
+        }
     }
 
     async downloadCertificate(id: string): Promise<{

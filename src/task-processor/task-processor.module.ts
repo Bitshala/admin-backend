@@ -5,6 +5,7 @@ import { APITaskProcessorService } from '@/task-processor/task-processor.service
 import { DbTransactionModule } from '@/db-transaction/db-transaction.module';
 import { CohortsModule } from '@/cohorts/cohorts.module';
 import { GitHubClassroomModule } from '@/github-classroom/github-classroom.module';
+import { CertificatesModule } from '@/certificates/certificates.module';
 
 @Module({
     imports: [
@@ -12,6 +13,7 @@ import { GitHubClassroomModule } from '@/github-classroom/github-classroom.modul
         DbTransactionModule,
         CohortsModule,
         GitHubClassroomModule,
+        CertificatesModule,
     ],
     providers: [APITaskProcessorService],
     exports: [TypeOrmModule, APITaskProcessorService],
