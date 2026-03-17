@@ -1,0 +1,12 @@
+Your Bitshala <%~ it.cohortName %> <%~ it.season %> Certificate 🎓
+
+Hello <%~ it.userName %>,
+
+Congratulations on successfully completing the <%~ it.cohortName %> <%~ it.season %> cohort! 🎉
+
+Your certificate of completion is attached to this email. Thank you for your participation and for being part of the Bitshala community.
+
+If you're open to it, feel free to share your certificate on Twitter or LinkedIn with a short review and tag Bitshala.
+
+Best regards,
+Team Bitshala

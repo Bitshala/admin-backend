@@ -1,0 +1,25 @@
+Bitshala <%~ it.cohortName %> <%~ it.season %> Graduation Call Today!
+
+Hello <%~ it.userName %>,
+
+Congratulations on successfully completing the Bitshala <%~ it.cohortName %> <%~ it.season %> cohort! 🎉
+
+To celebrate, we invite you to the Graduation Call where we'll reflect on the journey, recognize participants, and discuss what's next in the Bitshala ecosystem.
+
+📅 Graduation Call
+  Date: <%~ it.sessionDate %>
+  Time: <%~ it.sessionTime %>
+  Location: <%~ it.channelName %>
+
+During the call we will:
+- Celebrate your achievements
+- Share your Proof of Work certificates
+- Discuss Bitshala Fellowships and opportunities to contribute to Bitcoin FOSS
+- Explore how to stay involved in the Bitshala community
+
+This cohort is just the beginning of your journey into the Bitcoin FOSS ecosystem. We're excited to see what you build next.
+
+Looking forward to celebrating with you!
+
+Best regards,
+Team Bitshala

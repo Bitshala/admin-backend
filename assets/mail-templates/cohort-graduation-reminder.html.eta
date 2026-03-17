@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%~ it.cohortName %> <%~ it.season %> Graduation Call</title>
+</head>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+  <!-- Full-width background -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111111; padding:24px 0;">
+    <tr>
+      <td align="center">
+
+        <!-- Main card -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
+          <!-- Header strip -->
+          <tr>
+            <td align="center" style="background-color:#000000; padding:24px 24px 20px 24px;">
+              <h1 style="margin:0; font-size:22px; color:#ffffff; font-weight:700;">
+                &#127891; Graduation Call Today!
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                <%~ it.cohortName %> <%~ it.season %>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body copy -->
+          <tr>
+            <td style="padding:24px 32px 16px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0 0 16px 0;">
+                Hello <strong style="color:#ffd580;"><%~ it.userName %></strong>,
+              </p>
+
+              <p style="margin:0 0 20px 0;">
+                Congratulations on successfully completing the Bitshala
+                <strong style="color:#f9b233;"><%~ it.cohortName %> <%~ it.season %></strong> cohort! &#127881;
+              </p>
+
+              <p style="margin:0 0 20px 0;">
+                To celebrate, we invite you to the Graduation Call where we'll reflect on the journey,
+                recognize participants, and discuss what's next in the Bitshala ecosystem.
+              </p>
+
+              <!-- Session details block -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#262626; border-radius:12px; margin:0 0 20px 0;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <h3 style="margin:0 0 12px 0; font-size:16px; color:#ffd580;">
+                      &#128197; Graduation Call
+                    </h3>
+                    <table cellpadding="0" cellspacing="0" border="0" style="color:#eaeaea; font-size:14px; line-height:2;">
+                      <tr>
+                        <td style="padding-right:10px;">&#128197;</td>
+                        <td style="font-weight:600;"><%~ it.sessionDate %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding-right:10px;">&#9200;</td>
+                        <td style="font-weight:600;"><%~ it.sessionTime %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding-right:10px;">&#128205;</td>
+                        <td style="font-weight:600;"><%~ it.channelName %></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 12px 0; font-weight:600; color:#ffd580;">
+                During the call we will:
+              </p>
+
+              <!-- Agenda list -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#262626; border-radius:12px; margin:0 0 20px 0;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <ul style="padding-left:18px; margin:0; color:#eaeaea; font-size:13px; line-height:1.9;">
+                      <li>&#127942; Celebrate your achievements</li>
+                      <li>&#128220; Share your Proof of Work certificates</li>
+                      <li>&#128640; Discuss Bitshala Fellowships and opportunities to contribute to Bitcoin FOSS</li>
+                      <li>&#129309; Explore how to stay involved in the Bitshala community</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 16px 0;">
+                This cohort is just the beginning of your journey into the Bitcoin FOSS ecosystem.
+                We're excited to see what you build next.
+              </p>
+
+              <p style="margin:0 0 4px 0; font-weight:500;">
+                Looking forward to celebrating with you!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer / sign-off -->
+          <tr>
+            <td style="padding:0 32px 28px 32px; color:#b3b3b3; font-size:14px; line-height:1.6;">
+              <p style="margin:0;">
+                Best regards,<br />
+                <strong style="color:#eaeaea;">Team Bitshala</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Main card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
