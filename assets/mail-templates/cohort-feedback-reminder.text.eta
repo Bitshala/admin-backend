@@ -1,0 +1,17 @@
+Bitshala <%~ it.cohortName %> <%~ it.season %> Feedback Survey!
+
+Hello <%~ it.userName %>,
+
+Thank you for being part of the Bitshala <%~ it.cohortName %> <%~ it.season %> cohort! We hope you had a great learning experience.
+
+We'd love to hear your thoughts! Your feedback helps us improve the cohort experience for future participants.
+
+Please take a few minutes to fill out the feedback survey:
+  https://app.bitshala.org/
+
+Your honest input — what worked, what didn't, and what we can do better — is incredibly valuable to us.
+
+Thank you for helping us make Bitshala better!
+
+Best regards,
+Team Bitshala

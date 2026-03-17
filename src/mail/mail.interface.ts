@@ -49,6 +49,12 @@ export interface CohortCertificateContext {
     season: string;
 }
 
+export interface CohortFeedbackReminderContext {
+    userName: string;
+    cohortName: string;
+    season: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
     [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
@@ -56,4 +62,5 @@ export interface TemplateContextMap {
     [MailTemplate.CohortGdSessionReminder]: CohortGdSessionReminderContext;
     [MailTemplate.CohortGraduationReminder]: CohortGraduationReminderContext;
     [MailTemplate.CohortCertificate]: CohortCertificateContext;
+    [MailTemplate.CohortFeedbackReminder]: CohortFeedbackReminderContext;
 }

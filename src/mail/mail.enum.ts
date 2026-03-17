@@ -5,4 +5,5 @@ export enum MailTemplate {
     CohortGdSessionReminder = 'cohort-gd-session-reminder',
     CohortGraduationReminder = 'cohort-graduation-reminder',
     CohortCertificate = 'cohort-certificate',
+    CohortFeedbackReminder = 'cohort-feedback-reminder',
 }

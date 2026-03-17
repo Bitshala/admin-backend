@@ -290,6 +290,26 @@ export class MailService implements OnModuleInit {
         });
     }
 
+    async sendCohortFeedbackReminderEmail(
+        userEmail: string,
+        userName: string,
+        cohortName: string,
+        season: string,
+    ): Promise<void> {
+        const subject = `Bitshala ${cohortName} ${season} Feedback Survey!`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject: subject,
+            template: MailTemplate.CohortFeedbackReminder,
+            context: {
+                userName: userName,
+                cohortName: cohortName,
+                season: season,
+            },
+        });
+    }
+
     async sendCohortCertificateEmail(
         userEmail: string,
         userName: string,
