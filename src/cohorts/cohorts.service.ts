@@ -320,6 +320,22 @@ export class CohortsService {
                     });
 
                 await manager.save(reminderTasks);
+
+                // Schedule feedback reminder emails (day after 4th GD session)
+                const feedbackReminderTime = new Date(startDate);
+                feedbackReminderTime.setUTCDate(
+                    feedbackReminderTime.getUTCDate() + 4 * 7 + 1,
+                );
+                // 12:00 PM IST = 06:30 UTC
+                feedbackReminderTime.setUTCHours(6, 30, 0, 0);
+
+                const feedbackTask =
+                    new APITask<TaskType.SEND_FEEDBACK_REMINDER_EMAILS>();
+                feedbackTask.type = TaskType.SEND_FEEDBACK_REMINDER_EMAILS;
+                feedbackTask.data = { cohortId: cohort.id };
+                feedbackTask.executeOnTime = feedbackReminderTime;
+
+                await manager.save(feedbackTask);
             },
         );
     }

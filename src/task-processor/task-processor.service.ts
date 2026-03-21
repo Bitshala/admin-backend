@@ -89,6 +89,11 @@ export class APITaskProcessorService {
                         task,
                     );
                     break;
+                case TaskType.SEND_FEEDBACK_REMINDER_EMAILS:
+                    await this.cohortReminderService.handleSendFeedbackReminderEmails(
+                        task,
+                    );
+                    break;
                 default:
                     throw new ApiError(
                         `Unknown task type ${task.type} for task ${task.id}`,

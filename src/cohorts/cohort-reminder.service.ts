@@ -4,7 +4,10 @@ import { Repository } from 'typeorm';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { APITask } from '@/entities/api-task.entity';
+import { Attendance } from '@/entities/attendance.entity';
+import { Feedback } from '@/entities/feedback.entity';
 import { TaskType } from '@/task-processor/task.enums';
+import { isLastRetry } from '@/task-processor/task-processor.utils';
 import { CohortWeekType } from '@/common/enum';
 import { MailService } from '@/mail/mail.service';
 import { User } from '@/entities/user.entity';
@@ -19,6 +22,12 @@ export class CohortReminderService {
         private readonly cohortRepository: Repository<Cohort>,
         @InjectRepository(CohortWeek)
         private readonly cohortWeekRepository: Repository<CohortWeek>,
+        @InjectRepository(Attendance)
+        private readonly attendanceRepository: Repository<Attendance>,
+        @InjectRepository(Feedback)
+        private readonly feedbackRepository: Repository<Feedback>,
+        @InjectRepository(APITask)
+        private readonly apiTaskRepository: Repository<APITask<any>>,
         private readonly mailService: MailService,
     ) {}
 
@@ -168,6 +177,117 @@ export class CohortReminderService {
                 cohort.type,
             )} channel on the Bitshala Discord server`,
         );
+    }
+
+    async handleSendFeedbackReminderEmails(
+        task: APITask<TaskType.SEND_FEEDBACK_REMINDER_EMAILS>,
+    ): Promise<void> {
+        const { cohortId } = task.data;
+
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
+            relations: { users: true },
+        });
+
+        if (!cohort) {
+            throw new ServiceError(
+                `Cohort ${cohortId} not found for feedback reminder task`,
+            );
+        }
+
+        try {
+            const season = `Season ${cohort.season
+                .toString()
+                .padStart(2, '0')}`;
+            const cohortName = this.mailService.getCohortShortName(cohort.type);
+
+            const usersWithEmail = cohort.users.filter((u) => u.email);
+
+            this.logger.log(
+                `Sending feedback reminder emails for cohort ${cohortId} to ${usersWithEmail.length} eligible users`,
+            );
+
+            for (const user of usersWithEmail) {
+                try {
+                    const hasAttended = await this.attendanceRepository.exists({
+                        where: {
+                            user: { id: user.id },
+                            cohort: { id: cohortId },
+                            attended: true,
+                        },
+                    });
+
+                    if (!hasAttended) continue;
+
+                    const hasSubmittedFeedback =
+                        await this.feedbackRepository.exists({
+                            where: {
+                                user: { id: user.id },
+                                cohort: { id: cohortId },
+                            },
+                        });
+
+                    if (hasSubmittedFeedback) continue;
+
+                    const userName =
+                        user.name ||
+                        user.discordGlobalName ||
+                        user.discordUserName;
+
+                    await this.mailService.sendCohortFeedbackReminderEmail(
+                        user.email!,
+                        userName,
+                        cohortName,
+                        season,
+                    );
+                } catch (error) {
+                    this.logger.error(
+                        `Failed to send feedback reminder email to ${user.email}: ${error?.message}`,
+                        error?.stack,
+                    );
+                }
+            }
+
+            await this.scheduleNextFeedbackReminder(task, cohort);
+        } catch (error) {
+            this.logger.error(
+                `Failed to send feedback reminder emails for cohort ${cohortId}: ${error?.message}`,
+                error?.stack,
+            );
+
+            if (isLastRetry(task)) {
+                await this.scheduleNextFeedbackReminder(task, cohort);
+            }
+
+            throw error;
+        }
+    }
+
+    private async scheduleNextFeedbackReminder(
+        task: APITask<TaskType.SEND_FEEDBACK_REMINDER_EMAILS>,
+        cohort: Cohort,
+    ): Promise<void> {
+        const { cohortId } = task.data;
+
+        const nextExecuteOnTime = new Date(task.executeOnTime);
+        nextExecuteOnTime.setUTCDate(nextExecuteOnTime.getUTCDate() + 7);
+
+        const cutoffDate = new Date(cohort.endDate);
+        cutoffDate.setUTCDate(cutoffDate.getUTCDate() + 7);
+
+        if (nextExecuteOnTime <= cutoffDate) {
+            const nextTask =
+                new APITask<TaskType.SEND_FEEDBACK_REMINDER_EMAILS>();
+            nextTask.type = TaskType.SEND_FEEDBACK_REMINDER_EMAILS;
+            nextTask.data = { cohortId };
+            nextTask.executeOnTime = nextExecuteOnTime;
+
+            await this.apiTaskRepository.save(nextTask);
+
+            this.logger.log(
+                `Scheduled next feedback reminder for cohort ${cohortId} at ${nextExecuteOnTime.toISOString()}`,
+            );
+        }
     }
 
     private formatDate(date: Date): string {

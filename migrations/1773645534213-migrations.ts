@@ -55,9 +55,50 @@ export class Migrations1773645534213 implements MigrationInterface {
               ON cw."cohortId" = last_task."cohortId"
              AND cw."type" = 'GRADUATION'
         `);
+
+        // Backfill one SEND_FEEDBACK_REMINDER_EMAILS task per active cohort.
+        // First reminder is day after 4th GD session (startDate + 29 days), then weekly.
+        // Finds the earliest applicable day that's still in the future.
+        // The handler will self-chain weekly from there.
+        await queryRunner.query(`
+            INSERT INTO api_task ("id", "type", "status", "data", "executeOnTime", "retryCount", "retryLimit", "createdAt", "updatedAt")
+            SELECT
+                uuid_generate_v4(),
+                'SEND_FEEDBACK_REMINDER_EMAILS',
+                'UNPROCESSED',
+                jsonb_build_object('cohortId', c."id"),
+                next_day.execute_time,
+                0,
+                3,
+                NOW(),
+                NOW()
+            FROM cohort c
+            CROSS JOIN LATERAL (
+                SELECT MIN(candidate) AS execute_time
+                FROM generate_series(
+                    (c."startDate" + INTERVAL '29 days')::date + TIME '06:30:00',
+                    (c."endDate" + INTERVAL '7 days')::date + TIME '06:30:00',
+                    INTERVAL '7 days'
+                ) AS candidate
+                WHERE candidate > NOW()
+            ) next_day
+            WHERE c."endDate" + INTERVAL '7 days' > NOW()
+              AND next_day.execute_time IS NOT NULL
+              AND (
+                  SELECT COUNT(*)
+                  FROM cohort_week cw
+                  WHERE cw."cohortId" = c."id"
+                    AND cw."type" = 'GROUP_DISCUSSION'
+              ) >= 4
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
+            DELETE FROM api_task
+            WHERE "type" = 'SEND_FEEDBACK_REMINDER_EMAILS'
+        `);
+
         await queryRunner.query(`
             DELETE FROM api_task
             WHERE "type" = 'SEND_COHORT_REMINDER_EMAILS'
