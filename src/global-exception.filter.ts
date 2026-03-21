@@ -6,14 +6,22 @@ import {
     Injectable,
     Logger,
 } from '@nestjs/common';
-import { BaseExceptionFilter } from '@nestjs/core';
+import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core';
 import { QueryFailedError } from 'typeorm';
 import { ApiError, ServiceError } from '@/common/errors';
+import { DiscordAlertService } from '@/common/discord-alert.service';
 
 @Injectable()
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
     private logger = new Logger('Exceptions');
+
+    constructor(
+        httpAdapterHost: HttpAdapterHost,
+        private readonly discordAlert: DiscordAlertService,
+    ) {
+        super(httpAdapterHost.httpAdapter);
+    }
 
     catch(exception: Error, host: ArgumentsHost): void {
         if (exception instanceof BadRequestException) {
@@ -56,6 +64,18 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         }
 
         wrappedException.logError(this.logger);
+
+        const ctx = host.switchToHttp();
+        const request = ctx.getRequest();
+        const status = httpException.getStatus();
+
+        if (status >= 500) {
+            void this.discordAlert.sendErrorAlert(wrappedException, {
+                method: request?.method,
+                url: request?.url,
+            });
+        }
+
         super.catch(httpException, host);
     }
 }

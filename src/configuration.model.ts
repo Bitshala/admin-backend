@@ -270,6 +270,12 @@ class MailConfig {
     from: MailFromIdentity;
 }
 
+class MonitoringConfig {
+    @IsString()
+    @IsNotEmpty()
+    discordErrorWebhookUrl: string;
+}
+
 export class Config {
     @IsDefined()
     @ValidateNested()
@@ -300,4 +306,8 @@ export class Config {
     @ValidateNested()
     @Type(() => GitHubConfig)
     github: GitHubConfig;
+
+    @ValidateNested()
+    @Type(() => MonitoringConfig)
+    monitoring: MonitoringConfig;
 }
