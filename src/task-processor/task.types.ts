@@ -23,12 +23,17 @@ export type SendFeedbackReminderEmailsTaskData = {
     cohortId: string;
 };
 
+export type SendCalendarUpdateEmailsTaskData = {
+    cohortId: string;
+};
+
 export type TaskDataMap = {
     [TaskType.ASSIGN_COHORT_ROLE]: AssignCohortRoleTaskData;
     [TaskType.SYNC_CLASSROOM_SCORES]: SyncClassroomScoresTaskData;
     [TaskType.SEND_COHORT_REMINDER_EMAILS]: SendCohortReminderEmailsTaskData;
     [TaskType.SEND_CERTIFICATE_EMAILS]: SendCertificateEmailsTaskData;
     [TaskType.SEND_FEEDBACK_REMINDER_EMAILS]: SendFeedbackReminderEmailsTaskData;
+    [TaskType.SEND_CALENDAR_UPDATE_EMAILS]: SendCalendarUpdateEmailsTaskData;
 };
 
 export type TaskData<T extends TaskType> = TaskDataMap[T];
