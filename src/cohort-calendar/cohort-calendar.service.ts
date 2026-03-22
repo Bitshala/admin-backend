@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import ical, { ICalAlarmType, ICalCalendarMethod } from 'ical-generator';
 import { Cohort } from '@/entities/cohort.entity';
-import { CohortType, CohortWeekType } from '@/common/enum';
+import { CohortWeekType } from '@/common/enum';
 import { DISCORD_GENERAL_INVITE_URL } from '@/common/constants';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
@@ -50,7 +50,7 @@ export class CohortCalendarService {
             cohort,
             ICalCalendarMethod.REQUEST,
         );
-        const cohortName = this.getCohortShortName(cohort.type);
+        const cohortName = this.mailService.getCohortShortName(cohort.type);
         const season = `Season ${cohort.season.toString().padStart(2, '0')}`;
 
         this.logger.log(
@@ -99,7 +99,7 @@ export class CohortCalendarService {
     }
 
     private buildCalendar(cohort: Cohort, method: ICalCalendarMethod): string {
-        const shortName = this.getCohortShortName(cohort.type);
+        const shortName = this.mailService.getCohortShortName(cohort.type);
         const season = cohort.season.toString().padStart(2, '0');
         const calendarName = `${shortName} S${season}`;
 
@@ -182,21 +182,6 @@ export class CohortCalendarService {
                     description: `Graduation session for ${calendarName}. Join the ${shortName} channel on the Bitshala Discord server.`,
                     location: `${shortName} channel - Bitshala Discord`,
                 };
-        }
-    }
-
-    private getCohortShortName(cohortType: CohortType): string {
-        switch (cohortType) {
-            case CohortType.MASTERING_BITCOIN:
-                return 'MB';
-            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
-                return 'LBTCL';
-            case CohortType.PROGRAMMING_BITCOIN:
-                return 'PB';
-            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
-                return 'BPD';
-            case CohortType.MASTERING_LIGHTNING_NETWORK:
-                return 'LN';
         }
     }
 }
