@@ -85,6 +85,7 @@ export class MailCoreService
         text?: string;
         from?: string;
         attachments?: Attachment[];
+        icalEvent?: { method: string; content: string };
     }): Promise<void> {
         try {
             await this.transporter.sendMail({
@@ -94,6 +95,7 @@ export class MailCoreService
                 html: options.html,
                 text: options.text,
                 attachments: options.attachments,
+                icalEvent: options.icalEvent,
             });
         } catch (error) {
             this.logger.error(error.message, error.stack);

@@ -6,4 +6,5 @@ export enum MailTemplate {
     CohortGraduationReminder = 'cohort-graduation-reminder',
     CohortCertificate = 'cohort-certificate',
     CohortFeedbackReminder = 'cohort-feedback-reminder',
+    CohortCalendarUpdate = 'cohort-calendar-update',
 }

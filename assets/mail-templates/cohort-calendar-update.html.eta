@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Schedule Update — <%~ it.cohortName %> <%~ it.season %></title>
+</head>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+  <!-- Full-width background -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111111; padding:24px 0;">
+    <tr>
+      <td align="center">
+
+        <!-- Main card -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
+          <!-- Header strip -->
+          <tr>
+            <td align="center" style="background-color:#000000; padding:24px 24px 20px 24px;">
+              <h1 style="margin:0; font-size:22px; color:#ffffff; font-weight:700;">
+                Schedule Update
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                <%~ it.cohortName %> <%~ it.season %>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body copy -->
+          <tr>
+            <td style="padding:24px 32px 16px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0 0 16px 0;">
+                Hi <strong style="color:#ffd580;"><%~ it.userName %></strong>,
+              </p>
+
+              <p style="margin:0 0 20px 0;">
+                The session schedule for <strong style="color:#ffd580;"><%~ it.cohortName %> <%~ it.season %></strong> has been updated.
+              </p>
+
+              <p style="margin:0 0 20px 0;">
+                Your calendar should update automatically with the new session times. If not, please accept the updated calendar invite attached to this email.
+              </p>
+
+              <p style="margin:0 0 4px 0; font-weight:500;">
+                See you in the sessions!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer / sign-off -->
+          <tr>
+            <td style="padding:0 32px 28px 32px; color:#b3b3b3; font-size:14px; line-height:1.6;">
+              <p style="margin:0;">
+                <strong style="color:#eaeaea;"><%~ it.cohortName %> TAs</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Main card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

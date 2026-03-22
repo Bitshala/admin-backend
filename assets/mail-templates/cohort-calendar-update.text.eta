@@ -1,0 +1,11 @@
+Schedule Update — <%~ it.cohortName %> <%~ it.season %>
+
+Hi <%~ it.userName %>,
+
+The session schedule for <%~ it.cohortName %> <%~ it.season %> has been updated.
+
+Your calendar should update automatically with the new session times. If not, please accept the updated calendar invite attached to this email.
+
+See you in the sessions!
+
+<%~ it.cohortName %> TAs

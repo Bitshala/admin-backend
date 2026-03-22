@@ -30,6 +30,7 @@ import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
+import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
 
 @Injectable()
 export class CohortsService {
@@ -55,6 +56,7 @@ export class CohortsService {
         private readonly configService: ConfigService,
         private readonly mailService: MailService,
         private readonly cohortConfigService: CohortsConfigService,
+        private readonly cohortCalendarService: CohortCalendarService,
     ) {
         this.masteringBitcoinDiscordRoleId =
             this.configService.getOrThrow<string>(
@@ -354,6 +356,8 @@ export class CohortsService {
             );
         }
 
+        const originalStartDate = cohort.startDate;
+
         if (cohortData.startDate) {
             const startDate = new Date(cohortData.startDate);
             startDate.setUTCHours(0, 0, 0, 0);
@@ -373,7 +377,20 @@ export class CohortsService {
             cohort.registrationDeadline = registrationDeadline;
         }
 
-        await this.cohortRepository.save(cohort);
+        await this.dbTransactionService.execute(async (manager) => {
+            await manager.save(Cohort, cohort);
+
+            if (
+                cohortData.startDate &&
+                cohort.startDate.getTime() !== originalStartDate.getTime()
+            ) {
+                const apiTask =
+                    new APITask<TaskType.SEND_CALENDAR_UPDATE_EMAILS>();
+                apiTask.type = TaskType.SEND_CALENDAR_UPDATE_EMAILS;
+                apiTask.data = { cohortId };
+                await manager.save(APITask, apiTask);
+            }
+        });
     }
 
     async updateCohortWeek(
@@ -556,15 +573,20 @@ export class CohortsService {
             },
         );
 
-        // Send cohort joining confirmation email
+        // Send cohort joining confirmation email with calendar invite
         const userName =
             user.name || user.discordGlobalName || user.discordUserName;
 
         try {
+            const calendarInvite =
+                await this.cohortCalendarService.generateCalendarInvite(
+                    cohortId,
+                );
             await this.mailService.sendCohortJoiningConfirmationEmail(
                 user.email,
                 userName,
                 cohort.type,
+                calendarInvite,
             );
         } catch (error) {
             this.logger.error(

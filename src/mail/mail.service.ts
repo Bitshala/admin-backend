@@ -147,6 +147,7 @@ export class MailService implements OnModuleInit {
         template: K;
         context: TemplateContextMap[K];
         attachments?: Attachment[];
+        icalEvent?: { method: string; content: string };
     }): Promise<void> {
         const templateConfig = this.fileNameToPaths(options.template);
 
@@ -160,6 +161,7 @@ export class MailService implements OnModuleInit {
             html: html,
             text: text,
             attachments: options.attachments,
+            icalEvent: options.icalEvent,
         });
     }
 
@@ -187,6 +189,7 @@ export class MailService implements OnModuleInit {
         userEmail: string,
         userName: string,
         cohortType: CohortType,
+        calendarInvite?: string,
     ): Promise<void> {
         const cohortDisplayName = this.getCohortDisplayName(cohortType);
         const cohortCategory = this.getDiscordChannelCategoryName(cohortType);
@@ -204,6 +207,9 @@ export class MailService implements OnModuleInit {
                 discordSupportLink: discordInviteLink,
                 cohortCategory: cohortCategory,
             },
+            icalEvent: calendarInvite
+                ? { method: 'REQUEST', content: calendarInvite }
+                : undefined,
         });
     }
 
@@ -336,6 +342,28 @@ export class MailService implements OnModuleInit {
                     contentType: 'application/pdf',
                 },
             ],
+        });
+    }
+
+    async sendCalendarUpdateEmail(
+        userEmail: string,
+        userName: string,
+        cohortName: string,
+        season: string,
+        calendarInvite: string,
+    ): Promise<void> {
+        const subject = `Schedule Update: ${cohortName} ${season}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.CohortCalendarUpdate,
+            context: {
+                userName,
+                cohortName,
+                season,
+            },
+            icalEvent: { method: 'REQUEST', content: calendarInvite },
         });
     }
 }

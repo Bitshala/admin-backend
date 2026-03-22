@@ -14,6 +14,7 @@ import { Feedback } from '@/entities/feedback.entity';
 import { Attendance } from '@/entities/attendance.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { MailModule } from '@/mail/mail.module';
+import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
 
 @Module({
     imports: [
@@ -29,6 +30,7 @@ import { MailModule } from '@/mail/mail.module';
         DbTransactionModule,
         DiscordClientModule,
         MailModule,
+        CohortCalendarModule,
     ],
     providers: [CohortsConfigService, CohortsService, CohortReminderService],
     controllers: [CohortsController],
