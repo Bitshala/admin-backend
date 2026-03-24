@@ -63,14 +63,18 @@ export class CertificatesGenerationService {
         pdfDocument.registerFontkit(fontkit);
 
         // Embed the custom fonts
-        const nautigalFont = await pdfDocument.embedFont(
-            this.certificatesCacheService.getFontBytes(
-                CertificateFonts.NAUTIGAL,
+        const [nautigalFont, robotoFont] = await Promise.all([
+            pdfDocument.embedFont(
+                this.certificatesCacheService.getFontBytes(
+                    CertificateFonts.NAUTIGAL,
+                ),
             ),
-        );
-        const robotoFont = await pdfDocument.embedFont(
-            this.certificatesCacheService.getFontBytes(CertificateFonts.ROBOTO),
-        );
+            pdfDocument.embedFont(
+                this.certificatesCacheService.getFontBytes(
+                    CertificateFonts.ROBOTO,
+                ),
+            ),
+        ]);
 
         return { pdfDocument, nautigalFont, robotoFont };
     }
