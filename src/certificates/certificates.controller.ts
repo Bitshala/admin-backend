@@ -66,6 +66,27 @@ export class CertificatesController {
         return this.certificateService.getCohortCertificates(cohortId);
     }
 
+    @Get('cohort/:cohortId/download')
+    @ApiOperation({
+        summary: 'Bulk download all certificates for a cohort as a ZIP',
+    })
+    @Roles(UserRole.ADMIN, UserRole.TEACHING_ASSISTANT)
+    async bulkDownloadCohortCertificates(
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+        @Res({ passthrough: true }) res: Response,
+    ): Promise<StreamableFile> {
+        const { fileName, fileStream } =
+            await this.certificateService.bulkDownloadCohortCertificates(
+                cohortId,
+            );
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${fileName}"`,
+        );
+        return fileStream;
+    }
+
     @Get(':id/download')
     @ApiOperation({ summary: 'Download a certificate by ID' })
     async downloadCertificate(

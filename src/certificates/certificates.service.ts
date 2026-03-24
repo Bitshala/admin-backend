@@ -4,6 +4,7 @@ import {
     Logger,
     StreamableFile,
 } from '@nestjs/common';
+import * as archiver from 'archiver';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cohort } from '@/entities/cohort.entity';
@@ -270,6 +271,54 @@ export class CertificatesService {
                 certificate.cohort.type,
             ),
             fileBuffer: new StreamableFile(fileBuffer),
+        };
+    }
+
+    async bulkDownloadCohortCertificates(cohortId: string): Promise<{
+        fileName: string;
+        fileStream: StreamableFile;
+    }> {
+        const certificates = await this.certificateRepository.find({
+            where: { cohort: { id: cohortId } },
+            relations: { cohort: true, user: true },
+        });
+
+        if (certificates.length === 0) {
+            throw new BadRequestException(
+                `No certificates found for cohort ${cohortId}`,
+            );
+        }
+
+        const cohort = certificates[0].cohort;
+
+        const pdfResults = await Promise.all(
+            certificates.map(async (certificate) => ({
+                pdfBuffer:
+                    await this.certificatesGenerationService.generateCertificateFromEntity(
+                        certificate,
+                    ),
+                fileName: generateCertificateFileName(
+                    certificate.user.id,
+                    cohort.type,
+                ),
+            })),
+        );
+
+        const archive = archiver('zip', { zlib: { level: 5 } });
+
+        for (const { pdfBuffer, fileName } of pdfResults) {
+            archive.append(pdfBuffer, { name: fileName });
+        }
+
+        // Not awaited: finalize() signals no more entries, but awaiting it would deadlock
+        // since the stream has no consumer yet — NestJS drains it when piping the response.
+        archive.finalize();
+
+        return {
+            fileName: `certificates_${cohort.type.toLowerCase()}_s${
+                cohort.season
+            }.zip`,
+            fileStream: new StreamableFile(archive),
         };
     }
 }
