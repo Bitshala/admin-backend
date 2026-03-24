@@ -9,10 +9,11 @@ import { CertificatesCacheService } from '@/certificates/certificates.cache.serv
 import { ScoresModule } from '@/scores/scores.module';
 import { MailModule } from '@/mail/mail.module';
 import { DbTransactionModule } from '@/db-transaction/db-transaction.module';
+import { User } from '@/entities/user.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Certificate, Cohort]),
+        TypeOrmModule.forFeature([Certificate, Cohort, User]),
         ScoresModule,
         MailModule,
         DbTransactionModule,

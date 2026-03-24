@@ -1,4 +1,4 @@
-import { CohortType } from '@/common/enum';
+import { CohortType, CohortWeekType } from '@/common/enum';
 import { User } from '@/entities/user.entity';
 import { ServiceError } from '@/common/errors';
 import { Attendance as AttendanceEntity } from '@/entities/attendance.entity';
@@ -219,6 +219,8 @@ export class LeaderboardEntryDto {
     maxTotalScore!: number;
     totalAttendance!: number;
     maxAttendance!: number;
+    totalGroupDiscussionAttendance!: number;
+    maxGroupDiscussionAttendance!: number;
 
     constructor(partial: LeaderboardEntryDto) {
         Object.assign(this, partial);
@@ -260,6 +262,21 @@ export class LeaderboardEntryDto {
             0,
         );
         const maxAttendance = user.attendances.length;
+        const totalGroupDiscussionAttendance = user.attendances.reduce(
+            (acc, x) =>
+                acc +
+                (x.attended &&
+                x.cohortWeek.type === CohortWeekType.GROUP_DISCUSSION
+                    ? 1
+                    : 0),
+            0,
+        );
+        const maxGroupDiscussionAttendance = user.attendances.reduce(
+            (acc, x) =>
+                acc +
+                (x.cohortWeek.type === CohortWeekType.GROUP_DISCUSSION ? 1 : 0),
+            0,
+        );
 
         return new LeaderboardEntryDto({
             userId: user.id,
@@ -282,6 +299,8 @@ export class LeaderboardEntryDto {
                 exerciseMaxTotalScore,
             totalAttendance: totalAttendance,
             maxAttendance: maxAttendance,
+            totalGroupDiscussionAttendance: totalGroupDiscussionAttendance,
+            maxGroupDiscussionAttendance: maxGroupDiscussionAttendance,
         });
     }
 }

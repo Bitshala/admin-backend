@@ -29,6 +29,8 @@ export class CertificatesService {
     private readonly logger = new Logger(CertificatesService.name);
 
     constructor(
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
         @InjectRepository(Certificate)
         private readonly certificateRepository: Repository<Certificate>,
         @InjectRepository(Cohort)
@@ -63,8 +65,8 @@ export class CertificatesService {
         const certificateEntities = leaderboard
             .filter(
                 (entry) =>
-                    entry.totalAttendance >=
-                    entry.maxAttendance - absenceThresholdDays,
+                    entry.totalGroupDiscussionAttendance >=
+                    entry.maxGroupDiscussionAttendance - absenceThresholdDays,
             )
             .map((entry, index) => {
                 const certificateType: CertificateType =
