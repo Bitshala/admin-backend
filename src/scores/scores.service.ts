@@ -601,7 +601,9 @@ export class ScoresService {
                       },
                   },
                   relations: {
-                      attendances: true,
+                      attendances: {
+                          cohortWeek: true,
+                      },
                       groupDiscussionScores: true,
                   },
               });
