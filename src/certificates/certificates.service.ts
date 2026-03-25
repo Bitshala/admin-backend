@@ -291,7 +291,7 @@ export class CertificatesService {
 
         const cohort = certificates[0].cohort;
 
-        const pdfResults = await Promise.all(
+        const settledResults = await Promise.allSettled(
             certificates.map(async (certificate) => ({
                 pdfBuffer:
                     await this.certificatesGenerationService.generateCertificateFromEntity(
@@ -304,7 +304,28 @@ export class CertificatesService {
             })),
         );
 
+        const pdfResults = settledResults
+            .filter(
+                (
+                    r,
+                ): r is PromiseFulfilledResult<{
+                    pdfBuffer: Buffer;
+                    fileName: string;
+                }> => r.status === 'fulfilled',
+            )
+            .map((r) => r.value);
+
+        if (pdfResults.length === 0) {
+            throw new BadRequestException(
+                `Failed to generate any certificates for cohort ${cohortId}`,
+            );
+        }
+
         const archive = archiver('zip', { zlib: { level: 5 } });
+
+        archive.on('error', (err) => {
+            throw err;
+        });
 
         for (const { pdfBuffer, fileName } of pdfResults) {
             archive.append(pdfBuffer, { name: fileName });
