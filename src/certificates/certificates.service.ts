@@ -19,7 +19,10 @@ import {
 } from '@/certificates/certificates.constants';
 import { Certificate } from '@/entities/certificate.entity';
 import { User } from '@/entities/user.entity';
-import { GetCertificateResponseDto } from '@/certificates/certificates.response.dto';
+import {
+    CertificatePreviewResponseDto,
+    GetCertificateResponseDto,
+} from '@/certificates/certificates.response.dto';
 import { generateCertificateFileName } from '@/certificates/certificates.utils';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
@@ -42,7 +45,9 @@ export class CertificatesService {
         private readonly dbTransactionService: DbTransactionService,
     ) {}
 
-    async generateCertificatesForCohort(cohortId: string): Promise<void> {
+    private async buildCertificateEntities(
+        cohortId: string,
+    ): Promise<{ cohort: Cohort; certificateEntities: Certificate[] }> {
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
         });
@@ -99,6 +104,28 @@ export class CertificatesService {
                 return certificateEntity;
             });
 
+        return { cohort, certificateEntities };
+    }
+
+    async previewCertificatesForCohort(
+        cohortId: string,
+    ): Promise<CertificatePreviewResponseDto[]> {
+        const { certificateEntities } = await this.buildCertificateEntities(
+            cohortId,
+        );
+        return CertificatePreviewResponseDto.fromCertificateEntities(
+            certificateEntities,
+        );
+    }
+
+    async generateCertificatesForCohort(
+        cohortId: string,
+        sendEmail: boolean,
+    ): Promise<void> {
+        const { certificateEntities } = await this.buildCertificateEntities(
+            cohortId,
+        );
+
         // We first delete existing certificates for the cohort to avoid duplicates
         // This is to ensure that if the generation process is re-run, we don't end up with multiple
         await this.dbTransactionService.execute(async (manager) => {
@@ -108,14 +135,17 @@ export class CertificatesService {
                 `Saved ${certificateEntities.length} certificate records for cohort ${cohortId}`,
             );
 
-            const emailTask = new APITask<TaskType.SEND_CERTIFICATE_EMAILS>();
-            emailTask.type = TaskType.SEND_CERTIFICATE_EMAILS;
-            emailTask.data = { cohortId };
-            emailTask.executeOnTime = new Date();
-            await manager.save(emailTask);
-            this.logger.log(
-                `Created SEND_CERTIFICATE_EMAILS task for cohort ${cohortId}`,
-            );
+            if (sendEmail) {
+                const emailTask =
+                    new APITask<TaskType.SEND_CERTIFICATE_EMAILS>();
+                emailTask.type = TaskType.SEND_CERTIFICATE_EMAILS;
+                emailTask.data = { cohortId };
+                emailTask.executeOnTime = new Date();
+                await manager.save(emailTask);
+                this.logger.log(
+                    `Created SEND_CERTIFICATE_EMAILS task for cohort ${cohortId}`,
+                );
+            }
         });
     }
 

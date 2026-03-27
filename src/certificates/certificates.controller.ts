@@ -1,4 +1,5 @@
 import {
+    Body,
     Controller,
     Get,
     Param,
@@ -16,7 +17,11 @@ import { Roles } from '@/auth/roles.decorator';
 import { UserRole } from '@/common/enum';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
-import { GetCertificateResponseDto } from '@/certificates/certificates.response.dto';
+import {
+    CertificatePreviewResponseDto,
+    GetCertificateResponseDto,
+} from '@/certificates/certificates.response.dto';
+import { GenerateCertificatesRequestDto } from '@/certificates/certificates.request.dto';
 
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @ApiTags('Certificates')
@@ -25,16 +30,30 @@ import { GetCertificateResponseDto } from '@/certificates/certificates.response.
 export class CertificatesController {
     constructor(private readonly certificateService: CertificatesService) {}
 
+    @Get('cohort/:cohortId/preview')
+    @ApiOperation({
+        summary: 'Preview certificates that would be generated for a cohort',
+    })
+    @Roles(UserRole.ADMIN, UserRole.TEACHING_ASSISTANT)
+    async previewCertificatesForCohort(
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+    ): Promise<CertificatePreviewResponseDto[]> {
+        return this.certificateService.previewCertificatesForCohort(cohortId);
+    }
+
     @Post('cohort/:cohortId/generate')
     @ApiOperation({
-        summary:
-            'Generate certificates for top 10 performers in a cohort (Admin only)',
+        summary: 'Generate certificates for top performers in a cohort',
     })
     @Roles(UserRole.ADMIN, UserRole.TEACHING_ASSISTANT)
     async generateCertificatesForCohort(
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+        @Body() body: GenerateCertificatesRequestDto,
     ): Promise<void> {
-        await this.certificateService.generateCertificatesForCohort(cohortId);
+        await this.certificateService.generateCertificatesForCohort(
+            cohortId,
+            body.sendEmail,
+        );
     }
 
     @Get('cohort/:cohortId/me')

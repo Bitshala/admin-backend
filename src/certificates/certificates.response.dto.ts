@@ -1,24 +1,49 @@
 import { Certificate } from '@/entities/certificate.entity';
 import { CertificateType, TopPerformerRank } from '@/common/enum';
 
-export class GetCertificateResponseDto {
-    id!: string;
+export class CertificatePreviewResponseDto {
     userId!: string;
-    cohortId!: string;
     name!: string;
     certificateType!: CertificateType;
-    withExercises!: boolean;
     rank!: TopPerformerRank | null;
+    withExercises!: boolean;
+
+    constructor(obj: CertificatePreviewResponseDto) {
+        this.userId = obj.userId;
+        this.name = obj.name;
+        this.certificateType = obj.certificateType;
+        this.rank = obj.rank;
+        this.withExercises = obj.withExercises;
+    }
+
+    static fromCertificateEntity(
+        entity: Certificate,
+    ): CertificatePreviewResponseDto {
+        return new CertificatePreviewResponseDto({
+            userId: entity.user.id,
+            name: entity.name,
+            certificateType: entity.type,
+            rank: entity.rank,
+            withExercises: entity.withExercises,
+        });
+    }
+
+    static fromCertificateEntities(
+        entities: Certificate[],
+    ): CertificatePreviewResponseDto[] {
+        return entities.map((entity) => this.fromCertificateEntity(entity));
+    }
+}
+
+export class GetCertificateResponseDto extends CertificatePreviewResponseDto {
+    id!: string;
+    cohortId!: string;
     createdAt!: string;
 
     constructor(obj: GetCertificateResponseDto) {
+        super(obj);
         this.id = obj.id;
-        this.userId = obj.userId;
         this.cohortId = obj.cohortId;
-        this.name = obj.name;
-        this.certificateType = obj.certificateType;
-        this.withExercises = obj.withExercises;
-        this.rank = obj.rank;
         this.createdAt = obj.createdAt;
     }
 
