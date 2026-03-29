@@ -42,3 +42,6 @@ lerna-debug.log*
 #dev
 /config/dev.config.yaml
 /.claude/
+
+# DB snapshots
+/snapshots
