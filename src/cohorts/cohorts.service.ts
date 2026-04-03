@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    Logger,
+    NotFoundException,
+    StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cohort } from '@/entities/cohort.entity';
 import { Repository } from 'typeorm';
@@ -31,6 +37,10 @@ import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
+import { createReadStream, existsSync } from 'fs';
+import { join, basename } from 'path';
+import { lookup } from 'mime-types';
+import type { Response } from 'express';
 
 @Injectable()
 export class CohortsService {
@@ -93,6 +103,49 @@ export class CohortsService {
         }
 
         return GetCohortResponseDto.fromEntity(cohort);
+    }
+
+    async getAttachment(
+        cohortId: string,
+        filename: string,
+        res: Response,
+    ): Promise<StreamableFile> {
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
+            select: ['type'],
+        });
+
+        if (!cohort) {
+            throw new NotFoundException(
+                `Cohort with id ${cohortId} does not exist.`,
+            );
+        }
+
+        // Prevent path traversal
+        const sanitized = basename(filename);
+        if (sanitized !== filename || filename.includes('\0')) {
+            throw new BadRequestException('Invalid filename.');
+        }
+
+        const dir = cohort.type.toLowerCase().replace(/_/g, '-');
+        const filePath = join(
+            __dirname,
+            '..',
+            'assets',
+            'cohort-configs',
+            'attachments',
+            dir,
+            sanitized,
+        );
+
+        if (!existsSync(filePath)) {
+            throw new NotFoundException('Attachment not found.');
+        }
+
+        const contentType = lookup(filePath) || 'application/octet-stream';
+        res.set({ 'Content-Type': contentType });
+
+        return new StreamableFile(createReadStream(filePath));
     }
 
     private mapLatestCohortsToPublicCohortResponseDto(
@@ -284,8 +337,16 @@ export class CohortsService {
                         const weekConfig = config.weeks[weekNumber - 1];
                         week.type = CohortWeekType.GROUP_DISCUSSION;
                         week.hasExercise = weekConfig.hasExercise;
-                        week.questions = weekConfig.questions;
-                        week.bonusQuestion = weekConfig.bonusQuestions;
+                        week.questions = weekConfig.questions.map((q) => ({
+                            text: q.text,
+                            attachments: q.attachments ?? [],
+                        }));
+                        week.bonusQuestion = weekConfig.bonusQuestions.map(
+                            (q) => ({
+                                text: q.text,
+                                attachments: q.attachments ?? [],
+                            }),
+                        );
                     } else {
                         week.type = CohortWeekType.GRADUATION;
                         week.hasExercise = false;
@@ -428,10 +489,18 @@ export class CohortsService {
         }
 
         if (cohortWeekData.questions) {
-            cohortWeek.questions = cohortWeekData.questions;
+            cohortWeek.questions = cohortWeekData.questions.map((q) => ({
+                text: q.text,
+                attachments: q.attachments ?? [],
+            }));
         }
         if (cohortWeekData.bonusQuestion) {
-            cohortWeek.bonusQuestion = cohortWeekData.bonusQuestion;
+            cohortWeek.bonusQuestion = cohortWeekData.bonusQuestion.map(
+                (q) => ({
+                    text: q.text,
+                    attachments: q.attachments ?? [],
+                }),
+            );
         }
         if (cohortWeekData.classroomAssignmentId !== undefined) {
             cohortWeek.classroomAssignmentId =

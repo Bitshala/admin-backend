@@ -5,6 +5,7 @@ import {
     IsBoolean,
     IsInt,
     IsNumberString,
+    IsOptional,
     IsString,
     Max,
     Min,
@@ -13,17 +14,29 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+export class QuestionConfig {
+    @IsString()
+    text!: string;
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    attachments?: string[];
+}
+
 export class CohortWeekConfig {
     @IsBoolean()
     hasExercise!: boolean;
 
     @IsArray()
-    @IsString({ each: true })
-    questions!: string[];
+    @ValidateNested({ each: true })
+    @Type(() => QuestionConfig)
+    questions!: QuestionConfig[];
 
     @IsArray()
-    @IsString({ each: true })
-    bonusQuestions!: string[];
+    @ValidateNested({ each: true })
+    @Type(() => QuestionConfig)
+    bonusQuestions!: QuestionConfig[];
 }
 
 export class CohortConfig {

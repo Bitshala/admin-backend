@@ -1,10 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CohortType } from '@/common/enum';
 import { join } from 'path';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { validateSync } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { CohortConfig } from '@/cohorts/cohorts.config.model';
+import { CohortConfig, QuestionConfig } from '@/cohorts/cohorts.config.model';
+import { ServiceError } from '@/common/errors';
 
 @Injectable()
 export class CohortsConfigService implements OnModuleInit {
@@ -46,6 +47,27 @@ export class CohortsConfigService implements OnModuleInit {
                 );
             }
 
+            // Validate that all referenced attachment files exist
+            const attachDir = join(
+                configDir,
+                'attachments',
+                type.toLowerCase().replace(/_/g, '-'),
+            );
+            const allQuestions: QuestionConfig[] = config.weeks.flatMap((w) => [
+                ...w.questions,
+                ...w.bonusQuestions,
+            ]);
+            for (const question of allQuestions) {
+                for (const attachment of question.attachments ?? []) {
+                    const attachPath = join(attachDir, attachment);
+                    if (!existsSync(attachPath)) {
+                        throw new ServiceError(
+                            `Missing attachment file for ${type}: ${attachPath}`,
+                        );
+                    }
+                }
+            }
+
             this.configs.set(type, config);
             this.logger.log(`Loaded config for ${type} (${fileName})`);
         }
@@ -54,7 +76,7 @@ export class CohortsConfigService implements OnModuleInit {
     getConfig(type: CohortType): CohortConfig {
         const config = this.configs.get(type);
         if (!config) {
-            throw new Error(`No config found for cohort type: ${type}`);
+            throw new ServiceError(`No config found for cohort type: ${type}`);
         }
         return config;
     }

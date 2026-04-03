@@ -14,6 +14,11 @@ import { Attendance } from '@/entities/attendance.entity';
 import { BaseEntity } from '@/entities/base.entity';
 import { CohortWeekType } from '@/common/enum';
 
+export interface Question {
+    text: string;
+    attachments: string[];
+}
+
 @Entity()
 @Unique(['cohort', 'week'])
 @Check(`NOT "hasExercise" OR "type" = 'GROUP_DISCUSSION'`)
@@ -31,10 +36,10 @@ export class CohortWeek extends BaseEntity {
     hasExercise!: boolean;
 
     @Column('jsonb', { default: [] })
-    questions!: string[];
+    questions!: Question[];
 
     @Column('jsonb', { default: [] })
-    bonusQuestion!: string[];
+    bonusQuestion!: Question[];
 
     @Column('text', { nullable: true })
     classroomInviteLink!: string | null;

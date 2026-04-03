@@ -7,6 +7,8 @@ import {
     Patch,
     Post,
     Query,
+    Res,
+    StreamableFile,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -16,6 +18,7 @@ import {
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import {
     CreateCohortRequestDto,
     JoinWaitlistRequestDto,
@@ -92,6 +95,16 @@ export class CohortsController {
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         return this.cohortsService.listMyCohorts(user, query);
+    }
+
+    @Get('attachments/:id/:filename')
+    @ApiOperation({ summary: 'Stream a cohort question attachment' })
+    async getAttachment(
+        @Param('id', new ParseUUIDPipe()) id: string,
+        @Param('filename') filename: string,
+        @Res({ passthrough: true }) res: Response,
+    ): Promise<StreamableFile> {
+        return this.cohortsService.getAttachment(id, filename, res);
     }
 
     @Get(':id')

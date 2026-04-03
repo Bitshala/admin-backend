@@ -1,13 +1,14 @@
 import { CohortType, CohortWeekType } from '@/common/enum';
 import { Cohort } from '@/entities/cohort.entity';
+import { Question } from '@/entities/cohort-week.entity';
 
 export class GetCohortWeekResponseDto {
     id!: string;
     week!: number;
     type!: CohortWeekType;
     hasExercise!: boolean;
-    questions!: string[];
-    bonusQuestion!: string[];
+    questions!: Question[];
+    bonusQuestion!: Question[];
     classroomInviteLink!: string | null;
     classroomAssignmentUrl!: string | null;
     scheduledDate!: string;
