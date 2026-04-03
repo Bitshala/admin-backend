@@ -57,8 +57,7 @@ export class CohortReminderService {
             );
         }
 
-        const sessionDate = new Date(cohort.startDate);
-        sessionDate.setUTCDate(sessionDate.getUTCDate() + cohortWeek.week * 7);
+        const sessionDate = new Date(cohortWeek.scheduledDate);
 
         const usersWithEmail = cohort.users.filter((u) => u.email);
 

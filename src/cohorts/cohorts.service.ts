@@ -27,7 +27,7 @@ import { ConfigService } from '@nestjs/config';
 import { CohortType, CohortWeekType } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
-import { TaskType } from '@/task-processor/task.enums';
+import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
@@ -269,6 +269,12 @@ export class CohortsService {
                     week.week = weekNumber;
                     week.cohort = cohort;
 
+                    const scheduledDate = new Date(startDate);
+                    scheduledDate.setUTCDate(
+                        scheduledDate.getUTCDate() + weekNumber * 7,
+                    );
+                    week.scheduledDate = scheduledDate;
+
                     if (weekNumber === 0) {
                         week.type = CohortWeekType.ORIENTATION;
                         week.hasExercise = false;
@@ -298,29 +304,10 @@ export class CohortsService {
                 apiTask.data = { cohortId: cohort.id };
                 await manager.save(apiTask);
 
-                // Schedule reminder email tasks for each week (except graduation)
-                const reminderTasks: APITask<TaskType.SEND_COHORT_REMINDER_EMAILS>[] =
-                    cohort.weeks.map((week) => {
-                        const executeOnTime = new Date(startDate);
-                        executeOnTime.setUTCDate(
-                            executeOnTime.getUTCDate() + week.week * 7,
-                        );
-                        // 12:00 PM IST = 06:30 UTC
-                        executeOnTime.setUTCHours(6, 30, 0, 0);
-
-                        const reminderTask =
-                            new APITask<TaskType.SEND_COHORT_REMINDER_EMAILS>();
-                        reminderTask.type =
-                            TaskType.SEND_COHORT_REMINDER_EMAILS;
-                        reminderTask.data = {
-                            cohortId: cohort.id,
-                            cohortWeekId: week.id,
-                        };
-                        reminderTask.executeOnTime = executeOnTime;
-
-                        return reminderTask;
-                    });
-
+                // Schedule reminder email tasks for each week
+                const reminderTasks = cohort.weeks.map((week) =>
+                    this.createReminderTask(cohort.id, week),
+                );
                 await manager.save(reminderTasks);
 
                 // Schedule feedback reminder emails (day after 4th GD session)
@@ -348,6 +335,7 @@ export class CohortsService {
     ): Promise<void> {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
+            relations: { weeks: true },
         });
 
         if (!cohort) {
@@ -384,6 +372,36 @@ export class CohortsService {
                 cohortData.startDate &&
                 cohort.startDate.getTime() !== originalStartDate.getTime()
             ) {
+                // Shift all week scheduledDates by the same offset
+                const offsetMs =
+                    cohort.startDate.getTime() - originalStartDate.getTime();
+
+                for (const week of cohort.weeks) {
+                    week.scheduledDate = new Date(
+                        week.scheduledDate.getTime() + offsetMs,
+                    );
+                }
+                await manager.save(CohortWeek, cohort.weeks);
+
+                // Cancel all unprocessed reminder tasks and recreate with new dates
+                await manager
+                    .createQueryBuilder()
+                    .update(APITask)
+                    .set({ status: APITaskStatus.CANCELLED })
+                    .where('type = :type', {
+                        type: TaskType.SEND_COHORT_REMINDER_EMAILS,
+                    })
+                    .andWhere('status = :status', {
+                        status: APITaskStatus.UNPROCESSED,
+                    })
+                    .andWhere("data->>'cohortId' = :cohortId", { cohortId })
+                    .execute();
+
+                const reminderTasks = cohort.weeks.map((week) =>
+                    this.createReminderTask(cohort.id, week),
+                );
+                await manager.save(APITask, reminderTasks);
+
                 const apiTask =
                     new APITask<TaskType.SEND_CALENDAR_UPDATE_EMAILS>();
                 apiTask.type = TaskType.SEND_CALENDAR_UPDATE_EMAILS;
@@ -400,6 +418,7 @@ export class CohortsService {
         const cohortWeek: CohortWeek | null =
             await this.cohortWeekRepository.findOne({
                 where: { id: cohortWeekId },
+                relations: { cohort: true },
             });
 
         if (!cohortWeek) {
@@ -419,7 +438,66 @@ export class CohortsService {
                 cohortWeekData.classroomAssignmentId;
         }
 
-        await this.cohortWeekRepository.save(cohortWeek);
+        let scheduledDateChanged = false;
+
+        if (cohortWeekData.scheduledDate) {
+            const scheduledDate = new Date(cohortWeekData.scheduledDate);
+            scheduledDate.setUTCHours(0, 0, 0, 0);
+            scheduledDateChanged =
+                scheduledDate.getTime() !== cohortWeek.scheduledDate.getTime();
+            cohortWeek.scheduledDate = scheduledDate;
+        }
+
+        await this.dbTransactionService.execute(async (manager) => {
+            await manager.save(CohortWeek, cohortWeek);
+
+            if (scheduledDateChanged) {
+                // Cancel existing unprocessed reminder task for this week
+                await manager
+                    .createQueryBuilder()
+                    .update(APITask)
+                    .set({ status: APITaskStatus.CANCELLED })
+                    .where('type = :type', {
+                        type: TaskType.SEND_COHORT_REMINDER_EMAILS,
+                    })
+                    .andWhere('status = :status', {
+                        status: APITaskStatus.UNPROCESSED,
+                    })
+                    .andWhere("data->>'cohortWeekId' = :cohortWeekId", {
+                        cohortWeekId,
+                    })
+                    .execute();
+
+                // Create new reminder task with updated date
+                const reminderTask = this.createReminderTask(
+                    cohortWeek.cohort.id,
+                    cohortWeek,
+                );
+                await manager.save(APITask, reminderTask);
+
+                // Send calendar update emails
+                const calendarTask =
+                    new APITask<TaskType.SEND_CALENDAR_UPDATE_EMAILS>();
+                calendarTask.type = TaskType.SEND_CALENDAR_UPDATE_EMAILS;
+                calendarTask.data = { cohortId: cohortWeek.cohort.id };
+                await manager.save(APITask, calendarTask);
+            }
+        });
+    }
+
+    private createReminderTask(
+        cohortId: string,
+        week: CohortWeek,
+    ): APITask<TaskType.SEND_COHORT_REMINDER_EMAILS> {
+        const executeOnTime = new Date(week.scheduledDate);
+        // 12:00 PM IST = 06:30 UTC
+        executeOnTime.setUTCHours(6, 30, 0, 0);
+
+        const task = new APITask<TaskType.SEND_COHORT_REMINDER_EMAILS>();
+        task.type = TaskType.SEND_COHORT_REMINDER_EMAILS;
+        task.data = { cohortId, cohortWeekId: week.id };
+        task.executeOnTime = executeOnTime;
+        return task;
     }
 
     async assignDiscordRole(userId: string, cohortType: CohortType) {

@@ -10,6 +10,7 @@ export class GetCohortWeekResponseDto {
     bonusQuestion!: string[];
     classroomInviteLink!: string | null;
     classroomAssignmentUrl!: string | null;
+    scheduledDate!: string;
 
     constructor(obj: GetCohortWeekResponseDto) {
         this.id = obj.id;
@@ -20,6 +21,7 @@ export class GetCohortWeekResponseDto {
         this.bonusQuestion = obj.bonusQuestion;
         this.classroomInviteLink = obj.classroomInviteLink;
         this.classroomAssignmentUrl = obj.classroomAssignmentUrl;
+        this.scheduledDate = obj.scheduledDate;
     }
 }
 
@@ -66,6 +68,7 @@ export class GetCohortResponseDto {
                 bonusQuestion: week.bonusQuestion || [],
                 classroomInviteLink: week.classroomInviteLink || null,
                 classroomAssignmentUrl: week.classroomAssignmentUrl ?? null,
+                scheduledDate: week.scheduledDate.toISOString(),
             })),
         });
     }

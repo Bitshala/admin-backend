@@ -45,6 +45,9 @@ export class CohortWeek extends BaseEntity {
     @Column('text', { nullable: true })
     classroomAssignmentId!: string | null;
 
+    @Column({ type: 'timestamp with time zone' })
+    scheduledDate!: Date;
+
     @ManyToOne(() => Cohort, (c) => c.weeks)
     cohort!: Cohort;
 

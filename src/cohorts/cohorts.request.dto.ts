@@ -47,6 +47,10 @@ export class UpdateCohortWeekRequestDto {
     })
     @IsNotEmpty()
     classroomAssignmentId!: string | undefined;
+
+    @IsOptional()
+    @IsDateString({ strict: true })
+    scheduledDate!: string | undefined;
 }
 
 export class JoinWaitlistRequestDto {

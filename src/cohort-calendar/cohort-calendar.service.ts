@@ -116,8 +116,7 @@ export class CohortCalendarService {
         const sortedWeeks = [...cohort.weeks].sort((a, b) => a.week - b.week);
 
         for (const week of sortedWeeks) {
-            const eventDate = new Date(cohort.startDate);
-            eventDate.setUTCDate(eventDate.getUTCDate() + week.week * 7);
+            const eventDate = new Date(week.scheduledDate);
             eventDate.setUTCHours(14, 30, 0, 0);
 
             const endDate = new Date(eventDate);
