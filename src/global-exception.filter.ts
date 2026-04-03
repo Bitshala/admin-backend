@@ -71,6 +71,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
 
         if (status >= 500) {
             void this.discordAlert.sendErrorAlert(wrappedException, {
+                type: 'http',
                 method: request?.method,
                 url: request?.url,
             });

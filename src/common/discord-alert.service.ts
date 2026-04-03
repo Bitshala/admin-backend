@@ -3,10 +3,19 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { ServiceError } from '@/common/errors';
 
-interface RequestContext {
+interface HttpContext {
+    type: 'http';
     method: string;
     url: string;
 }
+
+interface TaskContext {
+    type: 'task';
+    taskId: string;
+    taskType: string;
+}
+
+type AlertContext = HttpContext | TaskContext;
 
 @Injectable()
 export class DiscordAlertService {
@@ -27,7 +36,7 @@ export class DiscordAlertService {
 
     async sendErrorAlert(
         error: ServiceError,
-        request?: RequestContext,
+        context?: AlertContext,
     ): Promise<void> {
         if (!this.webhookUrl) return;
         if (this.isRateLimited()) return;
@@ -44,10 +53,16 @@ export class DiscordAlertService {
             { name: 'Trace ID', value: `\`${error.traceId}\``, inline: true },
         ];
 
-        if (request) {
+        if (context?.type === 'http') {
             fields.push({
                 name: 'Endpoint',
-                value: `\`${request.method} ${request.url}\``,
+                value: `\`${context.method} ${context.url}\``,
+                inline: false,
+            });
+        } else if (context?.type === 'task') {
+            fields.push({
+                name: 'Task',
+                value: `\`${context.taskType}\` (\`${context.taskId}\`)`,
                 inline: false,
             });
         }

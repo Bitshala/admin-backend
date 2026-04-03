@@ -63,6 +63,8 @@ export class GitHubClassroomService {
             if (isLastRetry(task)) {
                 await this.scheduleNextSync(data);
             }
+
+            throw error;
         }
     }
 
