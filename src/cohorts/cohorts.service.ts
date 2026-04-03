@@ -569,6 +569,39 @@ export class CohortsService {
         return task;
     }
 
+    async syncQuestionsFromConfig(cohortId: string): Promise<void> {
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
+            relations: { weeks: true },
+        });
+
+        if (!cohort) {
+            throw new BadRequestException(
+                `Cohort with id ${cohortId} does not exist.`,
+            );
+        }
+
+        const config = this.cohortConfigService.getConfig(cohort.type);
+
+        for (const week of cohort.weeks) {
+            if (week.type !== CohortWeekType.GROUP_DISCUSSION) continue;
+
+            const weekConfig = config.weeks[week.week - 1];
+            if (!weekConfig) continue;
+
+            week.questions = weekConfig.questions.map((q) => ({
+                text: q.text,
+                attachments: q.attachments ?? [],
+            }));
+            week.bonusQuestion = weekConfig.bonusQuestions.map((q) => ({
+                text: q.text,
+                attachments: q.attachments ?? [],
+            }));
+        }
+
+        await this.cohortWeekRepository.save(cohort.weeks);
+    }
+
     async assignDiscordRole(userId: string, cohortType: CohortType) {
         const user = await this.userRepository.findOneOrFail({
             where: { id: userId },

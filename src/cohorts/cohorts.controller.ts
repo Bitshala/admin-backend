@@ -122,6 +122,17 @@ export class CohortsController {
         await this.cohortsService.createCohort(body);
     }
 
+    @Post(':cohortId/sync-questions')
+    @ApiOperation({
+        summary: 'Sync cohort week questions from config file',
+    })
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    async syncQuestionsFromConfig(
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+    ): Promise<void> {
+        await this.cohortsService.syncQuestionsFromConfig(cohortId);
+    }
+
     @Patch(':cohortId')
     @ApiOperation({ summary: 'Update a cohort' })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
