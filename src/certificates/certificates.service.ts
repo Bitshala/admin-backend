@@ -83,10 +83,7 @@ export class CertificatesService {
 
                 const certificateEntity = new Certificate();
                 certificateEntity.type = certificateType;
-                certificateEntity.name =
-                    entry.name ||
-                    entry.discordGlobalName ||
-                    entry.discordUsername;
+                certificateEntity.name = entry.displayName;
                 certificateEntity.cohort = cohort;
                 certificateEntity.user = {
                     id: entry.userId,
@@ -249,8 +246,6 @@ export class CertificatesService {
                         certificate,
                     );
 
-                const userName =
-                    user.name || user.discordGlobalName || user.discordUserName;
                 const fileName = generateCertificateFileName(
                     user.id,
                     cohort.type,
@@ -258,7 +253,7 @@ export class CertificatesService {
 
                 await this.mailService.sendCohortCertificateEmail(
                     user.email,
-                    userName,
+                    user.displayName,
                     cohortShortName,
                     season,
                     pdfBuffer,

@@ -206,6 +206,7 @@ export class UsersWeekScoreResponseDto extends WeeklyScore {
 
 export class LeaderboardEntryDto {
     userId!: string;
+    displayName!: string;
     discordUsername!: string;
     discordGlobalName!: string | null;
     name!: string | null;
@@ -280,6 +281,7 @@ export class LeaderboardEntryDto {
 
         return new LeaderboardEntryDto({
             userId: user.id,
+            displayName: user.displayName,
             discordUsername: user.discordUserName,
             discordGlobalName: user.discordGlobalName,
             name: user.name,
