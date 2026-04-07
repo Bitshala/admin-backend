@@ -93,4 +93,8 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Certificate, (c) => c.user)
     certificates!: Certificate[];
+
+    get displayName(): string {
+        return this.name || this.discordGlobalName || this.discordUserName;
+    }
 }

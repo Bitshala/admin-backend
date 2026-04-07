@@ -100,9 +100,6 @@ export class CohortReminderService {
         cohort: Cohort,
         sessionDate: Date,
     ): Promise<void> {
-        const userName =
-            user.name || user.discordGlobalName || user.discordUserName;
-
         if (!user.email) {
             this.logger.warn(
                 `User ${user.id} does not have an email address, skipping orientation reminder`,
@@ -112,7 +109,7 @@ export class CohortReminderService {
 
         await this.mailService.sendCohortOrientationReminderEmail(
             user.email,
-            userName,
+            user.displayName,
             cohort.type,
             this.formatDate(sessionDate),
             '8:00 PM IST',
@@ -126,8 +123,6 @@ export class CohortReminderService {
         cohort: Cohort,
         sessionDate: Date,
     ): Promise<void> {
-        const userName =
-            user.name || user.discordGlobalName || user.discordUserName;
         const season = `Season ${cohort.season.toString().padStart(2, '0')}`;
 
         if (!user.email) {
@@ -139,7 +134,7 @@ export class CohortReminderService {
 
         await this.mailService.sendCohortGdSessionReminderEmail(
             user.email,
-            userName,
+            user.displayName,
             this.mailService.getCohortShortName(cohort.type),
             season,
             this.formatDayOfWeek(sessionDate),
@@ -156,8 +151,6 @@ export class CohortReminderService {
         cohort: Cohort,
         sessionDate: Date,
     ): Promise<void> {
-        const userName =
-            user.name || user.discordGlobalName || user.discordUserName;
         const season = `Season ${cohort.season.toString().padStart(2, '0')}`;
 
         if (!user.email) {
@@ -169,7 +162,7 @@ export class CohortReminderService {
 
         await this.mailService.sendCohortGraduationReminderEmail(
             user.email,
-            userName,
+            user.displayName,
             this.mailService.getCohortShortName(cohort.type),
             season,
             this.formatDate(sessionDate),
@@ -232,14 +225,9 @@ export class CohortReminderService {
 
                     if (hasSubmittedFeedback) continue;
 
-                    const userName =
-                        user.name ||
-                        user.discordGlobalName ||
-                        user.discordUserName;
-
                     await this.mailService.sendCohortFeedbackReminderEmail(
                         user.email!,
-                        userName,
+                        user.displayName,
                         cohortName,
                         season,
                     );

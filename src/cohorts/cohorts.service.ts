@@ -1033,9 +1033,6 @@ export class CohortsService {
         );
 
         // Send cohort joining confirmation email with calendar invite
-        const userName =
-            user.name || user.discordGlobalName || user.discordUserName;
-
         try {
             const calendarInvite =
                 await this.cohortCalendarService.generateCalendarInvite(
@@ -1043,7 +1040,7 @@ export class CohortsService {
                 );
             await this.mailService.sendCohortJoiningConfirmationEmail(
                 user.email,
-                userName,
+                user.displayName,
                 cohort.type,
                 calendarInvite,
             );
@@ -1142,7 +1139,7 @@ export class CohortsService {
             // Send welcome email to the user
             await this.mailService.sendWelcomeToWaitlistEmail(
                 user.email,
-                user.name || user.discordGlobalName || user.discordUserName,
+                user.displayName,
                 body.type,
             );
         } catch (error) {
