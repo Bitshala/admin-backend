@@ -13,6 +13,8 @@ import { BaseEntity } from '@/entities/base.entity';
 import { UserRole } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
+import { FellowshipApplication } from '@/entities/fellowship-application.entity';
+import { Fellowship } from '@/entities/fellowship.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -93,6 +95,12 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Certificate, (c) => c.user)
     certificates!: Certificate[];
+
+    @OneToMany(() => FellowshipApplication, (fa) => fa.applicant)
+    fellowshipApplications!: FellowshipApplication[];
+
+    @OneToMany(() => Fellowship, (f) => f.user)
+    fellowships!: Fellowship[];
 
     get displayName(): string {
         return this.name || this.discordGlobalName || this.discordUserName;
