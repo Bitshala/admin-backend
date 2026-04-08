@@ -230,64 +230,35 @@ export class ScoresService {
     }
 
     async getUserScores(id: string): Promise<GetUsersScoresResponseDto> {
-        const cohorts = (
+        const [cohorts, attendances, gdScores, exerciseScores] =
             await Promise.all([
                 this.cohortRepository.find({
-                    where: {
-                        users: { id: id },
-                        hasExercises: true,
-                        weeks: {
-                            attendances: {
-                                user: { id: id },
-                            },
-                            groupDiscussionScores: {
-                                user: { id: id },
-                            },
-                            exerciseScores: {
-                                user: { id: id },
-                            },
-                        },
-                    },
-                    relations: {
-                        weeks: {
-                            attendances: {
-                                user: true,
-                            },
-                            groupDiscussionScores: {
-                                user: true,
-                            },
-                            exerciseScores: {
-                                user: true,
-                            },
-                        },
-                    },
+                    where: { users: { id: id } },
+                    relations: { weeks: true },
                 }),
-                this.cohortRepository.find({
-                    where: {
-                        users: { id: id },
-                        hasExercises: false,
-                        weeks: {
-                            attendances: {
-                                user: { id: id },
-                            },
-                            groupDiscussionScores: {
-                                user: { id: id },
-                            },
-                        },
-                    },
-                    relations: {
-                        weeks: {
-                            attendances: {
-                                user: true,
-                            },
-                            groupDiscussionScores: {
-                                user: true,
-                            },
-                        },
-                    },
+                this.attendanceRepository.find({
+                    where: { user: { id: id } },
+                    relations: { cohortWeek: true },
                 }),
-            ])
-        ).flat();
+                this.groupDiscussionScoreRepository.find({
+                    where: { user: { id: id } },
+                    relations: { cohortWeek: true },
+                }),
+                this.exerciseScoreRepository.find({
+                    where: { user: { id: id } },
+                    relations: { cohortWeek: true },
+                }),
+            ]);
+
+        const attendanceByWeekId = new Map(
+            attendances.map((a) => [a.cohortWeek.id, a]),
+        );
+        const gdScoreByWeekId = new Map(
+            gdScores.map((s) => [s.cohortWeek.id, s]),
+        );
+        const exerciseScoreByWeekId = new Map(
+            exerciseScores.map((s) => [s.cohortWeek.id, s]),
+        );
 
         const cohortScore: GetCohortScoresResponseDto[] = [];
         let totalScore = 0;
@@ -299,17 +270,11 @@ export class ScoresService {
             let cohortMaxTotalScore = 0;
 
             for (const week of cohort.weeks) {
-                const attendance = week.attendances?.find(
-                    (a) => a.user.id === id,
-                );
+                const attendance = attendanceByWeekId.get(week.id);
                 const groupDiscussionScore =
-                    week.groupDiscussionScores?.find(
-                        (score) => score.user.id === id,
-                    ) ?? null;
+                    gdScoreByWeekId.get(week.id) ?? null;
                 const exerciseScore =
-                    week.exerciseScores?.find(
-                        (score) => score.user.id === id,
-                    ) ?? null;
+                    exerciseScoreByWeekId.get(week.id) ?? null;
 
                 if (attendance) {
                     const weeklyScore = WeeklyScore.fromScores(
