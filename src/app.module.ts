@@ -29,6 +29,7 @@ import { TeachingAssistantsModule } from '@/teaching-assistants/teaching-assista
 import { CertificatesModule } from '@/certificates/certificates.module';
 import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
 import { MonitoringModule } from '@/common/monitoring.module';
+import { FellowshipApplicationsModule } from '@/fellowship-applications/fellowship-applications.module';
 
 @Module({
     imports: [
@@ -86,6 +87,7 @@ import { MonitoringModule } from '@/common/monitoring.module';
         CertificatesModule,
         CohortCalendarModule,
         MonitoringModule,
+        FellowshipApplicationsModule,
     ],
     controllers: [AppController],
     providers: [
