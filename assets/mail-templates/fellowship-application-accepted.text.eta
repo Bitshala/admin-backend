@@ -1,0 +1,19 @@
+Congratulations <%~ it.userName %>!
+
+Your <%~ it.fellowshipType %> Fellowship Application Has Been Accepted
+
+Hi <%~ it.userName %>,
+
+We are excited to inform you that your application for the <%~ it.fellowshipType %> Fellowship has been accepted!
+
+To get started, please log in to your account and complete the fellowship onboarding form with your additional details.
+
+Complete Onboarding: https://app.bitshala.org/
+
+---
+
+Next Steps
+
+- Log in and fill out the fellowship onboarding form.
+- Provide your mentor contact, project details, and GitHub profile.
+- Once completed, you will be fully onboarded into the fellowship program.

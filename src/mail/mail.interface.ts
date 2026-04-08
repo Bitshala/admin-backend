@@ -61,6 +61,22 @@ export interface CohortCalendarUpdateContext {
     season: string;
 }
 
+export interface FellowshipApplicationReceivedContext {
+    userName: string;
+    fellowshipType: string;
+}
+
+export interface FellowshipApplicationAcceptedContext {
+    userName: string;
+    fellowshipType: string;
+}
+
+export interface FellowshipApplicationRejectedContext {
+    userName: string;
+    fellowshipType: string;
+    reviewerRemarks: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
     [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
@@ -70,4 +86,7 @@ export interface TemplateContextMap {
     [MailTemplate.CohortCertificate]: CohortCertificateContext;
     [MailTemplate.CohortFeedbackReminder]: CohortFeedbackReminderContext;
     [MailTemplate.CohortCalendarUpdate]: CohortCalendarUpdateContext;
+    [MailTemplate.FellowshipApplicationReceived]: FellowshipApplicationReceivedContext;
+    [MailTemplate.FellowshipApplicationAccepted]: FellowshipApplicationAcceptedContext;
+    [MailTemplate.FellowshipApplicationRejected]: FellowshipApplicationRejectedContext;
 }
