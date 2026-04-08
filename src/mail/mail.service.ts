@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { MailCoreService } from '@/mail/mail.core.service';
-import { CohortType } from '@/common/enum';
+import { CohortType, FellowshipType } from '@/common/enum';
 import { ServiceError } from '@/common/errors';
 import { join } from 'path';
 import { Eta } from 'eta';
@@ -364,6 +364,76 @@ export class MailService implements OnModuleInit {
                 season,
             },
             icalEvent: { method: 'REQUEST', content: calendarInvite },
+        });
+    }
+
+    private getFellowshipTypeDisplayName(type: FellowshipType): string {
+        switch (type) {
+            case FellowshipType.DEVELOPER:
+                return 'Developer';
+            case FellowshipType.DESIGNER:
+                return 'Designer';
+            case FellowshipType.EDUCATOR:
+                return 'Educator';
+        }
+    }
+
+    async sendFellowshipApplicationReceivedEmail(
+        userEmail: string,
+        userName: string,
+        fellowshipType: FellowshipType,
+    ): Promise<void> {
+        const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
+        const subject = `Fellowship Application Received — ${displayType}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipApplicationReceived,
+            context: {
+                userName,
+                fellowshipType: displayType,
+            },
+        });
+    }
+
+    async sendFellowshipApplicationAcceptedEmail(
+        userEmail: string,
+        userName: string,
+        fellowshipType: FellowshipType,
+    ): Promise<void> {
+        const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
+        const subject = `Congratulations! Your ${displayType} Fellowship Application Has Been Accepted`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipApplicationAccepted,
+            context: {
+                userName,
+                fellowshipType: displayType,
+            },
+        });
+    }
+
+    async sendFellowshipApplicationRejectedEmail(
+        userEmail: string,
+        userName: string,
+        fellowshipType: FellowshipType,
+        reviewerRemarks: string,
+    ): Promise<void> {
+        const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
+        const subject = `Update on Your ${displayType} Fellowship Application`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipApplicationRejected,
+            context: {
+                userName,
+                fellowshipType: displayType,
+                reviewerRemarks,
+            },
         });
     }
 }
