@@ -46,9 +46,37 @@ export class Migrations1775546228053 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "fellowship_report" ADD CONSTRAINT "FK_b9ed154238aa2cecebac0b638fc" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
+
+        // Seed the first fellowship report reminder task at the next upcoming 20th/25th/28th at 12:00 noon IST (06:30 UTC)
+        const now = new Date();
+        const year = now.getUTCFullYear();
+        const month = now.getUTCMonth(); // 0-indexed
+        const day = now.getUTCDate();
+
+        let executeOnTime: Date;
+        if (day < 20) {
+            executeOnTime = new Date(Date.UTC(year, month, 20, 6, 30, 0));
+        } else if (day < 25) {
+            executeOnTime = new Date(Date.UTC(year, month, 25, 6, 30, 0));
+        } else if (day < 28) {
+            executeOnTime = new Date(Date.UTC(year, month, 28, 6, 30, 0));
+        } else {
+            // Next month's 20th
+            executeOnTime = new Date(Date.UTC(year, month + 1, 20, 6, 30, 0));
+        }
+
+        const taskMonth = executeOnTime.getUTCMonth() + 1; // 1-indexed
+        const taskYear = executeOnTime.getUTCFullYear();
+
+        await queryRunner.query(
+            `INSERT INTO "api_task" ("type", "data", "executeOnTime", "status", "retryCount", "retryLimit") VALUES ('SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS', '{"month": ${taskMonth}, "year": ${taskYear}}'::jsonb, '${executeOnTime.toISOString()}'::timestamptz, 'UNPROCESSED', 0, 1)`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `DELETE FROM "api_task" WHERE "type" = 'SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS'`,
+        );
         await queryRunner.query(
             `ALTER TABLE "fellowship_report" DROP CONSTRAINT "FK_b9ed154238aa2cecebac0b638fc"`,
         );

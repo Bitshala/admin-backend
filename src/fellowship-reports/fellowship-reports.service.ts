@@ -6,7 +6,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { FellowshipReport } from '@/entities/fellowship-report.entity';
 import { Fellowship } from '@/entities/fellowship.entity';
 import { User } from '@/entities/user.entity';
@@ -27,6 +27,8 @@ import {
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { MailService } from '@/mail/mail.service';
 import { APITask } from '@/entities/api-task.entity';
+import { TaskType } from '@/task-processor/task.enums';
+import { isLastRetry } from '@/task-processor/task-processor.utils';
 
 @Injectable()
 export class FellowshipReportsService {
@@ -353,5 +355,100 @@ export class FellowshipReportsService {
         }
 
         return FellowshipReportResponseDto.fromEntity(report);
+    }
+
+    async handleSendReportReminderEmails(
+        task: APITask<TaskType.SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS>,
+    ): Promise<void> {
+        const { month, year } = task.data;
+
+        try {
+            const activeFellowships = await this.fellowshipRepository.find({
+                where: { status: FellowshipStatus.ACTIVE },
+                relations: { user: true },
+            });
+
+            for (const fellowship of activeFellowships) {
+                try {
+                    const hasSubmitted = await this.reportRepository.exists({
+                        where: {
+                            fellowship: { id: fellowship.id },
+                            month,
+                            year,
+                            status: In([
+                                FellowshipReportStatus.SUBMITTED,
+                                FellowshipReportStatus.APPROVED,
+                            ]),
+                        },
+                    });
+
+                    if (hasSubmitted) {
+                        continue;
+                    }
+
+                    const user = fellowship.user;
+                    if (user.email) {
+                        await this.mailService.sendFellowshipReportReminderEmail(
+                            user.email,
+                            user.displayName,
+                            month,
+                            year,
+                        );
+                    }
+                } catch (error) {
+                    this.logger.error(
+                        `Failed to send report reminder email to ${fellowship.user.email}: ${error?.message}`,
+                        error?.stack,
+                    );
+                }
+            }
+
+            await this.scheduleNextReportReminder(task);
+        } catch (error) {
+            this.logger.error(
+                `Failed to send fellowship report reminder emails: ${error?.message}`,
+                error?.stack,
+            );
+
+            if (isLastRetry(task)) {
+                await this.scheduleNextReportReminder(task);
+            }
+
+            throw error;
+        }
+    }
+
+    private async scheduleNextReportReminder(
+        task: APITask<TaskType.SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS>,
+    ): Promise<void> {
+        const { month, year } = task.data;
+        const executeOnDay = task.executeOnTime.getUTCDate();
+        let nextExecuteOnTime: Date;
+        let nextMonth = month;
+        let nextYear = year;
+
+        if (executeOnDay < 25) {
+            nextExecuteOnTime = new Date(
+                Date.UTC(year, month - 1, 25, 6, 30, 0),
+            );
+        } else if (executeOnDay < 28) {
+            nextExecuteOnTime = new Date(
+                Date.UTC(year, month - 1, 28, 6, 30, 0),
+            );
+        } else {
+            nextMonth = month === 12 ? 1 : month + 1;
+            nextYear = month === 12 ? year + 1 : year;
+            nextExecuteOnTime = new Date(
+                Date.UTC(nextYear, nextMonth - 1, 20, 6, 30, 0),
+            );
+        }
+
+        const nextTask =
+            new APITask<TaskType.SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS>();
+        nextTask.type = TaskType.SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS;
+        nextTask.data = { month: nextMonth, year: nextYear };
+        nextTask.executeOnTime = nextExecuteOnTime;
+        nextTask.retryLimit = 1;
+        await this.apiTaskRepository.save(nextTask);
     }
 }
