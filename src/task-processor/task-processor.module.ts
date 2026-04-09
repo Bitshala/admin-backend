@@ -7,6 +7,7 @@ import { CohortsModule } from '@/cohorts/cohorts.module';
 import { GitHubClassroomModule } from '@/github-classroom/github-classroom.module';
 import { CertificatesModule } from '@/certificates/certificates.module';
 import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
+import { FellowshipReportsModule } from '@/fellowship-reports/fellowship-reports.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
         GitHubClassroomModule,
         CertificatesModule,
         CohortCalendarModule,
+        FellowshipReportsModule,
     ],
     providers: [APITaskProcessorService],
     exports: [TypeOrmModule, APITaskProcessorService],
