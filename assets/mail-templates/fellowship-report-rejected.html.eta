@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Report Rejected</title>
+</head>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111111; padding:24px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
+          <tr>
+            <td align="center" style="background-color:#000000; padding:24px 24px 20px 24px;">
+              <h1 style="margin:0; font-size:24px; color:#ffffff; font-weight:700;">
+                Report Update
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                <%~ it.monthName %> <%~ it.year %>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 16px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0 0 12px 0;">
+                Hi <%~ it.userName %>,
+              </p>
+
+              <p style="margin:0 0 16px 0;">
+                Your monthly fellowship report for
+                <strong style="color:#f9b233;"><%~ it.monthName %> <%~ it.year %></strong>
+                has been reviewed and unfortunately could not be approved at this time.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 16px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#262626; border-radius:12px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <h3 style="margin:0 0 8px 0; font-size:16px; color:#ffd580;">Reviewer Feedback</h3>
+                    <p style="margin:0; color:#eaeaea; font-size:13px; line-height:1.7;">
+                      <%~ it.reviewerRemarks %>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 32px 32px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0;">
+                Please reach out to
+                <a href="mailto:fellowship@bitshala.org" style="color:#f9b233; text-decoration:underline;">fellowship@bitshala.org</a>
+                for further clarification or to discuss next steps.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

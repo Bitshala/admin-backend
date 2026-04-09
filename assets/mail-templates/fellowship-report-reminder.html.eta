@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Report Reminder</title>
+</head>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111111; padding:24px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
+          <tr>
+            <td align="center" style="background-color:#000000; padding:24px 24px 20px 24px;">
+              <h1 style="margin:0; font-size:24px; color:#ffffff; font-weight:700;">
+                Monthly Report Reminder
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                <%~ it.monthName %> <%~ it.year %>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 16px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0 0 12px 0;">
+                Hi <%~ it.userName %>,
+              </p>
+
+              <p style="margin:0 0 16px 0;">
+                This is a reminder to submit your monthly fellowship report for
+                <strong style="color:#f9b233;"><%~ it.monthName %> <%~ it.year %></strong>.
+                Please log in and submit your report at your earliest convenience.
+              </p>
+
+              <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:16px auto 8px auto;">
+                <tr>
+                  <td align="center" bgcolor="#f7931a" style="border-radius:999px;">
+                    <a href="https://app.bitshala.org/"
+                       style="display:inline-block; padding:12px 28px; font-size:15px; font-weight:600; color:#000000; text-decoration:none;">
+                      Submit Report
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

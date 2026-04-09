@@ -1,0 +1,7 @@
+Monthly Report Reminder — <%~ it.monthName %> <%~ it.year %>
+
+Hi <%~ it.userName %>,
+
+This is a reminder to submit your monthly fellowship report for <%~ it.monthName %> <%~ it.year %>. Please log in and submit your report at your earliest convenience.
+
+Submit Report: https://app.bitshala.org/

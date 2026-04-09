@@ -10,4 +10,7 @@ export enum MailTemplate {
     FellowshipApplicationReceived = 'fellowship-application-received',
     FellowshipApplicationAccepted = 'fellowship-application-accepted',
     FellowshipApplicationRejected = 'fellowship-application-rejected',
+    FellowshipReportReminder = 'fellowship-report-reminder',
+    FellowshipReportApproved = 'fellowship-report-approved',
+    FellowshipReportRejected = 'fellowship-report-rejected',
 }
