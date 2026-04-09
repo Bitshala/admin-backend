@@ -1,0 +1,7 @@
+Report Approved — <%~ it.monthName %> <%~ it.year %>
+
+Hi <%~ it.userName %>,
+
+Your monthly fellowship report for <%~ it.monthName %> <%~ it.year %> has been reviewed and approved. You should receive your fellowship amount soon.
+
+Keep up the great work!

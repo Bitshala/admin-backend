@@ -77,6 +77,25 @@ export interface FellowshipApplicationRejectedContext {
     reviewerRemarks: string;
 }
 
+export interface FellowshipReportReminderContext {
+    userName: string;
+    monthName: string;
+    year: number;
+}
+
+export interface FellowshipReportApprovedContext {
+    userName: string;
+    monthName: string;
+    year: number;
+}
+
+export interface FellowshipReportRejectedContext {
+    userName: string;
+    monthName: string;
+    year: number;
+    reviewerRemarks: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
     [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
@@ -89,4 +108,7 @@ export interface TemplateContextMap {
     [MailTemplate.FellowshipApplicationReceived]: FellowshipApplicationReceivedContext;
     [MailTemplate.FellowshipApplicationAccepted]: FellowshipApplicationAcceptedContext;
     [MailTemplate.FellowshipApplicationRejected]: FellowshipApplicationRejectedContext;
+    [MailTemplate.FellowshipReportReminder]: FellowshipReportReminderContext;
+    [MailTemplate.FellowshipReportApproved]: FellowshipReportApprovedContext;
+    [MailTemplate.FellowshipReportRejected]: FellowshipReportRejectedContext;
 }

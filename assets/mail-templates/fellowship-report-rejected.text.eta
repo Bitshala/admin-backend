@@ -1,0 +1,15 @@
+Report Update — <%~ it.monthName %> <%~ it.year %>
+
+Hi <%~ it.userName %>,
+
+Your monthly fellowship report for <%~ it.monthName %> <%~ it.year %> has been reviewed and unfortunately could not be approved at this time.
+
+---
+
+Reviewer Feedback
+
+<%~ it.reviewerRemarks %>
+
+---
+
+Please reach out to fellowship@bitshala.org for further clarification or to discuss next steps.

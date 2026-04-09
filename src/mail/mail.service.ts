@@ -436,4 +436,87 @@ export class MailService implements OnModuleInit {
             },
         });
     }
+
+    private getMonthName(month: number): string {
+        const months = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+        ];
+        return months[month - 1];
+    }
+
+    async sendFellowshipReportReminderEmail(
+        userEmail: string,
+        userName: string,
+        month: number,
+        year: number,
+    ): Promise<void> {
+        const monthName = this.getMonthName(month);
+        const subject = `Reminder: Submit Your Fellowship Report for ${monthName} ${year}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipReportReminder,
+            context: {
+                userName,
+                monthName,
+                year,
+            },
+        });
+    }
+
+    async sendFellowshipReportApprovedEmail(
+        userEmail: string,
+        userName: string,
+        month: number,
+        year: number,
+    ): Promise<void> {
+        const monthName = this.getMonthName(month);
+        const subject = `Fellowship Report Approved — ${monthName} ${year}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipReportApproved,
+            context: {
+                userName,
+                monthName,
+                year,
+            },
+        });
+    }
+
+    async sendFellowshipReportRejectedEmail(
+        userEmail: string,
+        userName: string,
+        month: number,
+        year: number,
+        reviewerRemarks: string,
+    ): Promise<void> {
+        const monthName = this.getMonthName(month);
+        const subject = `Fellowship Report Update — ${monthName} ${year}`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipReportRejected,
+            context: {
+                userName,
+                monthName,
+                year,
+                reviewerRemarks,
+            },
+        });
+    }
 }
