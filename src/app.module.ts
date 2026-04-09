@@ -31,6 +31,7 @@ import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
 import { MonitoringModule } from '@/common/monitoring.module';
 import { FellowshipApplicationsModule } from '@/fellowship-applications/fellowship-applications.module';
 import { FellowshipsModule } from '@/fellowships/fellowships.module';
+import { FellowshipReportsModule } from '@/fellowship-reports/fellowship-reports.module';
 
 @Module({
     imports: [
@@ -90,6 +91,7 @@ import { FellowshipsModule } from '@/fellowships/fellowships.module';
         MonitoringModule,
         FellowshipApplicationsModule,
         FellowshipsModule,
+        FellowshipReportsModule,
     ],
     controllers: [AppController],
     providers: [
