@@ -8,6 +8,7 @@ import { APITask } from '@/entities/api-task.entity';
 import { Feedback } from '@/entities/feedback.entity';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 import { Fellowship } from '@/entities/fellowship.entity';
+import { FellowshipReport } from '@/entities/fellowship-report.entity';
 
 export const entities = [
     APITask,
@@ -18,6 +19,7 @@ export const entities = [
     Feedback,
     Fellowship,
     FellowshipApplication,
+    FellowshipReport,
     GroupDiscussionScore,
     User,
 ];
