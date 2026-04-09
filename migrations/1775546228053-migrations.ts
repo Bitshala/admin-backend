@@ -34,9 +34,31 @@ export class Migrations1775546228053 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "fellowship_application" ADD CONSTRAINT "FK_1a11e17efd19f0a5bb79e4dcb66" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
+        await queryRunner.query(
+            `CREATE TYPE "public"."fellowship_report_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED')`,
+        );
+        await queryRunner.query(
+            `CREATE TABLE "fellowship_report" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "month" integer NOT NULL, "year" integer NOT NULL, "content" text NOT NULL, "status" "public"."fellowship_report_status_enum" NOT NULL, "reviewerRemarks" text, "fellowshipId" uuid, "reviewedById" uuid, CONSTRAINT "PK_989afa645c643ba3ab5f8a0700b" PRIMARY KEY ("id"))`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_report" ADD CONSTRAINT "FK_b05b6cce0d61f864e1ad9228324" FOREIGN KEY ("fellowshipId") REFERENCES "fellowship"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_report" ADD CONSTRAINT "FK_b9ed154238aa2cecebac0b638fc" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_report" DROP CONSTRAINT "FK_b9ed154238aa2cecebac0b638fc"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_report" DROP CONSTRAINT "FK_b05b6cce0d61f864e1ad9228324"`,
+        );
+        await queryRunner.query(`DROP TABLE "fellowship_report"`);
+        await queryRunner.query(
+            `DROP TYPE "public"."fellowship_report_status_enum"`,
+        );
         await queryRunner.query(
             `ALTER TABLE "fellowship_application" DROP CONSTRAINT "FK_1a11e17efd19f0a5bb79e4dcb66"`,
         );

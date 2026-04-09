@@ -3,6 +3,7 @@ import {
     Entity,
     JoinColumn,
     ManyToOne,
+    OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -10,6 +11,7 @@ import { BaseEntity } from '@/entities/base.entity';
 import { FellowshipType, FellowshipStatus } from '@/common/enum';
 import { User } from '@/entities/user.entity';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
+import { FellowshipReport } from '@/entities/fellowship-report.entity';
 
 @Entity()
 export class Fellowship extends BaseEntity {
@@ -89,4 +91,7 @@ export class Fellowship extends BaseEntity {
     @OneToOne(() => FellowshipApplication, (fa) => fa.fellowship)
     @JoinColumn()
     application!: FellowshipApplication;
+
+    @OneToMany(() => FellowshipReport, (fr) => fr.fellowship)
+    reports!: FellowshipReport[];
 }

@@ -91,3 +91,10 @@ export enum FellowshipStatus {
     ACTIVE = 'ACTIVE',
     COMPLETED = 'COMPLETED',
 }
+
+export enum FellowshipReportStatus {
+    DRAFT = 'DRAFT',
+    SUBMITTED = 'SUBMITTED',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+}
