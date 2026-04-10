@@ -56,7 +56,7 @@ export class GetCohortResponseDto {
             type: cohort.type,
             season: cohort.season,
             startDate: cohort.startDate.toISOString(),
-            endDate: cohort.endDate.toISOString(),
+            endDate: cohort.getEndDate().toISOString(),
             registrationDeadline: cohort.registrationDeadline.toISOString(),
             hasExercises: cohort.hasExercises,
             classroomId: cohort.classroomId ?? null,

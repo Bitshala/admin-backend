@@ -50,13 +50,14 @@ export class CertificatesService {
     ): Promise<{ cohort: Cohort; certificateEntities: Certificate[] }> {
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
+            relations: { weeks: true },
         });
 
         if (!cohort) {
             throw new ServiceError(`Cohort with id ${cohortId} not found`);
         }
 
-        if (cohort.endDate > new Date()) {
+        if (cohort.getEndDate() > new Date()) {
             throw new BadRequestException(
                 `Cohort with id ${cohortId} has not ended yet. Certificates can only be generated after the cohort ends.`,
             );
@@ -212,7 +213,7 @@ export class CertificatesService {
 
         const certificates = await this.certificateRepository.find({
             where: { cohort: { id: cohortId } },
-            relations: { cohort: true, user: true },
+            relations: { cohort: { weeks: true }, user: true },
         });
 
         if (certificates.length === 0) {
@@ -279,7 +280,7 @@ export class CertificatesService {
         const certificate = await this.certificateRepository.findOne({
             where: { id },
             relations: {
-                cohort: true,
+                cohort: { weeks: true },
                 user: true,
             },
         });
@@ -310,7 +311,7 @@ export class CertificatesService {
     }> {
         const certificates = await this.certificateRepository.find({
             where: { cohort: { id: cohortId } },
-            relations: { cohort: true, user: true },
+            relations: { cohort: { weeks: true }, user: true },
         });
 
         if (certificates.length === 0) {

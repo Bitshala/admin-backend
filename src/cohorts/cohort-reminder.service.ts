@@ -185,7 +185,7 @@ export class CohortReminderService {
 
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            relations: { users: true },
+            relations: { users: true, weeks: true },
         });
 
         if (!cohort) {
@@ -271,7 +271,7 @@ export class CohortReminderService {
         const nextExecuteOnTime = new Date(task.executeOnTime);
         nextExecuteOnTime.setUTCDate(nextExecuteOnTime.getUTCDate() + 7);
 
-        const cutoffDate = new Date(cohort.endDate);
+        const cutoffDate = new Date(cohort.getEndDate());
         cutoffDate.setUTCDate(cutoffDate.getUTCDate() + 7);
 
         if (nextExecuteOnTime <= cutoffDate) {

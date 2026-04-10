@@ -84,7 +84,7 @@ export class GitHubClassroomService {
         }
 
         const endDatePlusBuffer = new Date(
-            cohort.endDate.getTime() + TWENTY_FOUR_HOURS_MS,
+            cohort.getEndDate().getTime() + TWENTY_FOUR_HOURS_MS,
         );
         const hasCohortEnded = endDatePlusBuffer < new Date();
 

@@ -161,7 +161,7 @@ export class CohortsService {
                             type: cohort.type,
                             season: cohort.season,
                             startDate: cohort.startDate.toISOString(),
-                            endDate: cohort.endDate.toISOString(),
+                            endDate: cohort.getEndDate().toISOString(),
                             registrationDeadline:
                                 cohort.registrationDeadline.toISOString(),
                         }),
@@ -189,6 +189,7 @@ export class CohortsService {
     async listPublicCohorts(): Promise<ListAvailableCohortsResponseDto> {
         const latestCohorts = await this.cohortRepository
             .createQueryBuilder('c')
+            .leftJoinAndSelect('c.weeks', 'weeks')
             .distinctOn(['c.type'])
             .orderBy('c.type', 'ASC')
             .addOrderBy('c.season', 'DESC')
@@ -303,7 +304,6 @@ export class CohortsService {
                 cohort.type = cohortData.type;
                 cohort.season = season;
                 cohort.startDate = startDate;
-                cohort.endDate = endDate;
                 cohort.registrationDeadline = registrationDeadline;
                 cohort.hasExercises = hasExercises;
                 cohort.weeks = [];
@@ -411,12 +411,6 @@ export class CohortsService {
             const startDate = new Date(cohortData.startDate);
             startDate.setUTCHours(0, 0, 0, 0);
             cohort.startDate = startDate;
-
-            const config = this.cohortConfigService.getConfig(cohort.type);
-            const totalWeeks = config.gdSessions + 2;
-            const endDate = new Date(startDate);
-            endDate.setUTCDate(endDate.getUTCDate() + totalWeeks * 7);
-            cohort.endDate = endDate;
         }
         if (cohortData.registrationDeadline) {
             const registrationDeadline = new Date(

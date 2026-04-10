@@ -34,14 +34,19 @@ export class Cohort extends BaseEntity {
     @Column('timestamptz')
     startDate!: Date;
 
-    @Column('timestamptz')
-    endDate!: Date;
-
     @Column('boolean')
     hasExercises!: boolean;
 
     @Column('text', { nullable: true })
     classroomId!: string | null;
+
+    getEndDate(): Date {
+        return this.weeks.reduce(
+            (max, week) =>
+                week.scheduledDate > max ? week.scheduledDate : max,
+            this.weeks[0].scheduledDate,
+        );
+    }
 
     @ManyToMany(() => User, (u) => u.cohorts)
     @JoinTable()

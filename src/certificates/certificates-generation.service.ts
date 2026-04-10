@@ -154,7 +154,7 @@ export class CertificatesGenerationService {
             certificate.name,
             certificate.cohort.type,
             certificate.type,
-            certificate.cohort.endDate,
+            certificate.cohort.getEndDate(),
             certificate.withExercises,
             certificate.rank,
         );
