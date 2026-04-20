@@ -61,6 +61,41 @@ export interface CohortCalendarUpdateContext {
     season: string;
 }
 
+export interface FellowshipApplicationReceivedContext {
+    userName: string;
+    fellowshipType: string;
+}
+
+export interface FellowshipApplicationAcceptedContext {
+    userName: string;
+    fellowshipType: string;
+}
+
+export interface FellowshipApplicationRejectedContext {
+    userName: string;
+    fellowshipType: string;
+    reviewerRemarks: string;
+}
+
+export interface FellowshipReportReminderContext {
+    userName: string;
+    monthName: string;
+    year: number;
+}
+
+export interface FellowshipReportApprovedContext {
+    userName: string;
+    monthName: string;
+    year: number;
+}
+
+export interface FellowshipReportRejectedContext {
+    userName: string;
+    monthName: string;
+    year: number;
+    reviewerRemarks: string;
+}
+
 export interface TemplateContextMap {
     [MailTemplate.WelcomeToWaitlist]: WelcomeToWaitlistContext;
     [MailTemplate.CohortJoiningConfirmation]: CohortJoiningConfirmationContext;
@@ -70,4 +105,10 @@ export interface TemplateContextMap {
     [MailTemplate.CohortCertificate]: CohortCertificateContext;
     [MailTemplate.CohortFeedbackReminder]: CohortFeedbackReminderContext;
     [MailTemplate.CohortCalendarUpdate]: CohortCalendarUpdateContext;
+    [MailTemplate.FellowshipApplicationReceived]: FellowshipApplicationReceivedContext;
+    [MailTemplate.FellowshipApplicationAccepted]: FellowshipApplicationAcceptedContext;
+    [MailTemplate.FellowshipApplicationRejected]: FellowshipApplicationRejectedContext;
+    [MailTemplate.FellowshipReportReminder]: FellowshipReportReminderContext;
+    [MailTemplate.FellowshipReportApproved]: FellowshipReportApprovedContext;
+    [MailTemplate.FellowshipReportRejected]: FellowshipReportRejectedContext;
 }

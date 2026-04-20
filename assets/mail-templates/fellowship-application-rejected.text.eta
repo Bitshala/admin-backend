@@ -1,0 +1,15 @@
+Application Update — <%~ it.fellowshipType %> Fellowship
+
+Hi <%~ it.userName %>,
+
+Thank you for your interest in the <%~ it.fellowshipType %> Fellowship. After careful review, we are unable to accept your application at this time.
+
+---
+
+Reviewer Feedback
+
+<%~ it.reviewerRemarks %>
+
+---
+
+We encourage you to review the feedback above and consider re-applying in the future. We appreciate your effort and look forward to seeing your growth.

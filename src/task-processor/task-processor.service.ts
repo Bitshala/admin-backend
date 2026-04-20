@@ -11,6 +11,7 @@ import { GitHubClassroomService } from '@/github-classroom/github-classroom.serv
 import { CohortReminderService } from '@/cohorts/cohort-reminder.service';
 import { CertificatesService } from '@/certificates/certificates.service';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
+import { FellowshipReportsService } from '@/fellowship-reports/fellowship-reports.service';
 
 @Injectable()
 export class APITaskProcessorService {
@@ -24,6 +25,7 @@ export class APITaskProcessorService {
         private readonly cohortReminderService: CohortReminderService,
         private readonly certificatesService: CertificatesService,
         private readonly cohortCalendarService: CohortCalendarService,
+        private readonly fellowshipReportsService: FellowshipReportsService,
         private readonly discordAlert: DiscordAlertService,
     ) {}
 
@@ -100,6 +102,11 @@ export class APITaskProcessorService {
                     break;
                 case TaskType.SEND_CALENDAR_UPDATE_EMAILS:
                     await this.cohortCalendarService.handleSendCalendarUpdateEmails(
+                        task,
+                    );
+                    break;
+                case TaskType.SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS:
+                    await this.fellowshipReportsService.handleSendReportReminderEmails(
                         task,
                     );
                     break;

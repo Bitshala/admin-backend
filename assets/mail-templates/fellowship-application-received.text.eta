@@ -1,0 +1,15 @@
+Application Received — <%~ it.fellowshipType %> Fellowship
+
+Hi <%~ it.userName %>,
+
+Thank you for applying to the <%~ it.fellowshipType %> Fellowship at Bitshala. We have received your application and proposal.
+
+Our team will review your application and get back to you soon. You will receive an email once a decision has been made.
+
+---
+
+What Happens Next?
+
+- Your application is now under review.
+- You will be notified via email once a decision is made.
+- If accepted, you will be asked to complete additional details to get started.

@@ -72,3 +72,29 @@ export enum FellowshipInterest {
     COINSWAP = 'COINSWAP',
     ANY_OTHER_PROJECT = 'ANY_OTHER_PROJECT',
 }
+
+export enum FellowshipType {
+    DEVELOPER = 'DEVELOPER',
+    DESIGNER = 'DESIGNER',
+    EDUCATOR = 'EDUCATOR',
+}
+
+export enum FellowshipApplicationStatus {
+    DRAFT = 'DRAFT',
+    SUBMITTED = 'SUBMITTED',
+    ACCEPTED = 'ACCEPTED',
+    REJECTED = 'REJECTED',
+}
+
+export enum FellowshipStatus {
+    PENDING = 'PENDING',
+    ACTIVE = 'ACTIVE',
+    COMPLETED = 'COMPLETED',
+}
+
+export enum FellowshipReportStatus {
+    DRAFT = 'DRAFT',
+    SUBMITTED = 'SUBMITTED',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+}

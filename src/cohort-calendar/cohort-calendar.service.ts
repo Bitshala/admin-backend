@@ -65,13 +65,10 @@ export class CohortCalendarService {
                 continue;
             }
 
-            const userName =
-                user.name || user.discordGlobalName || user.discordUserName;
-
             try {
                 await this.mailService.sendCalendarUpdateEmail(
                     user.email,
-                    userName,
+                    user.displayName,
                     cohortName,
                     season,
                     calendarInvite,
