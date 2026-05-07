@@ -1,19 +1,60 @@
-Congratulations <%~ it.userName %>!
+Welcome <%~ it.userName %>!
 
 Your <%~ it.fellowshipType %> Fellowship Application Has Been Accepted
 
-Hi <%~ it.userName %>,
+Dear <%~ it.userName %>,
 
-We are excited to inform you that your application for the <%~ it.fellowshipType %> Fellowship has been accepted!
+We are thrilled to inform you that you have been selected for the Bitshala <%~ it.fellowshipType %> Fellowship! We're excited to see your impact and contributions and look forward to working with you over the months ahead.
 
-To get started, please log in to your account and complete the fellowship onboarding form with your additional details.
-
-Complete Onboarding: https://app.bitshala.org/
+We've set up a Google Drive folder (<%~ it.driveFolderUrl %>) where your contracts and tax forms will be collected. Your monthly work reports are submitted through the Bitshala app at https://app.bitshala.org/.
 
 ---
 
 Next Steps
 
-- Log in and fill out the fellowship onboarding form.
-- Provide your mentor contact, project details, and GitHub profile.
-- Once completed, you will be fully onboarded into the fellowship program.
+1. Sign the Contract
+   Your contract — already signed by Bitshala — is in the Drive folder. Add your signature and upload the signed copy back to the same folder. Make sure the contract date matches the date in the contract document.
+
+2. Submit Your W-8BEN Form
+   We require a completed W-8BEN form for U.S. tax compliance on monthly payouts. Download the form from https://www.irs.gov/pub/irs-pdf/fw8ben.pdf, fill it out (India-specific guidance below), and upload the completed form to the Drive folder.
+
+3. Share Account Details
+   Monthly payments are processed through Skydo. You'll receive a separate email from Skydo with a form for your account and contact info — please fill it in.
+
+4. Complete Onboarding
+   Once the above is done, log in to https://app.bitshala.org/ and finish the fellowship onboarding form (mentor contact, project details, GitHub profile).
+
+---
+
+Reference: W-8BEN Form — India-Specific Guidance
+
+Use this if you're filing from India. Skip if it doesn't apply.
+Form: https://www.irs.gov/pub/irs-pdf/fw8ben.pdf
+
+Part I — Identification of Beneficial Owner
+- 1: Your full name
+- 2: Your country of citizenship
+- 3: Full street address — city, state/province, postal code, country
+- 4: Optional, only if mailing address differs from line 3
+- 5: Leave blank (unless you have a U.S. tax ID)
+- 6a: Your PAN card or relevant tax ID
+- 6b: Leave blank
+- 7: Date of birth (MM-DD-YYYY)
+
+Part II — Claim of Tax Treaty Benefits
+- 9a: India
+- 10: Article 15 (Independent Personal Services) of the treaty on line 9 — claims a 0% withholding rate.
+- Additional conditions: "Beneficial owner has a permanent establishment only in India and all work is done in India as per Article 5 (Permanent Establishment)."
+
+Part III — Certification
+- Sign, date, and complete the form.
+
+---
+
+Ready to get started? Open your fellowship workspace: <%~ it.driveFolderUrl %>
+
+If you have any questions or need clarification, email us at fellowship@bitshala.org — we're here to support you every step of the way.
+
+Welcome aboard, and we look forward to achieving great things together!
+
+— Team Bitshala

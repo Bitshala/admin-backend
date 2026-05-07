@@ -356,6 +356,7 @@ export class FellowshipApplicationsService {
                         applicant.email,
                         applicant.displayName,
                         application.type,
+                        dto.driveFolderUrl!,
                     );
                 } else if (
                     dto.status === FellowshipApplicationStatus.REJECTED

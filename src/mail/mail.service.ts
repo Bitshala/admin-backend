@@ -125,6 +125,7 @@ export class MailService implements OnModuleInit {
     private async sendTemplatedEmail<K extends MailTemplate>(options: {
         to: string;
         from?: string;
+        cc?: string | string[];
         subject: string;
         template: K;
         context: TemplateContextMap[K];
@@ -139,6 +140,7 @@ export class MailService implements OnModuleInit {
         await this.coreService.sendEmail({
             to: options.to,
             from: options.from,
+            cc: options.cc,
             subject: options.subject,
             html: html,
             text: text,
@@ -383,17 +385,20 @@ export class MailService implements OnModuleInit {
         userEmail: string,
         userName: string,
         fellowshipType: FellowshipType,
+        driveFolderUrl: string,
     ): Promise<void> {
         const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
-        const subject = `Congratulations! Your ${displayType} Fellowship Application Has Been Accepted`;
+        const subject = `Welcome to the Bitshala ${displayType} Fellowship`;
 
         return this.sendTemplatedEmail({
             to: userEmail,
+            cc: 'fellowship@bitshala.org',
             subject,
             template: MailTemplate.FellowshipApplicationAccepted,
             context: {
                 userName,
                 fellowshipType: displayType,
+                driveFolderUrl,
             },
         });
     }

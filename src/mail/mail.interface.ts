@@ -69,6 +69,7 @@ export interface FellowshipApplicationReceivedContext {
 export interface FellowshipApplicationAcceptedContext {
     userName: string;
     fellowshipType: string;
+    driveFolderUrl: string;
 }
 
 export interface FellowshipApplicationRejectedContext {
