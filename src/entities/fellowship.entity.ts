@@ -85,6 +85,9 @@ export class Fellowship extends BaseEntity {
     @Column('text', { nullable: true })
     questionsForBitshala!: string | null;
 
+    @Column('text', { nullable: true })
+    driveFolderUrl!: string | null;
+
     @ManyToOne(() => User)
     user!: User;
 

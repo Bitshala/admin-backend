@@ -321,6 +321,15 @@ export class FellowshipApplicationsService {
             );
         }
 
+        if (
+            dto.status === FellowshipApplicationStatus.ACCEPTED &&
+            !dto.driveFolderUrl
+        ) {
+            throw new BadRequestException(
+                'A Google Drive folder URL is required when accepting an application',
+            );
+        }
+
         application.status = dto.status;
         application.reviewedBy = reviewer;
         if (dto.reviewerRemarks) {
@@ -334,6 +343,7 @@ export class FellowshipApplicationsService {
                 type: application.type,
                 user: application.applicant,
                 application: application,
+                driveFolderUrl: dto.driveFolderUrl,
             });
             await this.fellowshipRepository.save(fellowship);
         }
