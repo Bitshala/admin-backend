@@ -35,6 +35,8 @@ import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
+import { isLastRetry } from '@/task-processor/task-processor.utils';
+import { TWENTY_FOUR_HOURS_MS } from '@/common/durations.constants';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
@@ -64,6 +66,8 @@ export class CohortsService {
         private readonly cohortWaitlistRepository: Repository<CohortWaitlist>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @InjectRepository(APITask)
+        private readonly apiTaskRepository: Repository<APITask<any>>,
         private readonly dbTransactionService: DbTransactionService,
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
@@ -368,6 +372,14 @@ export class CohortsService {
                 apiTask.data = { cohortId: cohort.id };
                 await manager.save(apiTask);
 
+                // Start the daily Discord role reconciliation recurrence.
+                // The handler self-reschedules at +24h after each run.
+                const reconcileTask =
+                    new APITask<TaskType.RECONCILE_COHORT_DISCORD_ROLES>();
+                reconcileTask.type = TaskType.RECONCILE_COHORT_DISCORD_ROLES;
+                reconcileTask.data = { cohortId: cohort.id };
+                await manager.save(reconcileTask);
+
                 // Schedule reminder email tasks for each week
                 const reminderTasks = cohort.weeks.map((week) =>
                     this.createReminderTask(cohort.id, week),
@@ -599,6 +611,25 @@ export class CohortsService {
         await this.cohortWeekRepository.save(cohort.weeks);
     }
 
+    private getDiscordRoleIdForCohortType(cohortType: CohortType): string {
+        switch (cohortType) {
+            case CohortType.MASTERING_BITCOIN:
+                return this.masteringBitcoinDiscordRoleId;
+            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
+                return this.learningBitcoinFromCommandLineDiscordRoleId;
+            case CohortType.PROGRAMMING_BITCOIN:
+                return this.programmingBitcoinDiscordRoleId;
+            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
+                return this.bitcoinProtocolDevelopmentDiscordRoleId;
+            case CohortType.MASTERING_LIGHTNING_NETWORK:
+                return this.masteringLightningNetworkDiscordRoleId;
+            default:
+                throw new BadRequestException(
+                    `Invalid cohort type: ${cohortType}`,
+                );
+        }
+    }
+
     async assignDiscordRole(userId: string, cohortId: string) {
         const membership = await this.cohortMembershipRepository.findOne({
             where: { user: { id: userId }, cohort: { id: cohortId } },
@@ -612,30 +643,7 @@ export class CohortsService {
         }
 
         const { user, cohort } = membership;
-
-        let roleId: string;
-
-        switch (cohort.type) {
-            case CohortType.MASTERING_BITCOIN:
-                roleId = this.masteringBitcoinDiscordRoleId;
-                break;
-            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
-                roleId = this.learningBitcoinFromCommandLineDiscordRoleId;
-                break;
-            case CohortType.PROGRAMMING_BITCOIN:
-                roleId = this.programmingBitcoinDiscordRoleId;
-                break;
-            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
-                roleId = this.bitcoinProtocolDevelopmentDiscordRoleId;
-                break;
-            case CohortType.MASTERING_LIGHTNING_NETWORK:
-                roleId = this.masteringLightningNetworkDiscordRoleId;
-                break;
-            default:
-                throw new BadRequestException(
-                    `Invalid cohort type: ${cohort.type}`,
-                );
-        }
+        const roleId = this.getDiscordRoleIdForCohortType(cohort.type);
 
         if (!user.isGuildMember) {
             throw new BadRequestException(
@@ -647,6 +655,88 @@ export class CohortsService {
 
         membership.discordRoleAssigned = true;
         await this.cohortMembershipRepository.save(membership);
+    }
+
+    async handleReconcileDiscordRolesTask(
+        task: APITask<TaskType.RECONCILE_COHORT_DISCORD_ROLES>,
+    ): Promise<void> {
+        const { cohortId } = task.data;
+
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
+            relations: { weeks: true },
+        });
+
+        if (!cohort) {
+            // Cohort deleted; stop the recurrence by not rescheduling.
+            this.logger.warn(
+                `Cohort ${cohortId} not found, stopping reconciliation recurrence`,
+            );
+            return;
+        }
+
+        const reconciliationCutoff =
+            cohort.getEndDate().getTime() + 7 * TWENTY_FOUR_HOURS_MS;
+        const shouldRequeue = Date.now() < reconciliationCutoff;
+
+        try {
+            await this.reconcileDiscordRolesForCohort(cohort);
+            if (shouldRequeue) {
+                await this.scheduleNextReconciliation(cohortId);
+            } else {
+                this.logger.log(
+                    `Cohort ${cohortId} ended over a week ago, stopping reconciliation recurrence`,
+                );
+            }
+        } catch (error) {
+            if (isLastRetry(task) && shouldRequeue) {
+                await this.scheduleNextReconciliation(cohortId);
+            }
+            throw error;
+        }
+    }
+
+    private async scheduleNextReconciliation(cohortId: string): Promise<void> {
+        const next = this.apiTaskRepository.create({
+            type: TaskType.RECONCILE_COHORT_DISCORD_ROLES,
+            data: { cohortId },
+            executeOnTime: new Date(Date.now() + TWENTY_FOUR_HOURS_MS),
+        });
+        await this.apiTaskRepository.save(next);
+    }
+
+    private async reconcileDiscordRolesForCohort(cohort: Cohort): Promise<void> {
+        const roleId = this.getDiscordRoleIdForCohortType(cohort.type);
+
+        const memberships = await this.cohortMembershipRepository.find({
+            where: { cohort: { id: cohort.id }, discordRoleAssigned: false },
+            relations: { user: true },
+        });
+
+        this.logger.log(
+            `Reconciling Discord roles for ${memberships.length} membership(s) in cohort ${cohort.id}`,
+        );
+
+        for (const membership of memberships) {
+            const { user } = membership;
+            try {
+                const guildMember = await this.discordClient.getGuildMember(
+                    user.discordUserId,
+                );
+                if (!guildMember.roles.includes(roleId)) {
+                    await this.discordClient.attachRoleToMember(
+                        user.discordUserId,
+                        roleId,
+                    );
+                }
+                membership.discordRoleAssigned = true;
+                await this.cohortMembershipRepository.save(membership);
+            } catch (error) {
+                this.logger.warn(
+                    `Failed to reconcile Discord role for user ${user.id} in cohort ${cohort.id}: ${error.message}`,
+                );
+            }
+        }
     }
 
     async addUserToCohort(userId: string, cohortId: string) {

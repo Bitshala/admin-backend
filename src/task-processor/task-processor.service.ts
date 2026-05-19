@@ -78,6 +78,11 @@ export class APITaskProcessorService {
                         task.data.cohortId,
                     );
                     break;
+                case TaskType.RECONCILE_COHORT_DISCORD_ROLES:
+                    await this.cohortsService.handleReconcileDiscordRolesTask(
+                        task,
+                    );
+                    break;
                 case TaskType.SYNC_CLASSROOM_SCORES:
                     await this.gitHubClassroomService.handleSyncClassroomTask(
                         task,
