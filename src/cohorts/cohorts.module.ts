@@ -13,6 +13,7 @@ import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { User } from '@/entities/user.entity';
 import { Feedback } from '@/entities/feedback.entity';
 import { Attendance } from '@/entities/attendance.entity';
+import { Certificate } from '@/entities/certificate.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { MailModule } from '@/mail/mail.module';
 import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
@@ -27,6 +28,7 @@ import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
             User,
             Feedback,
             Attendance,
+            Certificate,
             APITask,
         ]),
         DbTransactionModule,

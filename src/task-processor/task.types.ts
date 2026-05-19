@@ -5,6 +5,10 @@ export type AssignCohortRoleTaskData = {
     cohortId: string;
 };
 
+export type AssignCohortAlumniRoleTaskData = {
+    cohortId: string;
+};
+
 export type ReconcileCohortDiscordRolesTaskData = {
     cohortId: string;
 };
@@ -32,6 +36,7 @@ export type SendCalendarUpdateEmailsTaskData = {
 
 export type TaskDataMap = {
     [TaskType.ASSIGN_COHORT_ROLE]: AssignCohortRoleTaskData;
+    [TaskType.ASSIGN_COHORT_ALUMNI_ROLE]: AssignCohortAlumniRoleTaskData;
     [TaskType.RECONCILE_COHORT_DISCORD_ROLES]: ReconcileCohortDiscordRolesTaskData;
     [TaskType.SYNC_CLASSROOM_SCORES]: SyncClassroomScoresTaskData;
     [TaskType.SEND_COHORT_REMINDER_EMAILS]: SendCohortReminderEmailsTaskData;

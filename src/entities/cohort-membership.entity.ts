@@ -23,4 +23,7 @@ export class CohortMembership extends BaseEntity {
 
     @Column('boolean', { default: false })
     discordRoleAssigned!: boolean;
+
+    @Column('boolean', { default: false })
+    alumniRoleAssigned!: boolean;
 }

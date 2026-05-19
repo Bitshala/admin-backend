@@ -136,6 +136,18 @@ export class CertificatesService {
                 `Saved ${certificateEntities.length} certificate records for cohort ${cohortId}`,
             );
 
+            if (certificateEntities.length > 0) {
+                const alumniTask =
+                    new APITask<TaskType.ASSIGN_COHORT_ALUMNI_ROLE>();
+                alumniTask.type = TaskType.ASSIGN_COHORT_ALUMNI_ROLE;
+                alumniTask.data = { cohortId };
+                alumniTask.executeOnTime = new Date();
+                await manager.save(alumniTask);
+                this.logger.log(
+                    `Created ASSIGN_COHORT_ALUMNI_ROLE task for cohort ${cohortId}`,
+                );
+            }
+
             if (sendEmail) {
                 const emailTask =
                     new APITask<TaskType.SEND_CERTIFICATE_EMAILS>();

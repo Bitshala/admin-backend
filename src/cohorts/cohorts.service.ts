@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cohort } from '@/entities/cohort.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
     CreateCohortRequestDto,
     JoinWaitlistRequestDto,
@@ -33,6 +33,7 @@ import { ConfigService } from '@nestjs/config';
 import { CohortType, CohortWeekType } from '@/common/enum';
 import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
+import { Certificate } from '@/entities/certificate.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { isLastRetry } from '@/task-processor/task-processor.utils';
@@ -55,6 +56,12 @@ export class CohortsService {
     private readonly bitcoinProtocolDevelopmentDiscordRoleId: string;
     private readonly masteringLightningNetworkDiscordRoleId: string;
 
+    private readonly masteringBitcoinAlumniDiscordRoleId: string;
+    private readonly learningBitcoinFromCommandLineAlumniDiscordRoleId: string;
+    private readonly programmingBitcoinAlumniDiscordRoleId: string;
+    private readonly bitcoinProtocolDevelopmentAlumniDiscordRoleId: string;
+    private readonly masteringLightningNetworkAlumniDiscordRoleId: string;
+
     constructor(
         @InjectRepository(Cohort)
         private readonly cohortRepository: Repository<Cohort>,
@@ -66,6 +73,8 @@ export class CohortsService {
         private readonly cohortWaitlistRepository: Repository<CohortWaitlist>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @InjectRepository(Certificate)
+        private readonly certificateRepository: Repository<Certificate>,
         @InjectRepository(APITask)
         private readonly apiTaskRepository: Repository<APITask<any>>,
         private readonly dbTransactionService: DbTransactionService,
@@ -94,6 +103,27 @@ export class CohortsService {
         this.masteringLightningNetworkDiscordRoleId =
             this.configService.getOrThrow<string>(
                 'discord.roles.masteringLightningNetwork',
+            );
+
+        this.masteringBitcoinAlumniDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.alumniMasteringBitcoin',
+            );
+        this.learningBitcoinFromCommandLineAlumniDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.alumniLearningBitcoinFromCommandLine',
+            );
+        this.programmingBitcoinAlumniDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.alumniProgrammingBitcoin',
+            );
+        this.bitcoinProtocolDevelopmentAlumniDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.alumniBitcoinProtocolDevelopment',
+            );
+        this.masteringLightningNetworkAlumniDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.alumniMasteringLightningNetwork',
             );
     }
 
@@ -630,6 +660,25 @@ export class CohortsService {
         }
     }
 
+    private getAlumniDiscordRoleIdForCohortType(cohortType: CohortType): string {
+        switch (cohortType) {
+            case CohortType.MASTERING_BITCOIN:
+                return this.masteringBitcoinAlumniDiscordRoleId;
+            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
+                return this.learningBitcoinFromCommandLineAlumniDiscordRoleId;
+            case CohortType.PROGRAMMING_BITCOIN:
+                return this.programmingBitcoinAlumniDiscordRoleId;
+            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
+                return this.bitcoinProtocolDevelopmentAlumniDiscordRoleId;
+            case CohortType.MASTERING_LIGHTNING_NETWORK:
+                return this.masteringLightningNetworkAlumniDiscordRoleId;
+            default:
+                throw new BadRequestException(
+                    `Invalid cohort type: ${cohortType}`,
+                );
+        }
+    }
+
     async assignDiscordRole(userId: string, cohortId: string) {
         const membership = await this.cohortMembershipRepository.findOne({
             where: { user: { id: userId }, cohort: { id: cohortId } },
@@ -655,6 +704,25 @@ export class CohortsService {
 
         membership.discordRoleAssigned = true;
         await this.cohortMembershipRepository.save(membership);
+    }
+
+    async handleAssignAlumniRolesTask(
+        task: APITask<TaskType.ASSIGN_COHORT_ALUMNI_ROLE>,
+    ): Promise<void> {
+        const { cohortId } = task.data;
+
+        const cohort = await this.cohortRepository.findOne({
+            where: { id: cohortId },
+        });
+
+        if (!cohort) {
+            this.logger.warn(
+                `Cohort ${cohortId} not found, skipping alumni role assignment`,
+            );
+            return;
+        }
+
+        await this.reconcileAlumniDiscordRolesForCohort(cohort);
     }
 
     async handleReconcileDiscordRolesTask(
@@ -734,6 +802,59 @@ export class CohortsService {
             } catch (error) {
                 this.logger.warn(
                     `Failed to reconcile Discord role for user ${user.id} in cohort ${cohort.id}: ${error.message}`,
+                );
+            }
+        }
+
+        await this.reconcileAlumniDiscordRolesForCohort(cohort);
+    }
+
+    private async reconcileAlumniDiscordRolesForCohort(
+        cohort: Cohort,
+    ): Promise<void> {
+        const alumniRoleId = this.getAlumniDiscordRoleIdForCohortType(
+            cohort.type,
+        );
+
+        const certificates = await this.certificateRepository.find({
+            where: { cohort: { id: cohort.id } },
+            relations: { user: true },
+        });
+
+        if (certificates.length === 0) {
+            return;
+        }
+
+        const memberships = await this.cohortMembershipRepository.find({
+            where: {
+                cohort: { id: cohort.id },
+                user: { id: In(certificates.map((c) => c.user.id)) },
+                alumniRoleAssigned: false,
+            },
+            relations: { user: true },
+        });
+
+        this.logger.log(
+            `Reconciling alumni Discord roles for ${memberships.length} membership(s) in cohort ${cohort.id}`,
+        );
+
+        for (const membership of memberships) {
+            const { user } = membership;
+            try {
+                const guildMember = await this.discordClient.getGuildMember(
+                    user.discordUserId,
+                );
+                if (!guildMember.roles.includes(alumniRoleId)) {
+                    await this.discordClient.attachRoleToMember(
+                        user.discordUserId,
+                        alumniRoleId,
+                    );
+                }
+                membership.alumniRoleAssigned = true;
+                await this.cohortMembershipRepository.save(membership);
+            } catch (error) {
+                this.logger.warn(
+                    `Failed to reconcile alumni Discord role for user ${user.id} in cohort ${cohort.id}: ${error.message}`,
                 );
             }
         }

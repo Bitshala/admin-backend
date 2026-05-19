@@ -78,6 +78,9 @@ export class APITaskProcessorService {
                         task.data.cohortId,
                     );
                     break;
+                case TaskType.ASSIGN_COHORT_ALUMNI_ROLE:
+                    await this.cohortsService.handleAssignAlumniRolesTask(task);
+                    break;
                 case TaskType.RECONCILE_COHORT_DISCORD_ROLES:
                     await this.cohortsService.handleReconcileDiscordRolesTask(
                         task,

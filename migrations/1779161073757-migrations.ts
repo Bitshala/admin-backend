@@ -5,7 +5,7 @@ export class Migrations1779161073757 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `CREATE TABLE "cohort_membership" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "discordRoleAssigned" boolean NOT NULL DEFAULT false, "userId" uuid, "cohortId" uuid, CONSTRAINT "UQ_cohort_membership_user_cohort" UNIQUE ("userId", "cohortId"), CONSTRAINT "PK_cohort_membership_id" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "cohort_membership" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "discordRoleAssigned" boolean NOT NULL DEFAULT false, "alumniRoleAssigned" boolean NOT NULL DEFAULT false, "userId" uuid, "cohortId" uuid, CONSTRAINT "UQ_cohort_membership_user_cohort" UNIQUE ("userId", "cohortId"), CONSTRAINT "PK_cohort_membership_id" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
             `ALTER TABLE "cohort_membership" ADD CONSTRAINT "FK_cohort_membership_user" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -37,6 +37,23 @@ export class Migrations1779161073757 implements MigrationInterface {
             FROM "cohort" c
         `);
 
+        // Backfill: one ASSIGN_COHORT_ALUMNI_ROLE task per cohort that has
+        // existing certificates. The handler iterates cert holders and
+        // assigns the alumni role per-user, swallowing per-user failures
+        // (left-the-guild, etc.). Staggered 5 minutes apart for the same
+        // reason as the reconciliation tasks above.
+        await queryRunner.query(`
+            INSERT INTO "api_task" ("type", "data", "executeOnTime")
+            SELECT
+                'ASSIGN_COHORT_ALUMNI_ROLE',
+                jsonb_build_object('cohortId', sub."cohortId"),
+                NOW() + ((ROW_NUMBER() OVER (ORDER BY sub."cohortId") - 1) * INTERVAL '5 minutes')
+            FROM (
+                SELECT DISTINCT c."cohortId"
+                FROM "certificate" c
+            ) sub
+        `);
+
         await queryRunner.query(
             `ALTER TABLE "cohort_users_user" DROP CONSTRAINT "FK_2d63195132b5a87b18419994ffc"`,
         );
@@ -53,10 +70,10 @@ export class Migrations1779161073757 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        // Cancel any pending reconciliation tasks (their handler is removed
-        // in the reverted code).
+        // Cancel any pending reconciliation and alumni-role tasks (their
+        // handlers are removed in the reverted code).
         await queryRunner.query(
-            `UPDATE "api_task" SET "status" = 'CANCELLED' WHERE "type" = 'RECONCILE_COHORT_DISCORD_ROLES' AND "status" IN ('UNPROCESSED', 'FAILED')`,
+            `UPDATE "api_task" SET "status" = 'CANCELLED' WHERE "type" IN ('RECONCILE_COHORT_DISCORD_ROLES', 'ASSIGN_COHORT_ALUMNI_ROLE') AND "status" IN ('UNPROCESSED', 'FAILED')`,
         );
 
         await queryRunner.query(

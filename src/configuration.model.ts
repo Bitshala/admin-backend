@@ -83,6 +83,21 @@ class DiscordRolesConfig {
 
     @IsNumberString({ no_symbols: true })
     masteringLightningNetwork: string;
+
+    @IsNumberString({ no_symbols: true })
+    alumniMasteringBitcoin: string;
+
+    @IsNumberString({ no_symbols: true })
+    alumniLearningBitcoinFromCommandLine: string;
+
+    @IsNumberString({ no_symbols: true })
+    alumniProgrammingBitcoin: string;
+
+    @IsNumberString({ no_symbols: true })
+    alumniBitcoinProtocolDevelopment: string;
+
+    @IsNumberString({ no_symbols: true })
+    alumniMasteringLightningNetwork: string;
 }
 
 class DiscordInviteUrlsConfig {
