@@ -31,6 +31,7 @@ import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
 import { CohortType, CohortWeekType } from '@/common/enum';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { APITask } from '@/entities/api-task.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
@@ -55,6 +56,8 @@ export class CohortsService {
     constructor(
         @InjectRepository(Cohort)
         private readonly cohortRepository: Repository<Cohort>,
+        @InjectRepository(CohortMembership)
+        private readonly cohortMembershipRepository: Repository<CohortMembership>,
         @InjectRepository(CohortWeek)
         private readonly cohortWeekRepository: Repository<CohortWeek>,
         @InjectRepository(CohortWaitlist)
@@ -231,7 +234,7 @@ export class CohortsService {
         const [cohorts, total]: [Cohort[], number] =
             await this.cohortRepository.findAndCount({
                 where: {
-                    users: { id: user.id },
+                    memberships: { user: { id: user.id } },
                 },
                 skip: query.page * query.pageSize,
                 take: query.pageSize,
@@ -596,14 +599,23 @@ export class CohortsService {
         await this.cohortWeekRepository.save(cohort.weeks);
     }
 
-    async assignDiscordRole(userId: string, cohortType: CohortType) {
-        const user = await this.userRepository.findOneOrFail({
-            where: { id: userId },
+    async assignDiscordRole(userId: string, cohortId: string) {
+        const membership = await this.cohortMembershipRepository.findOne({
+            where: { user: { id: userId }, cohort: { id: cohortId } },
+            relations: { user: true, cohort: true },
         });
+
+        if (!membership) {
+            throw new BadRequestException(
+                `User ${userId} is not enrolled in cohort ${cohortId}.`,
+            );
+        }
+
+        const { user, cohort } = membership;
 
         let roleId: string;
 
-        switch (cohortType) {
+        switch (cohort.type) {
             case CohortType.MASTERING_BITCOIN:
                 roleId = this.masteringBitcoinDiscordRoleId;
                 break;
@@ -621,7 +633,7 @@ export class CohortsService {
                 break;
             default:
                 throw new BadRequestException(
-                    `Invalid cohort type: ${cohortType}`,
+                    `Invalid cohort type: ${cohort.type}`,
                 );
         }
 
@@ -632,6 +644,9 @@ export class CohortsService {
         }
 
         await this.discordClient.attachRoleToMember(user.discordUserId, roleId);
+
+        membership.discordRoleAssigned = true;
+        await this.cohortMembershipRepository.save(membership);
     }
 
     async addUserToCohort(userId: string, cohortId: string) {
@@ -659,10 +674,7 @@ export class CohortsService {
 
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            relations: {
-                weeks: true,
-                users: true,
-            },
+            relations: { weeks: true },
         });
 
         if (!cohort) {
@@ -677,9 +689,9 @@ export class CohortsService {
             );
         }
 
-        const alreadyEnrolled: boolean =
-            cohort.users.some((enrolledUser) => enrolledUser.id === user.id) ??
-            false;
+        const alreadyEnrolled = await this.cohortMembershipRepository.exists({
+            where: { user: { id: user.id }, cohort: { id: cohort.id } },
+        });
 
         if (alreadyEnrolled) {
             throw new BadRequestException(
@@ -693,13 +705,11 @@ export class CohortsService {
 
         await this.dbTransactionService.execute(
             async (manager): Promise<void> => {
-                if (!cohort.users) {
-                    cohort.users = [user];
-                } else {
-                    cohort.users.push(user);
-                }
-
-                await manager.save(cohort);
+                const membership = new CohortMembership();
+                membership.user = user;
+                membership.cohort = cohort;
+                membership.discordRoleAssigned = false;
+                await manager.save(membership);
 
                 const attendances: Attendance[] = [];
                 const groupDiscussionScores: GroupDiscussionScore[] = [];
@@ -741,7 +751,7 @@ export class CohortsService {
                 apiTask.type = TaskType.ASSIGN_COHORT_ROLE;
                 apiTask.data = {
                     userId: user.id,
-                    cohortType: cohort.type,
+                    cohortId: cohort.id,
                 };
                 await manager.save(apiTask);
             },
@@ -786,7 +796,6 @@ export class CohortsService {
 
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            relations: { users: true },
         });
 
         if (!cohort) {
@@ -795,9 +804,9 @@ export class CohortsService {
             );
         }
 
-        const isEnrolled =
-            cohort.users?.some((enrolledUser) => enrolledUser.id === user.id) ??
-            false;
+        const isEnrolled = await this.cohortMembershipRepository.exists({
+            where: { user: { id: user.id }, cohort: { id: cohort.id } },
+        });
 
         if (!isEnrolled) {
             throw new BadRequestException('User is not enrolled in cohort.');
@@ -805,11 +814,10 @@ export class CohortsService {
 
         await this.dbTransactionService.execute(
             async (manager): Promise<void> => {
-                await manager
-                    .createQueryBuilder()
-                    .relation(Cohort, 'users')
-                    .of(cohort.id)
-                    .remove(user.id);
+                await manager.delete(CohortMembership, {
+                    user: { id: user.id },
+                    cohort: { id: cohort.id },
+                });
 
                 await manager.delete(Attendance, {
                     user: { id: user.id },

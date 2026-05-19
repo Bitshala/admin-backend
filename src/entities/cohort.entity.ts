@@ -3,11 +3,8 @@ import {
     PrimaryGeneratedColumn,
     Column,
     OneToMany,
-    ManyToMany,
     Unique,
-    JoinTable,
 } from 'typeorm';
-import { User } from '@/entities/user.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
@@ -15,6 +12,7 @@ import { Attendance } from '@/entities/attendance.entity';
 import { BaseEntity } from '@/entities/base.entity';
 import { CohortType } from '@/common/enum';
 import { Certificate } from '@/entities/certificate.entity';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 
 @Entity()
 @Unique(['type', 'season'])
@@ -48,9 +46,8 @@ export class Cohort extends BaseEntity {
         );
     }
 
-    @ManyToMany(() => User, (u) => u.cohorts)
-    @JoinTable()
-    users!: User[];
+    @OneToMany(() => CohortMembership, (m) => m.cohort)
+    memberships!: CohortMembership[];
 
     @OneToMany(() => CohortWeek, (cw) => cw.cohort)
     weeks!: CohortWeek[];

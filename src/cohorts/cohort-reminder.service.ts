@@ -38,7 +38,7 @@ export class CohortReminderService {
 
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            relations: { users: true },
+            relations: { memberships: { user: true } },
         });
 
         if (!cohort) {
@@ -59,7 +59,9 @@ export class CohortReminderService {
 
         const sessionDate = new Date(cohortWeek.scheduledDate);
 
-        const usersWithEmail = cohort.users.filter((u) => u.email);
+        const usersWithEmail = cohort.memberships
+            .map((m) => m.user)
+            .filter((u) => u.email);
 
         this.logger.log(
             `Sending ${cohortWeek.type} reminder emails to ${usersWithEmail.length} users for cohort ${cohortId}, week ${cohortWeek.week}`,
@@ -185,7 +187,7 @@ export class CohortReminderService {
 
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            relations: { users: true, weeks: true },
+            relations: { memberships: { user: true }, weeks: true },
         });
 
         if (!cohort) {
@@ -200,7 +202,9 @@ export class CohortReminderService {
                 .padStart(2, '0')}`;
             const cohortName = this.mailService.getCohortShortName(cohort.type);
 
-            const usersWithEmail = cohort.users.filter((u) => u.email);
+            const usersWithEmail = cohort.memberships
+                .map((m) => m.user)
+                .filter((u) => u.email);
 
             this.logger.log(
                 `Sending feedback reminder emails for cohort ${cohortId} to ${usersWithEmail.length} eligible users`,

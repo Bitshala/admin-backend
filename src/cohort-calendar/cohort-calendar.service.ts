@@ -37,7 +37,7 @@ export class CohortCalendarService {
 
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            relations: { users: true, weeks: true },
+            relations: { memberships: { user: true }, weeks: true },
         });
 
         if (!cohort) {
@@ -53,11 +53,13 @@ export class CohortCalendarService {
         const cohortName = this.mailService.getCohortShortName(cohort.type);
         const season = `Season ${cohort.season.toString().padStart(2, '0')}`;
 
+        const users = cohort.memberships.map((m) => m.user);
+
         this.logger.log(
-            `Sending calendar update emails to ${cohort.users.length} users for cohort ${cohortId}`,
+            `Sending calendar update emails to ${users.length} users for cohort ${cohortId}`,
         );
 
-        for (const user of cohort.users) {
+        for (const user of users) {
             if (!user.email) {
                 this.logger.warn(
                     `User ${user.id} does not have an email address, skipping calendar update email`,

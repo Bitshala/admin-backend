@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cohort } from '@/entities/cohort.entity';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { CohortsService } from '@/cohorts/cohorts.service';
 import { CohortsController } from '@/cohorts/cohorts.controller';
@@ -20,6 +21,7 @@ import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
     imports: [
         TypeOrmModule.forFeature([
             Cohort,
+            CohortMembership,
             CohortWeek,
             CohortWaitlist,
             User,

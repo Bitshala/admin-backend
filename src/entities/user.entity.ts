@@ -1,11 +1,4 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    OneToMany,
-    ManyToMany,
-} from 'typeorm';
-import { Cohort } from '@/entities/cohort.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { Attendance } from '@/entities/attendance.entity';
@@ -13,6 +6,7 @@ import { BaseEntity } from '@/entities/base.entity';
 import { UserRole } from '@/common/enum';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -70,8 +64,8 @@ export class User extends BaseEntity {
     @Column('varchar', { length: 255, nullable: true })
     referral!: string | null;
 
-    @ManyToMany(() => Cohort, (c) => c.users)
-    cohorts!: Cohort[];
+    @OneToMany(() => CohortMembership, (m) => m.user)
+    cohortMemberships!: CohortMembership[];
 
     @OneToMany(() => GroupDiscussionScore, (gds) => gds.user)
     groupDiscussionScores!: GroupDiscussionScore[];

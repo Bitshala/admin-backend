@@ -1,5 +1,6 @@
 import { Attendance } from '@/entities/attendance.entity';
 import { Cohort } from '@/entities/cohort.entity';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
@@ -11,6 +12,7 @@ export const entities = [
     APITask,
     Attendance,
     Cohort,
+    CohortMembership,
     CohortWeek,
     ExerciseScore,
     Feedback,

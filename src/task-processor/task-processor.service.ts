@@ -75,7 +75,7 @@ export class APITaskProcessorService {
                 case TaskType.ASSIGN_COHORT_ROLE:
                     await this.cohortsService.assignDiscordRole(
                         task.data.userId,
-                        task.data.cohortType,
+                        task.data.cohortId,
                     );
                     break;
                 case TaskType.SYNC_CLASSROOM_SCORES:

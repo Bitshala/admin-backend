@@ -54,7 +54,7 @@ export class FeedbackService {
         const isEnrolled = await this.cohortRepository.exists({
             where: {
                 id: cohortId,
-                users: { id: user.id },
+                memberships: { user: { id: user.id } },
             },
         });
 

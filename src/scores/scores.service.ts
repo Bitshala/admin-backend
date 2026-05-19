@@ -233,7 +233,7 @@ export class ScoresService {
         const [cohorts, attendances, gdScores, exerciseScores] =
             await Promise.all([
                 this.cohortRepository.find({
-                    where: { users: { id: id } },
+                    where: { memberships: { user: { id: id } } },
                     relations: { weeks: true },
                 }),
                 this.attendanceRepository.find({
