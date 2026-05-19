@@ -19,6 +19,7 @@ import {
     UpdateScoresRequestDto,
 } from '@/scores/scores.request.dto';
 import { Cohort } from '@/entities/cohort.entity';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { CohortWeekType, UserRole } from '@/common/enum';
 
@@ -29,6 +30,8 @@ export class ScoresService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(Cohort)
         private readonly cohortRepository: Repository<Cohort>,
+        @InjectRepository(CohortMembership)
+        private readonly cohortMembershipRepository: Repository<CohortMembership>,
         @InjectRepository(CohortWeek)
         private readonly cohortWeekRepository: Repository<CohortWeek>,
         @InjectRepository(GroupDiscussionScore)
@@ -94,12 +97,21 @@ export class ScoresService {
             },
         });
 
+        const memberships = await this.cohortMembershipRepository.find({
+            where: { cohort: { id: cohortId } },
+            relations: { user: true },
+        });
+        const discordRoleAssignedByUserId = new Map(
+            memberships.map((m) => [m.user.id, m.discordRoleAssigned]),
+        );
+
         return new ListScoresForCohortAndWeekResponseDto({
             scores: usersWithScores
                 .map<UsersWeekScoreResponseDto>((u) =>
                     UsersWeekScoreResponseDto.fromUserWithScore(
                         u,
                         cohortWeekId,
+                        discordRoleAssignedByUserId.get(u.id) ?? false,
                     ),
                 )
                 .sort((a, b) => {

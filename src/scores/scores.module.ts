@@ -7,6 +7,7 @@ import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { Attendance } from '@/entities/attendance.entity';
 import { Cohort } from '@/entities/cohort.entity';
+import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 
 @Module({
@@ -17,6 +18,7 @@ import { CohortWeek } from '@/entities/cohort-week.entity';
             ExerciseScore,
             Attendance,
             Cohort,
+            CohortMembership,
             CohortWeek,
         ]),
     ],

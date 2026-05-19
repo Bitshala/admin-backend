@@ -151,6 +151,7 @@ export class UsersWeekScoreResponseDto extends WeeklyScore {
     discordUsername!: string;
     discordGlobalName!: string | null;
     name!: string | null;
+    discordRoleAssigned!: boolean;
     teachingAssistant: TeachingAssistantInfo | null;
 
     constructor(partial: UsersWeekScoreResponseDto) {
@@ -161,6 +162,7 @@ export class UsersWeekScoreResponseDto extends WeeklyScore {
     static fromUserWithScore(
         user: User,
         weekId: string,
+        discordRoleAssigned: boolean,
     ): UsersWeekScoreResponseDto {
         if (!user.attendances || user.attendances.length === 0) {
             throw new ServiceError(`Missing attendances for user ${user.id}`);
@@ -191,6 +193,7 @@ export class UsersWeekScoreResponseDto extends WeeklyScore {
             discordUsername: user.discordUserName,
             discordGlobalName: user.discordGlobalName,
             name: user.name,
+            discordRoleAssigned,
             teachingAssistant: assignedTA
                 ? TeachingAssistantInfo.fromUserEntity(assignedTA)
                 : null,
