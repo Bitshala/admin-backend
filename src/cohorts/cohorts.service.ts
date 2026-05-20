@@ -660,7 +660,9 @@ export class CohortsService {
         }
     }
 
-    private getAlumniDiscordRoleIdForCohortType(cohortType: CohortType): string {
+    private getAlumniDiscordRoleIdForCohortType(
+        cohortType: CohortType,
+    ): string {
         switch (cohortType) {
             case CohortType.MASTERING_BITCOIN:
                 return this.masteringBitcoinAlumniDiscordRoleId;
@@ -773,7 +775,9 @@ export class CohortsService {
         await this.apiTaskRepository.save(next);
     }
 
-    private async reconcileDiscordRolesForCohort(cohort: Cohort): Promise<void> {
+    private async reconcileDiscordRolesForCohort(
+        cohort: Cohort,
+    ): Promise<void> {
         const roleId = this.getDiscordRoleIdForCohortType(cohort.type);
 
         const memberships = await this.cohortMembershipRepository.find({
