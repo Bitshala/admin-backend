@@ -80,7 +80,7 @@ export class FellowshipApplicationsService {
         return FellowshipApplicationResponseDto.fromEntity(result);
     }
 
-    async updateDraft(
+    async updateApplication(
         id: string,
         user: User,
         dto: UpdateFellowshipApplicationRequestDto,
@@ -101,9 +101,14 @@ export class FellowshipApplicationsService {
             throw new ForbiddenException();
         }
 
-        if (application.status !== FellowshipApplicationStatus.DRAFT) {
+        const editableStatuses: FellowshipApplicationStatus[] = [
+            FellowshipApplicationStatus.DRAFT,
+            FellowshipApplicationStatus.CHANGES_REQUESTED,
+        ];
+
+        if (!editableStatuses.includes(application.status)) {
             throw new BadRequestException(
-                'Only draft applications can be updated',
+                'Only draft or changes-requested applications can be updated',
             );
         }
 
@@ -116,7 +121,7 @@ export class FellowshipApplicationsService {
         return FellowshipApplicationResponseDto.fromEntity(application);
     }
 
-    async submitDraft(
+    async submitApplication(
         id: string,
         user: User,
     ): Promise<FellowshipApplicationResponseDto> {
@@ -136,13 +141,20 @@ export class FellowshipApplicationsService {
             throw new ForbiddenException();
         }
 
-        if (application.status !== FellowshipApplicationStatus.DRAFT) {
+        const submittableStatuses: FellowshipApplicationStatus[] = [
+            FellowshipApplicationStatus.DRAFT,
+            FellowshipApplicationStatus.CHANGES_REQUESTED,
+        ];
+
+        if (!submittableStatuses.includes(application.status)) {
             throw new BadRequestException(
-                'Only draft applications can be submitted',
+                'Only draft or changes-requested applications can be submitted',
             );
         }
 
         application.status = FellowshipApplicationStatus.SUBMITTED;
+        application.reviewedBy = null;
+        application.reviewerRemarks = null;
         await this.applicationRepository.save(application);
 
         if (user.email) {
@@ -312,12 +324,33 @@ export class FellowshipApplicationsService {
             );
         }
 
+        const validReviewStatuses: FellowshipApplicationStatus[] = [
+            FellowshipApplicationStatus.ACCEPTED,
+            FellowshipApplicationStatus.REJECTED,
+            FellowshipApplicationStatus.CHANGES_REQUESTED,
+        ];
+
+        if (!validReviewStatuses.includes(dto.status)) {
+            throw new BadRequestException(
+                'Review status must be ACCEPTED, REJECTED, or CHANGES_REQUESTED',
+            );
+        }
+
         if (
             dto.status === FellowshipApplicationStatus.REJECTED &&
             !dto.reviewerRemarks
         ) {
             throw new BadRequestException(
                 'Reviewer remarks are required when rejecting an application',
+            );
+        }
+
+        if (
+            dto.status === FellowshipApplicationStatus.CHANGES_REQUESTED &&
+            !dto.reviewerRemarks
+        ) {
+            throw new BadRequestException(
+                'Reviewer remarks are required when requesting changes',
             );
         }
 
@@ -362,6 +395,16 @@ export class FellowshipApplicationsService {
                     dto.status === FellowshipApplicationStatus.REJECTED
                 ) {
                     await this.mailService.sendFellowshipApplicationRejectedEmail(
+                        applicant.email,
+                        applicant.displayName,
+                        application.type,
+                        dto.reviewerRemarks ??
+                            'No additional feedback provided by the reviewer.',
+                    );
+                } else if (
+                    dto.status === FellowshipApplicationStatus.CHANGES_REQUESTED
+                ) {
+                    await this.mailService.sendFellowshipApplicationChangesRequestedEmail(
                         applicant.email,
                         applicant.displayName,
                         application.type,

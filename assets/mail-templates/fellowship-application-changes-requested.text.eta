@@ -1,0 +1,15 @@
+Changes Requested — <%~ it.fellowshipType %> Fellowship
+
+Hi <%~ it.userName %>,
+
+Thanks for submitting your application to the <%~ it.fellowshipType %> Fellowship. A reviewer has taken a look and would like you to revise your proposal before we move forward.
+
+---
+
+Reviewer Feedback
+
+<%~ it.reviewerRemarks %>
+
+---
+
+Please update your proposal to address the feedback above and resubmit your application. We'll review it again as soon as it's back in our queue.

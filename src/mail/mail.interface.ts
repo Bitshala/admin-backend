@@ -78,6 +78,12 @@ export interface FellowshipApplicationRejectedContext {
     reviewerRemarks: string;
 }
 
+export interface FellowshipApplicationChangesRequestedContext {
+    userName: string;
+    fellowshipType: string;
+    reviewerRemarks: string;
+}
+
 export interface FellowshipReportReminderContext {
     userName: string;
     monthName: string;
@@ -109,6 +115,7 @@ export interface TemplateContextMap {
     [MailTemplate.FellowshipApplicationReceived]: FellowshipApplicationReceivedContext;
     [MailTemplate.FellowshipApplicationAccepted]: FellowshipApplicationAcceptedContext;
     [MailTemplate.FellowshipApplicationRejected]: FellowshipApplicationRejectedContext;
+    [MailTemplate.FellowshipApplicationChangesRequested]: FellowshipApplicationChangesRequestedContext;
     [MailTemplate.FellowshipReportReminder]: FellowshipReportReminderContext;
     [MailTemplate.FellowshipReportApproved]: FellowshipReportApprovedContext;
     [MailTemplate.FellowshipReportRejected]: FellowshipReportRejectedContext;

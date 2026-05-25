@@ -17,7 +17,7 @@ export class Migrations1775546228053 implements MigrationInterface {
             `CREATE TYPE "public"."fellowship_application_type_enum" AS ENUM('DEVELOPER', 'DESIGNER', 'EDUCATOR')`,
         );
         await queryRunner.query(
-            `CREATE TYPE "public"."fellowship_application_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'ACCEPTED', 'REJECTED')`,
+            `CREATE TYPE "public"."fellowship_application_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'CHANGES_REQUESTED', 'ACCEPTED', 'REJECTED')`,
         );
         await queryRunner.query(
             `CREATE TABLE "fellowship_application" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_application_type_enum" NOT NULL, "proposal" text NOT NULL, "status" "public"."fellowship_application_status_enum" NOT NULL, "reviewerRemarks" text, "applicantId" uuid, "reviewedById" uuid, CONSTRAINT "PK_d7f9f34e7d0af11c969d9ca7365" PRIMARY KEY ("id"))`,

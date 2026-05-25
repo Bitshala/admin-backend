@@ -82,6 +82,7 @@ export enum FellowshipType {
 export enum FellowshipApplicationStatus {
     DRAFT = 'DRAFT',
     SUBMITTED = 'SUBMITTED',
+    CHANGES_REQUESTED = 'CHANGES_REQUESTED',
     ACCEPTED = 'ACCEPTED',
     REJECTED = 'REJECTED',
 }

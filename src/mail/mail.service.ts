@@ -424,6 +424,27 @@ export class MailService implements OnModuleInit {
         });
     }
 
+    async sendFellowshipApplicationChangesRequestedEmail(
+        userEmail: string,
+        userName: string,
+        fellowshipType: FellowshipType,
+        reviewerRemarks: string,
+    ): Promise<void> {
+        const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
+        const subject = `Changes Requested — ${displayType} Fellowship Application`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipApplicationChangesRequested,
+            context: {
+                userName,
+                fellowshipType: displayType,
+                reviewerRemarks,
+            },
+        });
+    }
+
     private getMonthName(month: number): string {
         const months = [
             'January',

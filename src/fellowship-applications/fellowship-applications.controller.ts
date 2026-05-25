@@ -56,12 +56,15 @@ export class FellowshipApplicationsController {
     }
 
     @Post(':id/submit')
-    @ApiOperation({ summary: 'Submit a draft fellowship application' })
-    async submitDraft(
+    @ApiOperation({
+        summary:
+            'Submit a draft or changes-requested fellowship application for review',
+    })
+    async submitApplication(
         @Param('id', new ParseUUIDPipe()) id: string,
         @GetUser() user: User,
     ): Promise<FellowshipApplicationResponseDto> {
-        return this.service.submitDraft(id, user);
+        return this.service.submitApplication(id, user);
     }
 
     @Get('me')
@@ -94,13 +97,15 @@ export class FellowshipApplicationsController {
     }
 
     @Patch(':id')
-    @ApiOperation({ summary: 'Update a draft fellowship application' })
-    async updateDraft(
+    @ApiOperation({
+        summary: 'Update a draft or changes-requested fellowship application',
+    })
+    async updateApplication(
         @Param('id', new ParseUUIDPipe()) id: string,
         @GetUser() user: User,
         @Body() body: UpdateFellowshipApplicationRequestDto,
     ): Promise<FellowshipApplicationResponseDto> {
-        return this.service.updateDraft(id, user, body);
+        return this.service.updateApplication(id, user, body);
     }
 
     @Delete(':id')
