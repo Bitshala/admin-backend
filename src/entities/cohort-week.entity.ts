@@ -19,6 +19,18 @@ export interface Question {
     attachments: string[];
 }
 
+export interface ReadingMaterial {
+    label: string;
+    url: string;
+}
+
+export interface Exercise {
+    title: string;
+    concepts: string;
+    problem: string;
+    expectedOutput: string[];
+}
+
 @Entity()
 @Unique(['cohort', 'week'])
 @Check(`NOT "hasExercise" OR "type" = 'GROUP_DISCUSSION'`)
@@ -40,6 +52,18 @@ export class CohortWeek extends BaseEntity {
 
     @Column('jsonb', { default: [] })
     bonusQuestion!: Question[];
+
+    @Column('text', { nullable: true })
+    title!: string | null;
+
+    @Column('jsonb', { default: [] })
+    readingMaterial!: ReadingMaterial[];
+
+    @Column('text', { nullable: true })
+    activity!: string | null;
+
+    @Column('jsonb', { nullable: true })
+    exercise!: Exercise | null;
 
     @Column('text', { nullable: true })
     classroomInviteLink!: string | null;
