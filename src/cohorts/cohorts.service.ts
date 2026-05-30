@@ -18,6 +18,7 @@ import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
 import {
+    GeneralInstructionsResponseDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     PublicCohortResponseDto,
@@ -30,7 +31,7 @@ import { Attendance } from '@/entities/attendance.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
-import { CohortType, CohortWeekType } from '@/common/enum';
+import { CohortType, CohortWeekType, UserRole } from '@/common/enum';
 import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
@@ -127,7 +128,10 @@ export class CohortsService {
             );
     }
 
-    async getCohort(cohortId: string): Promise<GetCohortResponseDto> {
+    async getCohort(
+        cohortId: string,
+        role: UserRole,
+    ): Promise<GetCohortResponseDto> {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
             relations: { weeks: true },
@@ -139,7 +143,7 @@ export class CohortsService {
             );
         }
 
-        return GetCohortResponseDto.fromEntity(cohort);
+        return GetCohortResponseDto.fromEntity(cohort, role);
     }
 
     async getAttachment(
@@ -208,6 +212,7 @@ export class CohortsService {
 
     async listCohorts(
         query: PaginatedQueryDto,
+        role: UserRole,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         const [cohorts, total]: [Cohort[], number] =
             await this.cohortRepository.findAndCount({
@@ -219,7 +224,9 @@ export class CohortsService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: cohorts.map(GetCohortResponseDto.fromEntity),
+            records: cohorts.map((cohort) =>
+                GetCohortResponseDto.fromEntity(cohort, role),
+            ),
         });
     }
 
@@ -278,7 +285,9 @@ export class CohortsService {
 
         return new PaginatedDataDto({
             totalRecords: total,
-            records: cohorts.map(GetCohortResponseDto.fromEntity),
+            records: cohorts.map((cohort) =>
+                GetCohortResponseDto.fromEntity(cohort, user.role),
+            ),
         });
     }
 
@@ -344,6 +353,12 @@ export class CohortsService {
                 cohort.registrationDeadline = registrationDeadline;
                 cohort.hasExercises = hasExercises;
                 cohort.weeks = [];
+                // Snapshot links from config at creation; editable per cohort.
+                cohort.links = config.links.map((l) => ({
+                    label: l.label,
+                    url: l.url,
+                    minRole: l.minRole,
+                }));
 
                 if (hasExercises) cohort.classroomId = config.classroomId;
 
@@ -370,6 +385,10 @@ export class CohortsService {
                         week.hasExercise = false;
                         week.questions = [];
                         week.bonusQuestion = [];
+                        week.title = null;
+                        week.readingMaterial = [];
+                        week.activity = null;
+                        week.exercise = null;
                     } else if (weekNumber <= config.gdSessions) {
                         const weekConfig = config.weeks[weekNumber - 1];
                         week.type = CohortWeekType.GROUP_DISCUSSION;
@@ -384,11 +403,29 @@ export class CohortsService {
                                 attachments: q.attachments ?? [],
                             }),
                         );
+                        week.title = weekConfig.title ?? null;
+                        week.readingMaterial = (
+                            weekConfig.readingMaterial ?? []
+                        ).map((r) => ({ label: r.label, url: r.url }));
+                        week.activity = weekConfig.activity ?? null;
+                        week.exercise = weekConfig.exercise
+                            ? {
+                                  title: weekConfig.exercise.title,
+                                  concepts: weekConfig.exercise.concepts,
+                                  problem: weekConfig.exercise.problem,
+                                  expectedOutput:
+                                      weekConfig.exercise.expectedOutput,
+                              }
+                            : null;
                     } else {
                         week.type = CohortWeekType.GRADUATION;
                         week.hasExercise = false;
                         week.questions = [];
                         week.bonusQuestion = [];
+                        week.title = null;
+                        week.readingMaterial = [];
+                        week.activity = null;
+                        week.exercise = null;
                     }
 
                     cohort.weeks.push(week);
@@ -527,20 +564,6 @@ export class CohortsService {
             );
         }
 
-        if (cohortWeekData.questions) {
-            cohortWeek.questions = cohortWeekData.questions.map((q) => ({
-                text: q.text,
-                attachments: q.attachments ?? [],
-            }));
-        }
-        if (cohortWeekData.bonusQuestion) {
-            cohortWeek.bonusQuestion = cohortWeekData.bonusQuestion.map(
-                (q) => ({
-                    text: q.text,
-                    attachments: q.attachments ?? [],
-                }),
-            );
-        }
         if (cohortWeekData.classroomAssignmentId !== undefined) {
             cohortWeek.classroomAssignmentId =
                 cohortWeekData.classroomAssignmentId;
@@ -608,7 +631,15 @@ export class CohortsService {
         return task;
     }
 
-    async syncQuestionsFromConfig(cohortId: string): Promise<void> {
+    /**
+     * Destructively overwrites all config-backed instruction-sheet content from
+     * the cohort's config: per GD week the questions, bonus questions, title,
+     * reading material, activity and exercise; and the cohort's links. Non-GD
+     * weeks have their content reset to empty. This is the ONLY way to update
+     * cohort/cohort-week content. Scheduling (dates), classroom assignment, and
+     * the structural hasExercise/classroomId flags are NOT touched.
+     */
+    async syncFromConfig(cohortId: string): Promise<void> {
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
             relations: { weeks: true },
@@ -623,22 +654,65 @@ export class CohortsService {
         const config = this.cohortConfigService.getConfig(cohort.type);
 
         for (const week of cohort.weeks) {
-            if (week.type !== CohortWeekType.GROUP_DISCUSSION) continue;
+            if (week.type === CohortWeekType.GROUP_DISCUSSION) {
+                const weekConfig = config.weeks[week.week - 1];
+                if (!weekConfig) continue;
 
-            const weekConfig = config.weeks[week.week - 1];
-            if (!weekConfig) continue;
-
-            week.questions = weekConfig.questions.map((q) => ({
-                text: q.text,
-                attachments: q.attachments ?? [],
-            }));
-            week.bonusQuestion = weekConfig.bonusQuestions.map((q) => ({
-                text: q.text,
-                attachments: q.attachments ?? [],
-            }));
+                week.questions = weekConfig.questions.map((q) => ({
+                    text: q.text,
+                    attachments: q.attachments ?? [],
+                }));
+                week.bonusQuestion = weekConfig.bonusQuestions.map((q) => ({
+                    text: q.text,
+                    attachments: q.attachments ?? [],
+                }));
+                week.title = weekConfig.title;
+                week.readingMaterial = weekConfig.readingMaterial.map((r) => ({
+                    label: r.label,
+                    url: r.url,
+                }));
+                week.activity = weekConfig.activity ?? null;
+                week.exercise = weekConfig.exercise
+                    ? {
+                          title: weekConfig.exercise.title,
+                          concepts: weekConfig.exercise.concepts,
+                          problem: weekConfig.exercise.problem,
+                          expectedOutput: weekConfig.exercise.expectedOutput,
+                      }
+                    : null;
+            } else {
+                week.questions = [];
+                week.bonusQuestion = [];
+                week.title = null;
+                week.readingMaterial = [];
+                week.activity = null;
+                week.exercise = null;
+            }
         }
 
-        await this.cohortWeekRepository.save(cohort.weeks);
+        cohort.links = config.links.map((l) => ({
+            label: l.label,
+            url: l.url,
+            minRole: l.minRole,
+        }));
+
+        await this.dbTransactionService.execute(async (manager) => {
+            await manager.save(Cohort, cohort);
+            await manager.save(CohortWeek, cohort.weeks);
+        });
+    }
+
+    getGeneralInstructions(): GeneralInstructionsResponseDto {
+        const gi = this.cohortConfigService.getGeneralInstructions();
+        return {
+            title: gi.title,
+            intro: gi.intro,
+            sections: gi.sections.map((s) => ({
+                key: s.key,
+                heading: s.heading,
+                body: s.body,
+            })),
+        };
     }
 
     private getDiscordRoleIdForCohortType(cohortType: CohortType): string {

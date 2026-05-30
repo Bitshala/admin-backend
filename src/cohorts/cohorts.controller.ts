@@ -26,6 +26,7 @@ import {
     UpdateCohortWeekRequestDto,
 } from '@/cohorts/cohorts.request.dto';
 import {
+    GeneralInstructionsResponseDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     UserCohortWaitlistResponseDto,
@@ -60,9 +61,10 @@ export class CohortsController {
         description: 'Number of items per page',
     })
     async listCohorts(
+        @GetUser() user: User,
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
-        return this.cohortsService.listCohorts(query);
+        return this.cohortsService.listCohorts(query, user.role);
     }
 
     @Public()
@@ -107,12 +109,24 @@ export class CohortsController {
         return this.cohortsService.getAttachment(id, filename, res);
     }
 
+    // Declared before ':id' defensively. (The single-segment ':id' route can't
+    // actually match this two-segment path, but keeping literal routes above
+    // the param route avoids any future shadowing surprises.)
+    @Get('instructions/general')
+    @ApiOperation({
+        summary: 'Get the global cohort General Instructions document',
+    })
+    async getGeneralInstructions(): Promise<GeneralInstructionsResponseDto> {
+        return this.cohortsService.getGeneralInstructions();
+    }
+
     @Get(':id')
     @ApiOperation({ summary: 'Get a cohort by ID' })
     async getCohort(
         @Param('id', new ParseUUIDPipe()) id: string,
+        @GetUser() user: User,
     ): Promise<GetCohortResponseDto> {
-        return this.cohortsService.getCohort(id);
+        return this.cohortsService.getCohort(id, user.role);
     }
 
     @Post()
@@ -122,19 +136,22 @@ export class CohortsController {
         await this.cohortsService.createCohort(body);
     }
 
-    @Post(':cohortId/sync-questions')
+    @Post(':cohortId/sync-from-config')
     @ApiOperation({
-        summary: 'Sync cohort week questions from config file',
+        summary:
+            'Destructively overwrite all instruction-sheet content (questions, bonus, title, reading material, activity, exercise, links) from the cohort config. The only way to update cohort content.',
     })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
-    async syncQuestionsFromConfig(
+    async syncFromConfig(
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
     ): Promise<void> {
-        await this.cohortsService.syncQuestionsFromConfig(cohortId);
+        await this.cohortsService.syncFromConfig(cohortId);
     }
 
     @Patch(':cohortId')
-    @ApiOperation({ summary: 'Update a cohort' })
+    @ApiOperation({
+        summary: 'Update cohort scheduling (startDate, registrationDeadline)',
+    })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async updateCohort(
         @Param('cohortId', new ParseUUIDPipe())
@@ -145,7 +162,9 @@ export class CohortsController {
     }
 
     @Patch('weeks/:cohortWeekId')
-    @ApiOperation({ summary: 'Update a cohort week' })
+    @ApiOperation({
+        summary: 'Update cohort week scheduling / classroom assignment',
+    })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async updateCohortWeek(
         @Param('cohortWeekId', new ParseUUIDPipe())

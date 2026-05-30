@@ -1,14 +1,10 @@
 import {
-    IsArray,
     IsDateString,
     IsEnum,
     IsNotEmpty,
     IsNumberString,
     IsOptional,
-    IsString,
-    ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { CohortType } from '@/common/enum';
 
 export class UpdateCohortRequestDto {
@@ -32,30 +28,7 @@ export class CreateCohortRequestDto {
     registrationDeadline!: string;
 }
 
-export class QuestionDto {
-    @IsString()
-    @IsNotEmpty()
-    text!: string;
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    attachments?: string[];
-}
-
 export class UpdateCohortWeekRequestDto {
-    @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => QuestionDto)
-    questions?: QuestionDto[];
-
-    @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => QuestionDto)
-    bonusQuestion?: QuestionDto[];
-
     @IsOptional()
     @IsNumberString({
         no_symbols: true,
