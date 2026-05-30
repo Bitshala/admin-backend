@@ -1,0 +1,41 @@
+{
+  "title": "Welcome to the Bitshala Cohort",
+  "intro": "These instructions apply to every Bitshala study cohort. They explain how the program runs, what is expected of you, and how participation is evaluated.",
+  "sections": [
+    {
+      "key": "introSession",
+      "heading": "Introduction Session",
+      "body": "Every cohort begins with an orientation session where we walk through the schedule, the study material, and how group discussions work. Attending the orientation is the best way to start the cohort on the right footing."
+    },
+    {
+      "key": "communicationAttendance",
+      "heading": "Communication & Attendance",
+      "body": "All cohort communication happens on Discord. Introduce yourself in the #Intro channel when you join. You may miss at most one session, and you must attend a minimum number of group meetings to remain eligible for a certificate."
+    },
+    {
+      "key": "overview",
+      "heading": "Overview of the Study Cohort",
+      "body": "The cohort runs over several weeks of group discussions, bookended by an orientation week and a graduation week. Participation is open and self-paced within each week's schedule, and registration details are shared on the cohort page."
+    },
+    {
+      "key": "sessionStructure",
+      "heading": "Session Structure",
+      "body": "Each group discussion runs for about 60 minutes. A teaching assistant facilitates the discussion around that week's questions, and a bonus round is used to dig deeper into the material."
+    },
+    {
+      "key": "groupAssignments",
+      "heading": "Group Assignments",
+      "body": "Participants are split into small groups for discussions. Group 0 is the default group, and assignments are shared each week. Tip: join your group's voice channel a few minutes early so the session can start on time."
+    },
+    {
+      "key": "profilingEvaluation",
+      "heading": "Participant Profiling and Evaluation",
+      "body": "Your performance is graded across communication, depth of answers, technical fluency, and engagement, with additional credit for attendance and (where applicable) exercises. Top performers and all eligible participants receive certificates at the end of the cohort."
+    },
+    {
+      "key": "openParticipationPolicy",
+      "heading": "Open Participation Policy",
+      "body": "Cohorts follow an open participation policy: anyone who registers and meets the attendance requirements can take part, learn at their own pace, and earn a certificate."
+    }
+  ]
+}

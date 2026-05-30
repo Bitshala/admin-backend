@@ -4,13 +4,18 @@ import { join } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { validateSync } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { CohortConfig, QuestionConfig } from '@/cohorts/cohorts.config.model';
+import {
+    CohortConfig,
+    GeneralInstructionsConfig,
+    QuestionConfig,
+} from '@/cohorts/cohorts.config.model';
 import { ServiceError } from '@/common/errors';
 
 @Injectable()
 export class CohortsConfigService implements OnModuleInit {
     private readonly logger = new Logger(CohortsConfigService.name);
     private readonly configs = new Map<CohortType, CohortConfig>();
+    private generalInstructions!: GeneralInstructionsConfig;
 
     onModuleInit(): void {
         const configDir = join(__dirname, '..', 'assets', 'cohort-configs');
@@ -71,6 +76,34 @@ export class CohortsConfigService implements OnModuleInit {
             this.configs.set(type, config);
             this.logger.log(`Loaded config for ${type} (${fileName})`);
         }
+
+        // Load the global General Instructions document. This lives outside the
+        // per-CohortType loop because it is cohort-independent (one global doc).
+        const giPath = join(configDir, 'general-instructions.json');
+        let giRaw: string;
+        try {
+            giRaw = readFileSync(giPath, 'utf-8');
+        } catch {
+            throw new Error(
+                `Missing general instructions config file: ${giPath}`,
+            );
+        }
+
+        const gi = plainToInstance(
+            GeneralInstructionsConfig,
+            JSON.parse(giRaw),
+        );
+        const giErrors = validateSync(gi, {
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        });
+        if (giErrors.length > 0) {
+            const messages = giErrors.map((e) => e.toString()).join('; ');
+            throw new Error(`Invalid general instructions config: ${messages}`);
+        }
+
+        this.generalInstructions = gi;
+        this.logger.log('Loaded general instructions config');
     }
 
     getConfig(type: CohortType): CohortConfig {
@@ -79,5 +112,12 @@ export class CohortsConfigService implements OnModuleInit {
             throw new ServiceError(`No config found for cohort type: ${type}`);
         }
         return config;
+    }
+
+    getGeneralInstructions(): GeneralInstructionsConfig {
+        if (!this.generalInstructions) {
+            throw new ServiceError('General instructions config not loaded.');
+        }
+        return this.generalInstructions;
     }
 }

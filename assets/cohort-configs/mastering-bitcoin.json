@@ -1,13 +1,14 @@
 {
   "gdSessions": 8,
+  "links": [],
   "weeks": [
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "questions": [], "bonusQuestions": [] }
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] }
   ]
 }

@@ -1,13 +1,14 @@
 {
   "gdSessions": 7,
   "classroomId": "0",
+  "links": [],
   "weeks": [
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "questions": [], "bonusQuestions": [] }
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
+    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] }
   ]
 }
