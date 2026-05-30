@@ -26,7 +26,6 @@ import {
     UpdateCohortWeekRequestDto,
 } from '@/cohorts/cohorts.request.dto';
 import {
-    GeneralInstructionsResponseDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     UserCohortWaitlistResponseDto,
@@ -107,17 +106,6 @@ export class CohortsController {
         @Res({ passthrough: true }) res: Response,
     ): Promise<StreamableFile> {
         return this.cohortsService.getAttachment(id, filename, res);
-    }
-
-    // Declared before ':id' defensively. (The single-segment ':id' route can't
-    // actually match this two-segment path, but keeping literal routes above
-    // the param route avoids any future shadowing surprises.)
-    @Get('instructions/general')
-    @ApiOperation({
-        summary: 'Get the global cohort General Instructions document',
-    })
-    async getGeneralInstructions(): Promise<GeneralInstructionsResponseDto> {
-        return this.cohortsService.getGeneralInstructions();
     }
 
     @Get(':id')

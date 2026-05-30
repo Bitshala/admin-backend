@@ -18,7 +18,6 @@ import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
 import {
-    GeneralInstructionsResponseDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     PublicCohortResponseDto,
@@ -700,19 +699,6 @@ export class CohortsService {
             await manager.save(Cohort, cohort);
             await manager.save(CohortWeek, cohort.weeks);
         });
-    }
-
-    getGeneralInstructions(): GeneralInstructionsResponseDto {
-        const gi = this.cohortConfigService.getGeneralInstructions();
-        return {
-            title: gi.title,
-            intro: gi.intro,
-            sections: gi.sections.map((s) => ({
-                key: s.key,
-                heading: s.heading,
-                body: s.body,
-            })),
-        };
     }
 
     private getDiscordRoleIdForCohortType(cohortType: CohortType): string {

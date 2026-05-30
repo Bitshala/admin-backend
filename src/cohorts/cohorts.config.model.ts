@@ -121,27 +121,3 @@ export class CohortConfig {
     @Type(() => LinkConfig)
     links!: LinkConfig[];
 }
-
-export class GeneralInstructionsSectionConfig {
-    @IsString()
-    key!: string;
-
-    @IsString()
-    heading!: string;
-
-    @IsString()
-    body!: string;
-}
-
-export class GeneralInstructionsConfig {
-    @IsString()
-    title!: string;
-
-    @IsString()
-    intro!: string;
-
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => GeneralInstructionsSectionConfig)
-    sections!: GeneralInstructionsSectionConfig[];
-}

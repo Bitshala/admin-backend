@@ -168,15 +168,3 @@ export class ListAvailableCohortsResponseDto {
 export class UserCohortWaitlistResponseDto {
     cohortWaitlist!: CohortType[];
 }
-
-export class GeneralInstructionsSectionResponseDto {
-    key!: string;
-    heading!: string;
-    body!: string;
-}
-
-export class GeneralInstructionsResponseDto {
-    title!: string;
-    intro!: string;
-    sections!: GeneralInstructionsSectionResponseDto[];
-}
