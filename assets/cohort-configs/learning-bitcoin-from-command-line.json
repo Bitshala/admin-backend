@@ -1,13 +1,164 @@
 {
   "gdSessions": 6,
   "classroomId": "234007",
-  "links": [],
+  "links": [
+    { "label": "Wheel of Names", "url": "https://wheelofnames.com/", "minRole": "TEACHING_ASSISTANT" },
+    { "label": "MultiBuzz", "url": "https://www.multibuzz.app/", "minRole": "TEACHING_ASSISTANT" },
+    { "label": "lbtcl-playbook", "url": "https://docs.google.com/document/d/1YXsW3gRVbBxBEAAcI84W3KCFBbevzVXUUznH8w2XohM/preview", "minRole": "TEACHING_ASSISTANT" },
+    { "label": "lbtcl-bonus-questions", "url": "https://gist.github.com/rajarshimaitra/f83eaf3295b88ac180a965b3daab4d8a", "minRole": "TEACHING_ASSISTANT" },
+    { "label": "lbtcl-main-repo", "url": "https://github.com/Bitshala/LBTCL", "minRole": "TEACHING_ASSISTANT" }
+  ],
   "weeks": [
-    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": true, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] }
+    {
+      "hasExercise": true,
+      "title": "Bitcoin Fundamentals & Cryptographic Primitives",
+      "readingMaterial": [
+        { "label": "Chapter 1: Introducing Bitcoin", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/01_0_Introduction.md" },
+        { "label": "Chapter 2: Setting Up a Bitcoin-Core VPS", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/02_0_Setting_Up_a_Bitcoin-Core_VPS.md" },
+        { "label": "Chapter 3: Understanding Your Bitcoin Setup", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/03_0_Understanding_Your_Bitcoin_Setup.md" }
+      ],
+      "questions": [
+        { "text": "What are the cryptographic primitives used in Bitcoin? Give a brief description of each." },
+        { "text": "What is a blockchain? How does it differ from an array or other common data structures in programming, and in what situations is a blockchain especially useful?" },
+        { "text": "Why does Bitcoin use elliptic-curve cryptography? Which specific curve does it rely on, and what are some alternative curves?" },
+        { "text": "What is a digital signature? Why is it recommended to verify the signature of a downloaded Bitcoin Core binary, and what kinds of attacks are possible with a malicious binary?" },
+        { "text": "Why is it important to run your own Bitcoin node?" },
+        { "text": "What are the differences among Bitcoin's network types—mainnet, testnet, signet, and regtest?" },
+        { "text": "What data is stored in the **blocks** and **chainstate** folders within the Bitcoin data directory?" },
+        { "text": "Which address formats exist in Bitcoin, and what defines a *legacy* address?" },
+        { "text": "What is a SegWit address, and why is it generally preferred over a legacy address?" },
+        { "text": "What is a Bitcoin faucet, and why are faucets provided only for testnet and signet? How can coins be obtained in regtest?" },
+        { "text": "What is a transaction ID (txid)? Which `bitcoin-cli` commands accept a txid as input, and why are txids useful?" },
+        { "text": "What is a *descriptor* in Bitcoin, and what problems does it solve?" }
+      ],
+      "bonusQuestions": [
+        { "text": "What is a hash function? Why are hash functions essential in Bitcoin, and can two different inputs ever produce the same hash output?" },
+        { "text": "What is a 51% attack, and can a miner use 51% of the network hashrate to double-spend UTXOs?" },
+        { "text": "What is a natural blockchain reorganization (reorg), why does it occur, and how do nodes resolve it?" },
+        { "text": "What is RPC? Why does Bitcoin primarily use RPC rather than REST, and when is the REST API appropriate?" },
+        { "text": "What is the UTXO model, and what benefits does it provide compared with an account-based model?" }
+      ]
+    },
+    {
+      "hasExercise": true,
+      "title": "Transactions, Fees & Advanced Transaction Mechanics",
+      "readingMaterial": [
+        { "label": "Chapter 4: Sending Bitcoin Transactions", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/04_0_Sending_Bitcoin_Transactions.md" },
+        { "label": "Chapter 5: Controlling Bitcoin Transactions", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/05_0_Controlling_Bitcoin_Transactions.md" }
+      ],
+      "questions": [
+        { "text": "What are the components of a transaction? Describe in brief each component and the data they contain." },
+        { "text": "What is the transaction fee? Why do transactions need to pay fee? How to determine a suitable fee at the time of transaction creation?" },
+        { "text": "What is an unspent transaction output (UTXO)? How does `bitcoind` select UTXOs in case of `sendtoaddress` call?" },
+        { "text": "What does the confirmation of a transaction indicate? Why should we wait for a certain confirmation number on a transaction before spending them?" },
+        { "text": "What is a change address? What happens if we don't put the change address in `createrawtransaction` call?" },
+        { "text": "What is the difference between `createrawtransaction` and `fundrawtransaction` call? When to use one over the other?" },
+        { "text": "What is the difference between a segwit and a normal transaction?" },
+        { "text": "What is sequence number? What are the different ways it can be used to lock transactions?" },
+        { "text": "What is RBF? What is it useful for?" },
+        { "text": "What is CPFP? When to use it instead of RBF? Does RBF change `txid`? If so, why?" },
+        { "text": "What are some practical use cases of CPFP (hint: Lightning anchor outputs in channel opening transactions)" },
+        { "text": "What happens when a transaction being bumped by CPFP also gets fee bumped by RBF at the same time? What happens to the child transaction?" }
+      ],
+      "bonusQuestions": [
+        { "text": "What is the UTXO model? What are the benefits over the Account based model?" },
+        { "text": "What is the minimum amount you can send with bitcoin-cli? Why this minimum limit exists? Can there be transactions violating this limit?" },
+        { "text": "How transactions can be lost from mempool? How to detect such situation? What can be done in that situation?" }
+      ]
+    },
+    {
+      "hasExercise": true,
+      "title": "Multisig, PSBT & Hardware Wallet Integration",
+      "readingMaterial": [
+        { "label": "Chapter 6: Expanding Bitcoin Transactions with Multisigs", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/06_0_Expanding_Bitcoin_Transactions_Multisigs.md" },
+        { "label": "Chapter 7: Expanding Bitcoin Transactions with PSBTs", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/07_0_Expanding_Bitcoin_Transactions_PSBTs.md" }
+      ],
+      "questions": [
+        { "text": "What is a multisig? What are the common script types for multisig addresses?" },
+        { "text": "Why is it important to preserve the order of keys in multisig addresses for address generation? What happens if the order isn't preserved?" },
+        { "text": "What is BIP67 lexicographical ordering?" },
+        { "text": "Does the order of signature matter for signing multisig?" },
+        { "text": "Explain the use of `addmultisigaddress` command. When is it useful over vanilla multisig generation?" },
+        { "text": "What is a PSBT and why is it useful?" },
+        { "text": "What are the different components of PSBT? Can you explain each part and it's use in brief?" },
+        { "text": "What is HWI? What it is useful for?" }
+      ],
+      "bonusQuestions": [
+        { "text": "How are multisig wallets can be safer than single sig wallets? Give some examples of practical applications of multisig." },
+        { "text": "What is a bare multisig? Why are they not used? How can you broadcast a transaction with bare multisig?" },
+        { "text": "What is PSBTv2? How is it different from PSBTv0? And where did v1 go?" }
+      ]
+    },
+    {
+      "hasExercise": true,
+      "title": "Bitcoin Script & Transaction Verification",
+      "readingMaterial": [
+        { "label": "Chapter 8: Expanding Bitcoin Transactions in Other Ways", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/08_0_Expanding_Bitcoin_Transactions_Other.md" },
+        { "label": "Chapter 9: Introducing Bitcoin Scripts", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/09_0_Introducing_Bitcoin_Scripts.md" }
+      ],
+      "questions": [
+        { "text": "How are locktime via Unix time and via block height differentiated in the transaction data?" },
+        { "text": "What is a LockTime? Why are locktimes useful?" },
+        { "text": "What is OP_RETURN? How is it useful? What happens in script verification when it encounters an OP_RETURN? What if the value of OP_RETURN is non-zero?" },
+        { "text": "What are `scriptpubkey` and `scriptsig`? How are they used in script verification?" },
+        { "text": "Why is P2PKH needed when we already had P2PK?" },
+        { "text": "Differentiate between segwit and non-segwit script verification." },
+        { "text": "How is a `scriptpubkey` reduced into an address? Can you recover a `scriptpubkey` from an address?" },
+        { "text": "What are standard and non-standard `scriptpubkeys`? Can you create and submit a transaction with a non-standard `scriptpubkey` to your mempool? [Hint: Create a transaction with an addition script, call testmempoolaccept]." },
+        { "text": "How can you broadcast a non-standard redeem script?" }
+      ],
+      "bonusQuestions": [
+        { "text": "Why can't we create a reverse-locktime in bitcoin? ie, a UTXO that gets locked (unspendable) after a given time." },
+        { "text": "What are the practical use cases of OP_RETURN?" },
+        { "text": "How can one use the `scriptsig` field to encode random data in the blockchain?" }
+      ]
+    },
+    {
+      "hasExercise": true,
+      "title": "Advanced Scripts & Time Locks",
+      "readingMaterial": [
+        { "label": "Chapter 10: Embedding Bitcoin Scripts in P2SH Transactions", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/10_0_Embedding_Bitcoin_Scripts_in_P2SH_Transactions.md" },
+        { "label": "Chapter 11: Empowering Timelock with Bitcoin Scripts", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/11_0_Empowering_Timelock_with_Bitcoin_Scripts.md" }
+      ],
+      "questions": [
+        { "text": "Why is P2SH useful when we can have the raw locking script inside the `scriptpubkey`?" },
+        { "text": "What are the limitations imposed by consensus on the size of a `scriptsig`?" },
+        { "text": "Why is the P2SH hash length 20 bytes, whereas the P2WSH script hash is 32 bytes?" },
+        { "text": "Why does the multisig `redeemscript` start with a `0`? Is this a bug? Is there a way to fix it?" },
+        { "text": "How was segwit designed to be backward compatible? How did non-segwit nodes handle segwit transactions?" },
+        { "text": "What are the limitations of `nLockTime`?" },
+        { "text": "What is the difference between relative and absolute time locks?" },
+        { "text": "How are sequence locks set in a transaction? What was the previous (intended) use case of sequence in the transaction?" },
+        { "text": "Briefly describe how CLTV verification works." },
+        { "text": "Briefly describe how CSV verification works." },
+        { "text": "What happens when a transaction includes a time lock using both `nLockTime` and `nSequence` values? What is the error in the `testmempoolaccept` RPC when using a transaction like that?" }
+      ],
+      "bonusQuestions": [
+        { "text": "How is the different combination of `nlocktime` and `nsequence` determines different behaviors example, various combinations of locktime and RBF." },
+        { "text": "What are the practical applications of CLTV and CSV?" },
+        { "text": "How was segwit designed to be backward compatible? How did non-segwit nodes handled segwit transactions?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Complex Scripts & Real-World Applications",
+      "readingMaterial": [
+        { "label": "Chapter 12: Expanding Bitcoin Scripts", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/12_0_Expanding_Bitcoin_Scripts.md" },
+        { "label": "Chapter 13: Designing Real Bitcoin Scripts", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/13_0_Designing_Real_Bitcoin_Scripts.md" }
+      ],
+      "questions": [
+        { "text": "How can script conditionals cause transaction malleability?" },
+        { "text": "What are some real-world conditional script examples?" },
+        { "text": "What are some practical examples of OP_SWAP?" },
+        { "text": "What can multisig escrows be useful for?" },
+        { "text": "What are some real-world examples of multisig escrows?" },
+        { "text": "Are there any real-world examples of complex bare scripts?" }
+      ],
+      "bonusQuestions": [
+        { "text": "Which opcodes can access different parts of the transaction data? Name few of them." },
+        { "text": "Why is Bitcoin Script turing-incomplete? What are the problems of turning-complete smart contracts, in context of decentralised blockchains." },
+        { "text": "What is the coolest Bitcoin Script application you can imagine, that doesn't exist yet?" }
+      ]
+    }
   ]
 }

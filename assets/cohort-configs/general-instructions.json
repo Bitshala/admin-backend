@@ -1,41 +1,41 @@
 {
-  "title": "Welcome to the Bitshala Cohort",
-  "intro": "These instructions apply to every Bitshala study cohort. They explain how the program runs, what is expected of you, and how participation is evaluated.",
+  "title": "Welcome to Bitshala Cohort",
+  "intro": "These general instructions are aimed at helping you navigate through the program successfully.",
   "sections": [
     {
       "key": "introSession",
       "heading": "Introduction Session",
-      "body": "Every cohort begins with an orientation session where we walk through the schedule, the study material, and how group discussions work. Attending the orientation is the best way to start the cohort on the right footing."
+      "body": "The program begins with an introductory session. This is an ice-breaker between participants and the Bitshala team where we share what to expect in the coming weeks. It would be a great place to introduce oneself, get to know each other, and discuss the course structure. We will also have an intro session by the Bitshala Team on Bitcoin dev careers!"
     },
     {
       "key": "communicationAttendance",
       "heading": "Communication & Attendance",
-      "body": "All cohort communication happens on Discord. Introduce yourself in the #Intro channel when you join. You may miss at most one session, and you must attend a minimum number of group meetings to remain eligible for a certificate."
+      "body": "Discord will be the primary means of communication. We will host all our sessions, discussions and doubt clearing on Discord, every week at the same time and same day. This will also be visible over your Google Calendar. Participants are expected to attend every week. We allow one absence for emergencies or prior conflicts. If you miss more than 2 meetings, we advise you to re-join the next cohort, which we run on a recurring basis.\n\nTo begin with, please introduce yourself on the Bitshala Discord (in the #Intro channel). Say a little bit about yourself, what you do for work and something you do for fun. These groups work best when we get to know each other. If you don't want to use your personal photo as your icon, that is totally fine — just please change it to a unique image."
     },
     {
       "key": "overview",
       "heading": "Overview of the Study Cohort",
-      "body": "The cohort runs over several weeks of group discussions, bookended by an orientation week and a graduation week. Participation is open and self-paced within each week's schedule, and registration details are shared on the cohort page."
+      "body": "Duration: Weekly sessions.\n\nRegistered Participants:\n- Registered participants will be enrolled\n- Participants will be provided with weekly question sets\n- They are required to prepare by reading designated chapters and completing any practice examples in the book\n\nOpen Participation:\n- Non-registered participants are welcome to attend and benefit from the discussions but will not be profiled or receive certificates."
     },
     {
       "key": "sessionStructure",
       "heading": "Session Structure",
-      "body": "Each group discussion runs for about 60 minutes. A teaching assistant facilitates the discussion around that week's questions, and a bonus round is used to dig deeper into the material."
+      "body": "60-Minute Group Discussion:\n- All the participants will show up in one voice channel with the Teaching Assistants (TAs)\n- Questions will be allocated to participants within each group, with priority given to registered participants\n- TAs will facilitate the discussion, assess answers, and provide feedback\n- Participants can seek clarification on concepts and exercises from the chapter"
     },
     {
       "key": "groupAssignments",
       "heading": "Group Assignments",
-      "body": "Participants are split into small groups for discussions. Group 0 is the default group, and assignments are shared each week. Tip: join your group's voice channel a few minutes early so the session can start on time."
+      "body": "Each week, your attendance is tracked and directly affects your group assignment for the following week.\n\nHow It Works:\n- Attendance Tracking — Every week, if you attend you are marked Present. If you do not attend, you are marked Absent.\n- Group Assignment — Based on the previous week's attendance, TAs assign present participants into groups using our custom grouping logic.\n- Group 0 (Unassigned) — Absent participants are placed into Group 0 by default. They are free to join any group TAs assign them to, but they must notify the TAs.\n\nTip: Consistent attendance ensures you are automatically placed in a group each week without extra steps. If you were absent last week and plan to attend, reach out to a TA ahead of time so they can place you in a group."
     },
     {
       "key": "profilingEvaluation",
       "heading": "Participant Profiling and Evaluation",
-      "body": "Your performance is graded across communication, depth of answers, technical fluency, and engagement, with additional credit for attendance and (where applicable) exercises. Top performers and all eligible participants receive certificates at the end of the cohort."
+      "body": "Grading: Participants will be evaluated by TAs based on their answers and demonstrated technical competency.\n\nPerformance Profiling:\n- Profiles will include strengths, areas for improvement, and overall progress.\n- These profiles will serve as feedback for the participants and guide TAs in providing targeted support.\n\nCompletion Certificate: Certificates will be awarded to registered participants who actively participate and perform satisfactorily throughout the cohort."
     },
     {
       "key": "openParticipationPolicy",
       "heading": "Open Participation Policy",
-      "body": "Cohorts follow an open participation policy: anyone who registers and meets the attendance requirements can take part, learn at their own pace, and earn a certificate."
+      "body": "- Non-registered participants are encouraged to join and benefit from the discussions.\n- However, they will not be profiled, graded, or eligible for completion certificates.\n- Priority to answer questions will be given to registered participants."
     }
   ]
 }

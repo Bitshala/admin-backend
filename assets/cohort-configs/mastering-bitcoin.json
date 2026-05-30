@@ -1,14 +1,191 @@
 {
   "gdSessions": 8,
-  "links": [],
+  "links": [
+    { "label": "Wheel of Names", "url": "https://wheelofnames.com/", "minRole": "TEACHING_ASSISTANT" },
+    { "label": "MultiBuzz", "url": "https://www.multibuzz.app/", "minRole": "TEACHING_ASSISTANT" }
+  ],
   "weeks": [
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] },
-    { "hasExercise": false, "title": "", "readingMaterial": [], "questions": [], "bonusQuestions": [] }
+    {
+      "hasExercise": false,
+      "title": "Introduction & How Bitcoin Works",
+      "readingMaterial": [
+        { "label": "Chapter 1: Introduction", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch01_intro.adoc" },
+        { "label": "Chapter 2: How Bitcoin Works", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch02_overview.adoc" }
+      ],
+      "questions": [
+        { "text": "What were the major problems of Digital Currencies before Bitcoin? How did Bitcoin solve them?" },
+        { "text": "Do you think it would be better if bitcoin transactions were reversible? What are the potential benefits and drawbacks?" },
+        { "text": "What is the Bitcoin Issuance Rate? How do we know the supply cap of Bitcoin is 21 million?" },
+        { "text": "Is Bitcoin private? Does Bitcoin need to be private? Why isn't Bitcoin fungible?" },
+        { "text": "What is a transaction fee? How is it calculated? What's the effect of transaction fee on transaction confirmation?" },
+        { "text": "What are change addresses? When are change addresses required? What happens if the user (or wallet software) forgets to include the change address in a transaction? When will we not require a change address?" },
+        { "text": "What does it mean by a transaction to be \"confirmed\"? How many confirmation is usually acceptable? Is it okay to accept unconfirmed transactions? Why or why not?" },
+        { "text": "Why did Satoshi said transactions are \"chain of digital signatures\"? What is a UTXO? Whats the difference between UTXO and Account based model? Why did Bitcoin choose to stick with UTXO model?" }
+      ],
+      "bonusQuestions": [
+        { "text": "Do you believe Bitcoin needs to compete with Visa/MasterCard to succeed? Why or why not?" },
+        { "text": "What are the two main components of a Transaction? What does each component include?" },
+        { "text": "What is the lowest denomination of Bitcoin? Can we run out of decimals to denominate the smallest unit, as Bitcoin adoption increases?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Bitcoin Core & Keys and Addresses",
+      "readingMaterial": [
+        { "label": "Chapter 3: Bitcoin Core: The Reference Implementation", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch03_bitcoin-core.adoc" },
+        { "label": "Chapter 4: Keys and Addresses", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04_keys.adoc" }
+      ],
+      "questions": [
+        { "text": "Why is Bitcoin Core called a \"Reference Implementation\"? What other implementations of Bitcoin are out there? Is it preferable to have many implementations of Bitcoin?" },
+        { "text": "What are BIPs (Bitcoin Improvement Proposals)? What are their role in the Bitcoin development process?" },
+        { "text": "What is bitcoin-cli? What is it used for? Have you explored any bitcoin-cli commands? Which commands do you find most useful as a home node operator?" },
+        { "text": "Describe the functions of 'private keys', 'public keys', 'Bitcoin addresses', and 'digital signatures'. What is the mathematical relationship between them and how are they used in Bitcoin?" },
+        { "text": "What is the discrete logarithm problem, and why is it considered hard to solve?" },
+        { "text": "What is asymmetry in cryptography, and why are one-way functions useful? Identify a one-way cryptographic function used in deriving public keys from private keys." },
+        { "text": "Describe instances where private keys have been compromised due to lack of entropy. Why is it important to use a cryptographically secure pseudorandom number generator to produce a private key? What are some techniques of generating pseudo random numbers?" },
+        { "text": "What are the different kinds of Bitcoin addresses? Explain the differences between P2PKH and P2SH." },
+        { "text": "What is the difference between a hot wallet and cold storage?" },
+        { "text": "What is bech32? How is it better than base58? Are there any problems in bech32? How are they solved?" }
+      ],
+      "bonusQuestions": [
+        { "text": "What is the approximate disk space requirement for running Bitcoin Core? What are the approximate network bandwidth and memory requirements? Do you think it's \"cheap\" to run a node?" },
+        { "text": "How can you verify the signatures of download binaries of Bitcoin Core? What are the potential damages of running a malicious version of the software?" },
+        { "text": "What hash functions are used in the generation of Bitcoin addresses?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Wallet Recovery & Transactions",
+      "readingMaterial": [
+        { "label": "Chapter 5: Wallet Recovery", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch05_wallets.adoc" },
+        { "label": "Chapter 6: Transactions", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch06_transactions.adoc" }
+      ],
+      "questions": [
+        { "text": "What is a Bitcoin wallet? What are the different types of wallets available?" },
+        { "text": "What is the difference between deterministic and non-deterministic wallets?" },
+        { "text": "What is a \"seed\" in the context of Bitcoin wallets? How are mnemonic words generated from the seed?" },
+        { "text": "What is the optional passphrase for a mnemonic? In which situations passphrase can be useful?" },
+        { "text": "What are the components of an extended key (XPub)? What is the fingerprint of a key?" },
+        { "text": "What are hardened and non-hardened derivations? What are the advantages of having different types of derivations?" },
+        { "text": "What are the different components of a Bitcoin transaction? What are transaction inputs and outputs, and how are they constructed? What are locking and unlocking scripts?" },
+        { "text": "What are various sources of transaction malleability? How does segwit fix transaction malleability? What parts of the transaction structure got affected with the segwit upgrade?" }
+      ],
+      "bonusQuestions": [
+        { "text": "What is nSequence? What was it intended use when Satoshi created Bitcoin? How is it used today?" },
+        { "text": "What are various sources of transaction malleability? How does segwit fix transaction malleability?" },
+        { "text": "Can two transactions have the same transaction id? When can this happen? Is that a consensus violation?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Authorization and Authentication & Digital Signature",
+      "readingMaterial": [
+        { "label": "Chapter 7: Authorization and Authentication", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch07_authorization-authentication.adoc" },
+        { "label": "Chapter 8: Digital Signatures", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch08_signatures.adoc" }
+      ],
+      "questions": [
+        { "text": "Is the Turing incompleteness of Bitcoin's scripting language (SCRIPT) a feature or a deficiency?" },
+        { "text": "Explain different types of timelocks available in a Bitcoin transaction and list the components of the transactions that can be used to set these timelocks." },
+        { "text": "How does Taproot upgrade increase security and privacy in Bitcoin?" },
+        { "text": "Highlight the differences between Tapscript and native Bitcoin script?" },
+        { "text": "What are digital signatures, where are they placed in a transaction, and what is their purpose?" },
+        { "text": "What are sighashes, and what are their uses? How many types of sighashes are there?" },
+        { "text": "What is the Discrete Log Problem, and why is it important in Cryptography? What does it mean when we say \"DLP is hard\"? What would have happened if DLP wasn't a \"hard\" problem?" },
+        { "text": "Why is it important to use a random number (k) as the basis for a private/public nonce pair? What vulnerabilities can be exploited if k is known to be reused? Can you provide a real-life example of when such an exploit occurred?" }
+      ],
+      "bonusQuestions": [
+        { "text": "Why is the public key directly included in a P2TR output whereas in other script types we always include a hash?" },
+        { "text": "Why are the locking and unlocking scripts executed separately?" },
+        { "text": "Besides signing transactions, what other uses could digital signatures have?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Transaction Fees & The Bitcoin Network",
+      "readingMaterial": [
+        { "label": "Chapter 9: Transaction Fees", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch09_fees.adoc" },
+        { "label": "Chapter 10: The Bitcoin Network", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch10_network.adoc" }
+      ],
+      "questions": [
+        { "text": "Why do we need to pay transaction fees when we have block reward as an incentive? Is there a minimum fee that every transaction needs to pay? Is it a consensus rule or policy rule?" },
+        { "text": "What is RBF. When is it useful? List all the conditions required to do a valid RBF." },
+        { "text": "What is CPFP (Child Pays For Parents)? When is it useful? In which situation RBF cannot be used, but CPFP can be used?" },
+        { "text": "What is transaction pinning? How is it a vulnerability for multiparty time-sensitive protocols such as LN?" },
+        { "text": "What is a peer-to-peer network? Give two examples of successful peer-to-peer networks that preceded Bitcoin." },
+        { "text": "Explain in brief what is a Mempool and what is an Orphan Pool." },
+        { "text": "How do light clients validate that a transaction exists? How is this different from the mechanism full archival nodes use to validate a transaction?" },
+        { "text": "What are compact block filters? What data should be included in a block filter?" }
+      ],
+      "bonusQuestions": [
+        { "text": "What are the privacy trade-offs in using a light client?" },
+        { "text": "What is fee sniping and how does it work? How can it be prevented?" },
+        { "text": "What is CPFP carve out and anchor outputs?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "The Blockchain & Mining and Consensus",
+      "readingMaterial": [
+        { "label": "Chapter 11: The Blockchain", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch11_blockchain.adoc" },
+        { "label": "Chapter 12: Mining and Consensus", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch12_mining.adoc" }
+      ],
+      "questions": [
+        { "text": "Describe the structure of a block and what data does a block header contain?" },
+        { "text": "What is a Merkle Tree? How is it used in the blockchain? What data does the Merkle Root verifies?" },
+        { "text": "What is the difference between mainnet and testnet? Can testnet coins have value?" },
+        { "text": "What is the difference between signet and testnet? What is regtest? When is it useful?" },
+        { "text": "What is a coinbase transaction? What prevents the miners from inflating the coinbase reward?" },
+        { "text": "Explain the 51% attack. Can it compromise the security of private keys and signing algorithms?" },
+        { "text": "What is Mining Difficulty? How is it adjusted? What would happen if it wasn't adjusted?" },
+        { "text": "What is the difference between Hard Fork and Soft Fork? Is it possible to do hard fork of Bitcoin, without creating a new coin/network, at current stage of the market?" }
+      ],
+      "bonusQuestions": [
+        { "text": "How are soft forks are activated in Bitcoin? What was the last soft fork that happened?" },
+        { "text": "What is \"Rough Consensus\"? How does it affect Bitcoin's development?" },
+        { "text": "When was the last Bitcoin hardfork? What caused it?" }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Bitcoin Security & Second-Layer Applications",
+      "readingMaterial": [
+        { "label": "Chapter 13: Bitcoin Security", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch13_security.adoc" },
+        { "label": "Chapter 14: Second-Layer Applications", "url": "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch14_applications.adoc" }
+      ],
+      "questions": [
+        { "text": "Why does the author say securing bitcoins is like securing cash or a chunk of precious metal?" },
+        { "text": "What could be the consequences of applying centralised security models to a decentralised network like Bitcoin?" },
+        { "text": "Explain the concept of root of trust in security models. What should be the root of trust for Bitcoin applications?" },
+        { "text": "Why are hardware siging devices the most recommended way of storing Bitcoin?" },
+        { "text": "What are payment channels in context to Bitcoin? How do they facilitate extremely high transaction throughput?" },
+        { "text": "Can a Bitcoin transaction be cancelled? Explain asymmetric revocable transactions." },
+        { "text": "What is a HTLC? Which OP-code is used to achieve it in context to payment channels?" },
+        { "text": "Explain what are funding and commitment transactions in context of payment channels." }
+      ],
+      "bonusQuestions": [
+        { "text": "What could be the consequences of using unnecessarily complex techniques to secure bitcoins?" },
+        { "text": "Explain at least two use-cases of applications build on top of Bitcoin." },
+        { "text": "Can a Bitcoin transaction be cancelled? Explain asymmetric revocable transactions." }
+      ]
+    },
+    {
+      "hasExercise": false,
+      "title": "Sparrow Wallet Hands-on",
+      "readingMaterial": [
+        { "label": "Download Sparrow Wallet", "url": "https://sparrowwallet.com/" },
+        { "label": "Bitcoin Testnet4 Faucet", "url": "https://coinfaucet.eu/en/btc-testnet4/" }
+      ],
+      "questions": [
+        { "text": "How to run Sparrow Wallet in Mainnet, Testnet4, Signet, etc.?" },
+        { "text": "How to create a single-sig Native SegWit (P2WPKH) wallet?" },
+        { "text": "How to create a Multisig wallet?" },
+        { "text": "How to sign a transaction?" },
+        { "text": "How to broadcast a transaction?" },
+        { "text": "How to connect to our own full node?" },
+        { "text": "How to create a watch-only wallet?" },
+        { "text": "How to sign and verify a message?" }
+      ],
+      "bonusQuestions": []
+    }
   ]
 }
