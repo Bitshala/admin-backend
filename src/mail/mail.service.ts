@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { MailCoreService } from '@/mail/mail.core.service';
 import { CohortType } from '@/common/enum';
 import { ServiceError } from '@/common/errors';
+import { getCohortFullName } from '@/common/cohort-display';
 import { join } from 'path';
 import { Eta } from 'eta';
 import { MailTemplate } from '@/mail/mail.enum';
@@ -92,25 +93,6 @@ export class MailService implements OnModuleInit {
         }
     }
 
-    private getDiscordChannelCategoryName(cohortType: CohortType): string {
-        switch (cohortType) {
-            case CohortType.MASTERING_BITCOIN:
-                return 'Mastering Bitcoin';
-            case CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE:
-                return 'Learning Bitcoin from the Command Line';
-            case CohortType.PROGRAMMING_BITCOIN:
-                return 'Programming Bitcoin';
-            case CohortType.BITCOIN_PROTOCOL_DEVELOPMENT:
-                return 'Bitcoin Protocol Development';
-            case CohortType.MASTERING_LIGHTNING_NETWORK:
-                return 'Mastering the Lightning Network';
-            default:
-                throw new ServiceError(
-                    `Unknown cohort type encountered: ${cohortType}`,
-                );
-        }
-    }
-
     private getCohortInviteLink(cohortType: CohortType): string {
         switch (cohortType) {
             case CohortType.MASTERING_BITCOIN:
@@ -192,7 +174,7 @@ export class MailService implements OnModuleInit {
         calendarInvite?: string,
     ): Promise<void> {
         const cohortDisplayName = this.getCohortDisplayName(cohortType);
-        const cohortCategory = this.getDiscordChannelCategoryName(cohortType);
+        const cohortCategory = getCohortFullName(cohortType);
         const discordInviteLink = this.getCohortInviteLink(cohortType);
         const subject = `Welcome to ${cohortDisplayName} - Your enrollment is confirmed!`;
 
