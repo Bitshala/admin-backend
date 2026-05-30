@@ -384,7 +384,7 @@ export class CohortsService {
                         week.type = CohortWeekType.ORIENTATION;
                         week.hasExercise = false;
                         week.questions = [];
-                        week.bonusQuestion = [];
+                        week.bonusQuestions = [];
                         week.title = null;
                         week.readingMaterial = [];
                         week.activity = null;
@@ -397,7 +397,7 @@ export class CohortsService {
                             text: q.text,
                             attachments: q.attachments ?? [],
                         }));
-                        week.bonusQuestion = weekConfig.bonusQuestions.map(
+                        week.bonusQuestions = weekConfig.bonusQuestions.map(
                             (q) => ({
                                 text: q.text,
                                 attachments: q.attachments ?? [],
@@ -421,7 +421,7 @@ export class CohortsService {
                         week.type = CohortWeekType.GRADUATION;
                         week.hasExercise = false;
                         week.questions = [];
-                        week.bonusQuestion = [];
+                        week.bonusQuestions = [];
                         week.title = null;
                         week.readingMaterial = [];
                         week.activity = null;
@@ -662,7 +662,7 @@ export class CohortsService {
                     text: q.text,
                     attachments: q.attachments ?? [],
                 }));
-                week.bonusQuestion = weekConfig.bonusQuestions.map((q) => ({
+                week.bonusQuestions = weekConfig.bonusQuestions.map((q) => ({
                     text: q.text,
                     attachments: q.attachments ?? [],
                 }));
@@ -682,7 +682,7 @@ export class CohortsService {
                     : null;
             } else {
                 week.questions = [];
-                week.bonusQuestion = [];
+                week.bonusQuestions = [];
                 week.title = null;
                 week.readingMaterial = [];
                 week.activity = null;

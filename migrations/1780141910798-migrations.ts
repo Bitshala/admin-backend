@@ -17,9 +17,15 @@ export class Migrations1780141910798 implements MigrationInterface {
         await queryRunner.query(
             `ALTER TABLE "cohort" ADD "links" jsonb NOT NULL DEFAULT '[]'`,
         );
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" RENAME COLUMN "bonusQuestion" TO "bonusQuestions"`,
+        );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(
+            `ALTER TABLE "cohort_week" RENAME COLUMN "bonusQuestions" TO "bonusQuestion"`,
+        );
         await queryRunner.query(`ALTER TABLE "cohort" DROP COLUMN "links"`);
         await queryRunner.query(
             `ALTER TABLE "cohort_week" DROP COLUMN "exercise"`,

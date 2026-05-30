@@ -23,7 +23,7 @@ export class GetCohortWeekResponseDto {
     hasExercise!: boolean;
     title!: string | null;
     questions!: Question[];
-    bonusQuestion!: Question[];
+    bonusQuestions!: Question[];
     readingMaterial!: ReadingMaterial[];
     activity!: string | null;
     exercise!: Exercise | null;
@@ -38,7 +38,7 @@ export class GetCohortWeekResponseDto {
         this.hasExercise = obj.hasExercise;
         this.title = obj.title;
         this.questions = obj.questions;
-        this.bonusQuestion = obj.bonusQuestion;
+        this.bonusQuestions = obj.bonusQuestions;
         this.readingMaterial = obj.readingMaterial;
         this.activity = obj.activity;
         this.exercise = obj.exercise;
@@ -110,8 +110,8 @@ export class GetCohortResponseDto {
                     attachments: [...(q.attachments ?? [])],
                 })),
                 // Bonus questions are staff-only; hidden from students.
-                bonusQuestion: canSeeBonus
-                    ? (week.bonusQuestion || []).map((q) => ({
+                bonusQuestions: canSeeBonus
+                    ? (week.bonusQuestions || []).map((q) => ({
                           text: q.text,
                           attachments: [...(q.attachments ?? [])],
                       }))

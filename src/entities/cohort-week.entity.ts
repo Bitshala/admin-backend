@@ -51,7 +51,7 @@ export class CohortWeek extends BaseEntity {
     questions!: Question[];
 
     @Column('jsonb', { default: [] })
-    bonusQuestion!: Question[];
+    bonusQuestions!: Question[];
 
     @Column('text', { nullable: true })
     title!: string | null;
