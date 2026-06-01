@@ -4,7 +4,11 @@ import { join } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { validateSync } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { CohortConfig, QuestionConfig } from '@/cohorts/cohorts.config.model';
+import {
+    CohortConfig,
+    LinkConfig,
+    QuestionConfig,
+} from '@/cohorts/cohorts.config.model';
 import { ServiceError } from '@/common/errors';
 
 @Injectable()
@@ -14,6 +18,10 @@ export class CohortsConfigService implements OnModuleInit {
 
     onModuleInit(): void {
         const configDir = join(__dirname, '..', 'assets', 'cohort-configs');
+
+        // Links shared by every cohort, declared once. Merged into each
+        // cohort's config below so they aren't duplicated per config file.
+        const globalLinks = this.loadGlobalLinks(configDir);
 
         for (const type of Object.values(CohortType)) {
             const fileName = type.toLowerCase().replace(/_/g, '-') + '.json';
@@ -68,9 +76,46 @@ export class CohortsConfigService implements OnModuleInit {
                 }
             }
 
+            // Prepend shared global links, then any course-specific links,
+            // de-duplicated by url so a config can't reintroduce a global one.
+            const seen = new Set<string>();
+            config.links = [...globalLinks, ...(config.links ?? [])].filter(
+                (link) => {
+                    if (seen.has(link.url)) return false;
+                    seen.add(link.url);
+                    return true;
+                },
+            );
+
             this.configs.set(type, config);
             this.logger.log(`Loaded config for ${type} (${fileName})`);
         }
+    }
+
+    private loadGlobalLinks(configDir: string): LinkConfig[] {
+        const filePath = join(configDir, 'global-links.json');
+
+        let raw: string;
+        try {
+            raw = readFileSync(filePath, 'utf-8');
+        } catch {
+            throw new Error(`Missing global links config file: ${filePath}`);
+        }
+
+        const links = plainToInstance(LinkConfig, JSON.parse(raw) as unknown[]);
+        const errors = links.flatMap((link) =>
+            validateSync(link, {
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
+        );
+
+        if (errors.length > 0) {
+            const messages = errors.map((e) => e.toString()).join('; ');
+            throw new Error(`Invalid global links config: ${messages}`);
+        }
+
+        return links;
     }
 
     getConfig(type: CohortType): CohortConfig {

@@ -1,10 +1,6 @@
 {
   "gdSessions": 8,
   "classroomId": "300036",
-  "links": [
-    { "label": "Wheel of Names", "url": "https://wheelofnames.com/", "minRole": "TEACHING_ASSISTANT" },
-    { "label": "MultiBuzz", "url": "https://www.multibuzz.app/", "minRole": "TEACHING_ASSISTANT" }
-  ],
   "weeks": [
     {
       "hasExercise": true,

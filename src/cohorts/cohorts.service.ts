@@ -353,7 +353,7 @@ export class CohortsService {
                 cohort.hasExercises = hasExercises;
                 cohort.weeks = [];
                 // Snapshot links from config at creation; editable per cohort.
-                cohort.links = config.links.map((l) => ({
+                cohort.links = (config.links ?? []).map((l) => ({
                     label: l.label,
                     url: l.url,
                     minRole: l.minRole,
@@ -689,7 +689,7 @@ export class CohortsService {
             }
         }
 
-        cohort.links = config.links.map((l) => ({
+        cohort.links = (config.links ?? []).map((l) => ({
             label: l.label,
             url: l.url,
             minRole: l.minRole,

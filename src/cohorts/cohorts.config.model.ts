@@ -116,8 +116,12 @@ export class CohortConfig {
     )
     classroomId!: string;
 
+    // Course-specific links only. Global links shared by every cohort
+    // (e.g. Wheel of Names, MultiBuzz) live in global-links.json and are
+    // merged in by CohortsConfigService at load time.
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => LinkConfig)
-    links!: LinkConfig[];
+    links?: LinkConfig[];
 }
