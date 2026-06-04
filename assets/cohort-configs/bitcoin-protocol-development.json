@@ -1,4 +1,5 @@
 {
+  "$schema": "./cohort-config.schema.json",
   "gdSessions": 5,
   "classroomId": "255956",
   "links": [],

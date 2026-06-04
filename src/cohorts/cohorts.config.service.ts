@@ -47,7 +47,13 @@ export class CohortsConfigService implements OnModuleInit {
                 );
             }
 
-            const config = plainToInstance(CohortConfig, JSON.parse(raw));
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            // `$schema` references cohort-config.schema.json for editor tooling
+            // (autocomplete + inline docs); it is not part of the validated
+            // model, so drop it before `forbidNonWhitelisted` would reject it.
+            delete parsed['$schema'];
+
+            const config = plainToInstance(CohortConfig, parsed);
             const errors = validateSync(config, {
                 whitelist: true,
                 forbidNonWhitelisted: true,

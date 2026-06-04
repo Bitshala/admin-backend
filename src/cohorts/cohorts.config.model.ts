@@ -3,6 +3,7 @@ import {
     ArrayMinSize,
     IsArray,
     IsBoolean,
+    IsDefined,
     IsEnum,
     IsInt,
     IsNumberString,
@@ -20,6 +21,9 @@ export class QuestionConfig {
     @IsString()
     text!: string;
 
+    // Optional file names, relative to the cohort's attachments directory
+    // (assets/cohort-configs/attachments/<cohort>/). Each must exist on disk.
+    // Omit when the question has no attachments.
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
@@ -71,11 +75,16 @@ export class CohortWeekConfig {
     @Type(() => ReadingMaterialConfig)
     readingMaterial!: ReadingMaterialConfig[];
 
+    // Optional free-text activity for the week. Omit when there is none.
     @IsOptional()
     @IsString()
     activity?: string;
 
-    @IsOptional()
+    // Exercise content. Required when `hasExercise` is true; omit otherwise.
+    // (When `hasExercise` is false but an exercise is present, it is still
+    // validated.)
+    @ValidateIf((o: CohortWeekConfig) => o.hasExercise || o.exercise != null)
+    @IsDefined()
     @ValidateNested()
     @Type(() => ExerciseConfig)
     exercise?: ExerciseConfig;

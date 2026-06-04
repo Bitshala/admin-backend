@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitshala.org/schemas/cohort-config.schema.json",
+  "title": "Cohort Config",
+  "description": "Configuration for a single cohort, loaded and validated at startup by CohortsConfigService. The file name must match the CohortType (lower-cased, underscores -> hyphens). Global links shared by every cohort (Wheel of Names, MultiBuzz) are added in code and need not be listed here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["gdSessions", "weeks", "links"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Editor tooling only. Points at this schema for autocomplete + inline docs; stripped before validation."
+    },
+    "gdSessions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8,
+      "description": "Number of group-discussion sessions. Must equal the length of `weeks`."
+    },
+    "classroomId": {
+      "type": "string",
+      "pattern": "^[0-9]+$",
+      "description": "GitHub Classroom id used to sync exercise scores. Required when any week has `hasExercise: true`; may be omitted otherwise."
+    },
+    "links": {
+      "type": "array",
+      "description": "Course-specific links for this cohort. Use [] when there are none. Global links shared by every cohort are merged in by CohortsConfigService at load time, so do not list them here.",
+      "items": { "$ref": "#/$defs/link" }
+    },
+    "weeks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "description": "One entry per group-discussion session. Length must equal `gdSessions`.",
+      "items": { "$ref": "#/$defs/week" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "weeks": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": { "hasExercise": { "const": true } },
+              "required": ["hasExercise"]
+            }
+          }
+        },
+        "required": ["weeks"]
+      },
+      "then": { "required": ["classroomId"] }
+    }
+  ],
+  "$defs": {
+    "week": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hasExercise",
+        "questions",
+        "bonusQuestions",
+        "title",
+        "readingMaterial"
+      ],
+      "properties": {
+        "hasExercise": {
+          "type": "boolean",
+          "description": "Whether this week has a graded exercise (scored via GitHub Classroom). When true, `exercise` content is required and the cohort must declare `classroomId`."
+        },
+        "questions": {
+          "type": "array",
+          "description": "Discussion questions for the week.",
+          "items": { "$ref": "#/$defs/question" }
+        },
+        "bonusQuestions": {
+          "type": "array",
+          "description": "Optional-to-answer bonus discussion questions.",
+          "items": { "$ref": "#/$defs/question" }
+        },
+        "title": {
+          "type": "string",
+          "description": "Week title."
+        },
+        "readingMaterial": {
+          "type": "array",
+          "description": "Reading-material links for the week.",
+          "items": { "$ref": "#/$defs/readingMaterial" }
+        },
+        "activity": {
+          "type": "string",
+          "description": "Optional free-text activity for the week. Omit when there is none."
+        },
+        "exercise": {
+          "$ref": "#/$defs/exercise",
+          "description": "Exercise content. Required when `hasExercise` is true; omit otherwise."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": { "hasExercise": { "const": true } },
+            "required": ["hasExercise"]
+          },
+          "then": { "required": ["exercise"] }
+        }
+      ]
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Question prompt."
+        },
+        "attachments": {
+          "type": "array",
+          "description": "Optional file names, relative to the cohort's attachments directory (assets/cohort-configs/attachments/<cohort>/). Each file must exist on disk. Omit when the question has no attachments.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "readingMaterial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "url"],
+      "properties": {
+        "label": { "type": "string", "description": "Display label." },
+        "url": { "type": "string", "description": "Link URL." }
+      }
+    },
+    "exercise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "concepts", "problem", "expectedOutput"],
+      "properties": {
+        "title": { "type": "string", "description": "Exercise title." },
+        "concepts": {
+          "type": "string",
+          "description": "Concepts the exercise covers."
+        },
+        "problem": {
+          "type": "string",
+          "description": "Problem statement."
+        },
+        "expectedOutput": {
+          "type": "array",
+          "description": "Expected output lines.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "url"],
+      "properties": {
+        "label": { "type": "string", "description": "Display label." },
+        "url": { "type": "string", "description": "Link URL." },
+        "minRole": {
+          "type": "string",
+          "enum": ["ADMIN", "TEACHING_ASSISTANT", "STUDENT"],
+          "description": "Minimum role required to see this link. Absent => visible to everyone."
+        }
+      }
+    }
+  }
+}
