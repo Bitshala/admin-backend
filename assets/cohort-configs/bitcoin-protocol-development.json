@@ -6,6 +6,17 @@
   "weeks": [
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Bitcoin Node Interaction and OP_RETURN Transaction",
+        "concepts": "RPC interface, wallet management, block mining, transaction construction, OP_RETURN outputs, fee rates",
+        "problem": "Connect to a Bitcoin Core node running in regtest mode using RPC. Create and load a wallet named \"testwallet\", generate an address from it, and mine blocks to that address until you have a spendable balance. Then construct and broadcast a transaction that sends 100 BTC to the address bcrt1qq2yshcmzdlznnpxx258xswqlmqcxjs4dssfxt2 and includes a second OP_RETURN output containing the binary encoding of the message \"We are all Satoshi!!\". Set the fee rate to exactly 21 sats/vB.",
+        "expectedOutput": [
+          "A running regtest Bitcoin node with a funded \"testwallet\" wallet",
+          "A broadcast transaction containing two outputs: a 100 BTC payment output and an OP_RETURN data output with the message \"We are all Satoshi!!\"",
+          "A fee rate of exactly 21 sats/vB on the transaction",
+          "The transaction ID (txid) written to out.txt"
+        ]
+      },
       "title": "Bitcoin Protocol Development Cohort",
       "readingMaterial": [
         { "label": "Welcome to the Bitcoin Protocol Development Seminar", "url": "https://chaincode.gitbook.io/seminars/bitcoin-protocol-development/welcome-to-the-bitcoin-protocol" }
@@ -38,6 +49,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Building a P2SH-P2WSH Multisig Transaction",
+        "concepts": "P2SH wrapping, P2WSH, 2-of-2 multisig, sighash calculation, ECDSA signatures, scriptSig and witness construction",
+        "problem": "Construct a signed P2SH-P2WSH transaction that spends a 2-of-2 multisig redeem script. You are given two private keys and the redeem script (OP_2 <pubkey1> <pubkey2> OP_2 OP_CHECKMULTISIG). The transaction must contain exactly one input (outpoint hash of all zeros, index 0, sequence 0xffffffff) and exactly one output paying 0.001 BTC to the address 325UUecEQuyrTd28Xs2hvAxdAjHM7XzqVF, with locktime 0. Calculate the sighash of the unsigned transaction, compute ECDSA signatures with both private keys, construct the correct scriptSig from the redeem script, and build a valid multisig witness stack.",
+        "expectedOutput": [
+          "A correctly computed sighash for the P2SH-P2WSH input",
+          "Valid ECDSA signatures from both private keys",
+          "A correct scriptSig wrapping the witness program and a valid witness stack passing 2-of-2 multisig validation",
+          "The fully serialized transaction hex written to out.txt"
+        ]
+      },
       "title": "SEGWIT",
       "readingMaterial": [
         { "label": "SEGWIT", "url": "https://chaincode.gitbook.io/seminars/bitcoin-protocol-development/segwit" }
@@ -69,6 +91,16 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Mine Your First Block",
+        "concepts": "Transaction validation, mempool processing, coinbase transactions, merkle root, block header construction, proof-of-work",
+        "problem": "Simulate the mining process of a block. You are given a mempool folder containing JSON files, each representing an individual transaction with all of its data. Write a script that processes these transactions, validates them, selects valid ones for inclusion, constructs a coinbase transaction, and mines a block whose hash meets the difficulty target 0000ffff00000000000000000000000000000000000000000000000000000000. Any previous block hash may be used as long as the mined block hash satisfies the target.",
+        "expectedOutput": [
+          "A valid block header whose hash is below the difficulty target",
+          "A correctly serialized coinbase transaction",
+          "An out.txt file containing the block header on the first line, the serialized coinbase transaction on the second line, and the txids of all mined transactions on the following lines, starting with the coinbase txid"
+        ]
+      },
       "title": "Mining and Network Block Propagation",
       "readingMaterial": [
         { "label": "Mining and Network Block Propagation", "url": "https://chaincode.gitbook.io/seminars/bitcoin-protocol-development/mining-network-prop" }
@@ -100,6 +132,16 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Connecting to the P2P Network",
+        "concepts": "P2P protocol, version/verack handshake, network message serialization, block retrieval, block parsing, fee and coinbase analysis",
+        "problem": "Interact directly with the Bitcoin P2P network without using RPC. Discover and connect to a Bitcoin node, perform the initial version/verack handshake to establish a valid connection, then request the full block data for block height 840000 using its block hash (obtained from a public blockchain explorer). Parse the raw block to extract the 80-byte block header, the block hash, the total fees collected by the miner, and information identifying the miner from the coinbase transaction.",
+        "expectedOutput": [
+          "A successful version/verack handshake with a Bitcoin node",
+          "Retrieved and parsed raw block data for block 840000",
+          "An out.txt file containing the block header on the first line, the block hash on the second line, the total fees collected in sats on the third line, and the miner information on the fourth line"
+        ]
+      },
       "title": "P2P",
       "readingMaterial": [
         { "label": "P2P", "url": "https://chaincode.gitbook.io/seminars/bitcoin-protocol-development/p2p" }
@@ -122,6 +164,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Parsing a Descriptor and Calculating Wallet Balance",
+        "concepts": "Output descriptors, extended public keys, address derivation, gap limit handling, Esplora API, balance calculation",
+        "problem": "Parse the output descriptor wpkh(tpubD6NzVbkrYhZ4XgiXtGrdW5XDAPFCL9h7we1vwNCpn8tGbBcgfVYjXyhWo4E1xkh56hjod1RhGjxbaTLV3X4FyWuejifB9jusQ46QzG87VKp/*)#adv567t2 to derive wallet addresses. Continue generating addresses until a sequence of 10 consecutive unused addresses (addresses with no transactions) is detected. For each generated address, fetch its transaction data from a locally running Esplora API (http://localhost:8094/regtest/api/) and calculate the total balance across all addresses.",
+        "expectedOutput": [
+          "Addresses correctly derived from the wpkh descriptor",
+          "Address scanning that stops after detecting a gap of 10 consecutive unused addresses",
+          "Transaction data fetched from the Esplora API for each address",
+          "An out.txt file containing a single line with the total balance in BTC"
+        ]
+      },
       "title": "Scripts and Wallets",
       "readingMaterial": [
         { "label": "Scripts and Wallets", "url": "https://chaincode.gitbook.io/seminars/bitcoin-protocol-development/script-wallets" }

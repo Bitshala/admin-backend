@@ -6,6 +6,16 @@
   "weeks": [
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Finite Fields and Elliptic Curves",
+        "concepts": "Finite field arithmetic, modular arithmetic, Fermat's little theorem, elliptic curve point addition",
+        "problem": "Implement the mathematical building blocks of Bitcoin's cryptography in Python. Build a FieldElement class supporting addition, subtraction, multiplication, exponentiation, and division over a finite field using modular arithmetic (using Fermat's little theorem for division). Then build a Point class representing points on an elliptic curve y² = x³ + ax + b, implementing point addition for all cases: the point at infinity (identity), additive inverses, points with different x coordinates, and point doubling. Complete all exercises in Chapter1.ipynb and Chapter2.ipynb.",
+        "expectedOutput": [
+          "A working FieldElement class with all arithmetic operations defined over a prime field",
+          "A Point class that correctly validates curve membership and handles all point addition cases including identity and doubling",
+          "All cells in Chapter1.ipynb and Chapter2.ipynb running without errors"
+        ]
+      },
       "title": "Finite Fields & Elliptic Curves",
       "readingMaterial": [
         { "label": "Chapter 1: Finite Fields", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch01.asciidoc" },
@@ -28,6 +38,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Elliptic Curve Cryptography",
+        "concepts": "Elliptic curves over finite fields, scalar multiplication, secp256k1, public/private key pairs, ECDSA signing and verification",
+        "problem": "Combine finite fields and elliptic curves to build working elliptic curve cryptography. Implement curve points over a finite field and scalar multiplication using binary expansion. Define the secp256k1 curve parameters used by Bitcoin (S256Field, S256Point, the generator point G, and the group order N). Then implement Signature and PrivateKey classes to perform ECDSA: derive a public key from a private key, sign a message hash, and verify a signature. Complete all exercises in Chapter3.ipynb.",
+        "expectedOutput": [
+          "Elliptic curve point operations working over a finite field, including efficient scalar multiplication",
+          "A working secp256k1 implementation with the correct generator point and group order",
+          "ECDSA signature creation and verification that round-trips correctly",
+          "All cells in Chapter3.ipynb running without errors"
+        ]
+      },
       "title": "Elliptic Curve Cryptography",
       "readingMaterial": [
         { "label": "Chapter 3: Elliptic Curve Cryptography", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch03.asciidoc" }
@@ -50,6 +71,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Serialization and Transactions",
+        "concepts": "SEC public key format, DER signatures, Base58Check, WIF, varints, transaction parsing and serialization, fee calculation",
+        "problem": "Implement Bitcoin's serialization formats and transaction structure. Serialize public keys in compressed and uncompressed SEC format, encode signatures in DER format, and implement Base58Check encoding to produce Bitcoin addresses and WIF-encoded private keys. Then build a transaction parser and serializer that handles the version, inputs (previous txid, index, scriptSig, sequence), outputs (amount, scriptPubKey), locktime, and varints, and calculate the fee of a transaction by looking up the value of its inputs. Complete all exercises in Chapter4.ipynb and Chapter5.ipynb.",
+        "expectedOutput": [
+          "SEC and DER serialization for public keys and signatures",
+          "Correct Bitcoin addresses (Base58Check) and WIF private keys derived from key material",
+          "A transaction parser that can parse and re-serialize raw transactions losslessly",
+          "Correct fee calculation for a parsed transaction, and all cells in Chapter4.ipynb and Chapter5.ipynb running without errors"
+        ]
+      },
       "title": "Serialization & Transactions",
       "readingMaterial": [
         { "label": "Chapter 4: Serialization", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch04.asciidoc" },
@@ -75,6 +107,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Script and Transaction Validation",
+        "concepts": "Bitcoin Script, opcode evaluation, p2pk and p2pkh, sighash computation, transaction validation, transaction creation",
+        "problem": "Implement Bitcoin's Script language and use it to validate and create transactions. Build a Script parser, serializer, and evaluation engine that executes the combined scriptSig and scriptPubKey using a stack, supporting standard patterns like p2pkh. Implement the SIGHASH_ALL signature hash computation, validate a transaction by verifying the signatures on each of its inputs, and then construct, sign, and serialize your own transaction. Complete all exercises in Chapter6.ipynb and Chapter7.ipynb.",
+        "expectedOutput": [
+          "A Script evaluation engine that correctly executes p2pkh scripts",
+          "Correct sighash (z) computation for transaction inputs",
+          "Full transaction validation that verifies input signatures",
+          "A self-created, signed transaction that serializes correctly, and all cells in Chapter6.ipynb and Chapter7.ipynb running without errors"
+        ]
+      },
       "title": "Script & Transaction Creation",
       "readingMaterial": [
         { "label": "Chapter 6: Script", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch06.asciidoc" },
@@ -97,6 +140,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Pay-to-Script-Hash (P2SH)",
+        "concepts": "P2SH addresses, redeem scripts, bare multisig, OP_CHECKMULTISIG, p2sh signature validation",
+        "problem": "Implement Pay-to-Script-Hash, the mechanism that enables complex spending conditions like multisig behind a short address. Implement OP_CHECKMULTISIG (handling its off-by-one bug), construct redeem scripts for multisig, hash them to produce P2SH addresses, and extend Script evaluation to detect the special p2sh pattern and execute the redeem script. Finally, modify the sighash computation for p2sh inputs and verify a signature on a p2sh multisig transaction input. Complete all exercises in Chapter8.ipynb.",
+        "expectedOutput": [
+          "A working OP_CHECKMULTISIG implementation that validates bare multisig scripts",
+          "P2SH address generation from a redeem script hash",
+          "Script evaluation that recognizes and correctly executes the p2sh pattern",
+          "Signature verification for a p2sh multisig input, and all cells in Chapter8.ipynb running without errors"
+        ]
+      },
       "title": "P2SH & Segwit",
       "readingMaterial": [
         { "label": "Chapter 8: P2SH", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch08.asciidoc" },
@@ -123,6 +177,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Blocks and Networking",
+        "concepts": "Block headers, coinbase transactions, difficulty and target, proof-of-work validation, P2P network messages, version/verack handshake",
+        "problem": "Implement Bitcoin's block structure and connect to the peer-to-peer network. Parse and serialize 80-byte block headers, identify coinbase transactions and extract block height from the coinbase scriptSig, compute the block hash and validate proof-of-work against the target, and calculate difficulty and the new bits after a difficulty adjustment period. Then implement the network layer: parse and serialize network envelopes, construct version and verack messages, perform the network handshake with a peer, and download block headers from the network. Complete all exercises in Chapter9.ipynb and Chapter10.ipynb.",
+        "expectedOutput": [
+          "Block header parsing, serialization, and proof-of-work validation",
+          "Correct target, difficulty, and new-bits calculation after a 2016-block adjustment period",
+          "A completed version/verack handshake with a live Bitcoin node",
+          "Block headers downloaded and validated from a peer, and all cells in Chapter9.ipynb and Chapter10.ipynb running without errors"
+        ]
+      },
       "title": "Blocks & Networking",
       "readingMaterial": [
         { "label": "Chapter 9: Blocks", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch09.asciidoc" },
@@ -150,6 +215,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "SPV and Bloom Filters",
+        "concepts": "Merkle trees, merkle proofs, simplified payment verification, bloom filters, merkleblock messages",
+        "problem": "Implement Simplified Payment Verification, allowing a light client to verify transaction inclusion without downloading full blocks. Build merkle parent and merkle root computation, construct a full merkle tree, and parse merkleblock messages to verify a merkle inclusion proof from the flag bits and hashes. Then implement BIP37 bloom filters: compute filter bits using murmur3 hashing, load a filter to a connected node with the filterload command, request merkle blocks with getdata, and identify transactions of interest belonging to an address. Complete all exercises in Chapter11.ipynb and Chapter12.ipynb.",
+        "expectedOutput": [
+          "Correct merkle root computation from a list of transaction hashes",
+          "Merkleblock parsing and validation of merkle inclusion proofs",
+          "A working BIP37 bloom filter that a node accepts via filterload",
+          "Transactions of interest discovered from a peer using bloom-filtered merkle blocks, and all cells in Chapter11.ipynb and Chapter12.ipynb running without errors"
+        ]
+      },
       "title": "SPV & Bloom Filters",
       "readingMaterial": [
         { "label": "Chapter 11: SPV", "url": "https://github.com/jimmysong/programmingbitcoin/blob/master/ch11.asciidoc" },

@@ -10,6 +10,17 @@
   "weeks": [
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Setting Up and Interacting with a Bitcoin Node",
+        "concepts": "Node setup, bitcoin.conf configuration, RPC interaction, wallet creation, block rewards, coinbase maturity, transaction lifecycle",
+        "problem": "Set up Bitcoin Core from scratch: download the binaries, install them, create a bitcoin.conf configured for regtest (with server, txindex, and rpcauth settings), and start bitcoind. Then create two wallets named \"Miner\" and \"Trader\". Generate an address labeled \"Mining Reward\" from the Miner wallet and mine blocks to it until the wallet shows a positive balance, observing how many blocks it takes and why (coinbase maturity). Send 20 BTC from Miner to a Trader address labeled \"Received\", inspect the unconfirmed transaction in the node's mempool using getmempoolentry, then confirm it by mining one block.",
+        "expectedOutput": [
+          "A running regtest Bitcoin node with two wallets: Miner and Trader",
+          "A comment explaining why block rewards require 100 blocks of maturity before they are spendable",
+          "A mempool entry fetched for the unconfirmed transaction",
+          "An out.txt file with the txid, Miner's input address and amount, Trader's output address and amount, Miner's change address and amount, transaction fee, and the block height and block hash where the transaction confirmed"
+        ]
+      },
       "title": "Bitcoin Fundamentals & Cryptographic Primitives",
       "readingMaterial": [
         { "label": "Chapter 1: Introducing Bitcoin", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/01_0_Introduction.md" },
@@ -40,6 +51,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Fee Bumping with RBF and CPFP",
+        "concepts": "Replace-By-Fee (RBF), Child-Pays-For-Parent (CPFP), mempool inspection, transaction conflicts, fee management",
+        "problem": "Create and fund Miner and Trader wallets with at least 3 block rewards (150 BTC). Craft an RBF-enabled \"Parent\" transaction spending two 50 BTC block rewards, paying 70 BTC to Trader and 29.99999 BTC change back to Miner. Broadcast it but do not mine it. Query the mempool for its details and record them to parent.json. Then create a \"Child\" (CPFP) transaction spending Miner's change output of the Parent, paying 29.99998 BTC to a new Miner address, and record it to child.json. Finally, fee-bump the Parent via RBF by hand-crafting a conflicting transaction with the same inputs but a fee raised by 10,000 satoshis (without using bumpfee), broadcast it, and record it to parent-rbf.json. Observe what happens to the Child transaction after the replacement.",
+        "expectedOutput": [
+          "Three JSON files (parent.json, child.json, parent-rbf.json), each containing txid, inputs, outputs, fee, and weight",
+          "A broadcast RBF-signaled Parent transaction and a Child transaction spending its change output",
+          "A hand-crafted replacement transaction that successfully evicts the original Parent and the Child from the mempool",
+          "A demonstration of why RBF and CPFP cannot safely be combined on the same parent transaction"
+        ]
+      },
       "title": "Transactions, Fees & Advanced Transaction Mechanics",
       "readingMaterial": [
         { "label": "Chapter 4: Sending Bitcoin Transactions", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/04_0_Sending_Bitcoin_Transactions.md" },
@@ -67,6 +89,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "2-of-2 Multisig with PSBT",
+        "concepts": "Multisig scripts, P2WSH addresses, PSBT workflow, collaborative signing, joint custody",
+        "problem": "Simulate a 2-of-2 multisig share transfer between two participants, Alice and Bob. Create three wallets (Miner, Alice, Bob), fund Miner with block rewards, and send 15 BTC each to Alice and Bob. Fetch Alice's and Bob's public keys and construct a 2-of-2 P2WSH multisig address. Build a funding PSBT that deposits 20 BTC into the multisig (10 BTC from each party with correct change back to each), sign it with both parties, broadcast, and mine 6 blocks to confirm. Then build a spending PSBT that spends the multisig UTXO and splits the funds back equally (10 BTC each, minus fees), sign it in turn with Alice and Bob, extract and broadcast the final transaction, and mine 6 blocks to confirm.",
+        "expectedOutput": [
+          "A 2-of-2 P2WSH multisig address built from Alice's and Bob's public keys",
+          "A confirmed funding transaction depositing 20 BTC into the multisig (10 BTC from each party)",
+          "A confirmed spending transaction signed by both parties that splits the funds back equally",
+          "Balance reports for Alice and Bob after each phase, and an out.txt containing the funding txid and spending txid on separate lines"
+        ]
+      },
       "title": "Multisig, PSBT & Hardware Wallet Integration",
       "readingMaterial": [
         { "label": "Chapter 6: Expanding Bitcoin Transactions with Multisigs", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/06_0_Expanding_Bitcoin_Transactions_Multisigs.md" },
@@ -90,6 +123,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Absolute Timelocks and OP_RETURN",
+        "concepts": "Absolute timelocks (nLockTime), block height locks, non-final transactions, OP_RETURN data embedding",
+        "problem": "Simulate a timelocked salary payment. Create three wallets (Miner, Employee, Employer) and fund the Employer from mined blocks. Create a salary transaction of 40 BTC from Employer to Employee with an absolute timelock of block 500, so it cannot be included in the blockchain until block 500 is mined. Attempt to broadcast it early and report what happens. Mine up to block 500 and broadcast the transaction. Then have the Employee spend the funds to a new Employee address, adding an OP_RETURN output containing the ASCII string \"I got my salary, I am rich\". Broadcast and confirm the spending transaction.",
+        "expectedOutput": [
+          "A timelocked transaction that is rejected as non-final when broadcast before block 500, with a comment reporting the observed error",
+          "Successful broadcast of the salary transaction after mining to block 500",
+          "A confirmed spending transaction containing an OP_RETURN output with the message \"I got my salary, I am rich\"",
+          "Final balances of Employee and Employer, and an out.txt containing the funding txid and spending txid on separate lines"
+        ]
+      },
       "title": "Bitcoin Script & Transaction Verification",
       "readingMaterial": [
         { "label": "Chapter 8: Expanding Bitcoin Transactions in Other Ways", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/08_0_Expanding_Bitcoin_Transactions_Other.md" },
@@ -114,6 +158,17 @@
     },
     {
       "hasExercise": true,
+      "exercise": {
+        "title": "Relative Timelocks",
+        "concepts": "Relative timelocks, nSequence, BIP68, input aging, refund transactions",
+        "problem": "Demonstrate a relative timelock spend. Create two wallets (Miner and Alice), fund Alice by mining blocks to Miner and sending coins to Alice, then confirm the funding and assert Alice has a positive balance. Build a refund transaction where Alice pays 10 BTC back to Miner with a relative timelock of 10 blocks (by setting the input's nSequence appropriately). Attempt to broadcast the refund transaction immediately and report the error you observe. Mine 10 more blocks, broadcast the refund transaction successfully, and mine one additional block to confirm it.",
+        "expectedOutput": [
+          "A refund transaction with nSequence set for a 10-block relative timelock",
+          "A report of the non-BIP68-final error observed when broadcasting before the input has aged 10 blocks",
+          "Successful broadcast and confirmation of the refund transaction after mining 10 blocks",
+          "Alice's final balance reported, and an out.txt containing the refund txid"
+        ]
+      },
       "title": "Advanced Scripts & Time Locks",
       "readingMaterial": [
         { "label": "Chapter 10: Embedding Bitcoin Scripts in P2SH Transactions", "url": "https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/10_0_Embedding_Bitcoin_Scripts_in_P2SH_Transactions.md" },
