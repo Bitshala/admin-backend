@@ -1,11 +1,30 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { CohortType } from '@/common/enum';
+import { CohortType, UserRole } from '@/common/enum';
 import { join } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { validateSync } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { CohortConfig, QuestionConfig } from '@/cohorts/cohorts.config.model';
+import {
+    CohortConfig,
+    LinkConfig,
+    QuestionConfig,
+} from '@/cohorts/cohorts.config.model';
 import { ServiceError } from '@/common/errors';
+
+// Links shared by every cohort, declared once here so they aren't duplicated
+// across each cohort config file. Merged into every cohort at load time.
+const GLOBAL_LINKS: LinkConfig[] = [
+    {
+        label: 'Wheel of Names',
+        url: 'https://wheelofnames.com/',
+        minRole: UserRole.TEACHING_ASSISTANT,
+    },
+    {
+        label: 'MultiBuzz',
+        url: 'https://www.multibuzz.app/',
+        minRole: UserRole.TEACHING_ASSISTANT,
+    },
+];
 
 @Injectable()
 export class CohortsConfigService implements OnModuleInit {
@@ -67,6 +86,16 @@ export class CohortsConfigService implements OnModuleInit {
                     }
                 }
             }
+
+            // Prepend shared global links, then this cohort's course-specific
+            // links, de-duplicated by url so a config can't reintroduce a
+            // global one.
+            const seen = new Set<string>();
+            config.links = [...GLOBAL_LINKS, ...config.links].filter((link) => {
+                if (seen.has(link.url)) return false;
+                seen.add(link.url);
+                return true;
+            });
 
             this.configs.set(type, config);
             this.logger.log(`Loaded config for ${type} (${fileName})`);
