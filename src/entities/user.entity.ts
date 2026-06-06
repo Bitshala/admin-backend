@@ -43,6 +43,12 @@ export class User extends BaseEntity {
     @Column('varchar', { length: 2048, nullable: true })
     githubProfileUrl!: string | null;
 
+    @Column('varchar', { length: 2048, nullable: true })
+    portfolioUrl!: string | null;
+
+    @Column('varchar', { length: 2048, nullable: true })
+    linkedinProfileUrl!: string | null;
+
     @Column({ type: 'jsonb', default: [] })
     skills!: string[];
 

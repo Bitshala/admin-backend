@@ -11,6 +11,8 @@ export class GetUserResponse {
     description: string | null;
     background: string | null;
     githubProfileUrl: string | null;
+    portfolioUrl: string | null;
+    linkedinProfileUrl: string | null;
     skills: string[] | null;
     // ISO date (YYYY-MM-DD) of when first heard about Bitcoin
     firstHeardAboutBitcoinOn: string | null;
@@ -35,6 +37,8 @@ export class GetUserResponse {
             description: user.description,
             background: user.background,
             githubProfileUrl: user.githubProfileUrl,
+            portfolioUrl: user.portfolioUrl,
+            linkedinProfileUrl: user.linkedinProfileUrl,
             skills: user.skills,
             firstHeardAboutBitcoinOn: user.firstHeardAboutBitcoinOn,
             bitcoinBooksRead: user.bitcoinBooksRead,

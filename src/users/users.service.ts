@@ -141,6 +141,12 @@ export class UsersService {
         if (body.githubProfileUrl !== undefined) {
             user.githubProfileUrl = body.githubProfileUrl;
         }
+        if (body.portfolioUrl !== undefined) {
+            user.portfolioUrl = body.portfolioUrl;
+        }
+        if (body.linkedinProfileUrl !== undefined) {
+            user.linkedinProfileUrl = body.linkedinProfileUrl;
+        }
         if (body.skills !== undefined) {
             user.skills = body.skills ?? [];
         }

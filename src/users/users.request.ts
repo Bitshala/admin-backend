@@ -46,6 +46,18 @@ export class UpdateUserRequest {
     @MaxLength(2048)
     githubProfileUrl?: string;
 
+    /** Portfolio or side-project URL */
+    @IsOptional()
+    @IsUrl({ require_protocol: true })
+    @MaxLength(2048)
+    portfolioUrl?: string;
+
+    /** LinkedIn profile URL */
+    @IsOptional()
+    @IsUrl({ require_protocol: true })
+    @MaxLength(2048)
+    linkedinProfileUrl?: string;
+
     /** Skills */
     @IsOptional()
     @IsArray()
