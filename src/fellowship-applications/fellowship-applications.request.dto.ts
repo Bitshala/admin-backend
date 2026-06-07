@@ -5,8 +5,13 @@ import {
     IsString,
     IsUrl,
     Matches,
+    MaxLength,
 } from 'class-validator';
 import { FellowshipType, FellowshipApplicationStatus } from '@/common/enum';
+
+// The client caps the two long-form sections at 3,000 chars each; this bound
+// covers both plus title, links and markdown framing with generous headroom.
+const PROPOSAL_MAX_LENGTH = 20_000;
 
 export class CreateFellowshipApplicationRequestDto {
     @IsEnum(FellowshipType)
@@ -14,6 +19,7 @@ export class CreateFellowshipApplicationRequestDto {
 
     @IsString()
     @IsNotEmpty()
+    @MaxLength(PROPOSAL_MAX_LENGTH)
     proposal!: string;
 }
 
@@ -21,6 +27,7 @@ export class UpdateFellowshipApplicationRequestDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()
+    @MaxLength(PROPOSAL_MAX_LENGTH)
     proposal?: string;
 }
 
@@ -35,11 +42,16 @@ export class ReviewFellowshipApplicationRequestDto {
 
     // Required when status === ACCEPTED (enforced in the service).
     // Folder hosts the unsigned contract and is where the fellow uploads
-    // their W-8BEN form.
+    // their W-8BEN form — so it must be an actual Drive folder URL, not
+    // just any drive.google.com link.
     @IsOptional()
     @IsUrl()
-    @Matches(/^https:\/\/drive\.google\.com\//, {
-        message: 'driveFolderUrl must be a Google Drive URL',
-    })
+    @Matches(
+        /^https:\/\/drive\.google\.com\/drive\/(u\/\d+\/)?folders\/[\w-]+([?#].*)?$/,
+        {
+            message:
+                'driveFolderUrl must be a Google Drive folder URL (https://drive.google.com/drive/folders/…)',
+        },
+    )
     driveFolderUrl?: string;
 }

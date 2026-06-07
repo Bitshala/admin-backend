@@ -121,6 +121,12 @@ export class FellowshipsService {
             );
         }
 
+        if (new Date(dto.endDate) <= new Date(dto.startDate)) {
+            throw new BadRequestException(
+                'Contract end date must be after the start date',
+            );
+        }
+
         fellowship.startDate = new Date(dto.startDate);
         fellowship.endDate = new Date(dto.endDate);
         fellowship.amountUsd = dto.amountUsd.toString();
