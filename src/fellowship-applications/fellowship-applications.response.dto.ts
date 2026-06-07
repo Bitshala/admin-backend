@@ -9,6 +9,16 @@ export class FellowshipApplicationProposalResponseDto {
     }
 }
 
+export class GithubUserCheckResponseDto {
+    // true/false when GitHub answered; null when the check could not be
+    // performed — clients must treat null as "unknown", never "missing".
+    exists!: boolean | null;
+
+    constructor(exists: boolean | null) {
+        this.exists = exists;
+    }
+}
+
 export class FellowshipApplicationResponseDto {
     id!: string;
     type!: FellowshipType;

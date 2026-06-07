@@ -35,4 +35,19 @@ export class GitHubClassroomClient {
             },
         );
     }
+
+    /**
+     * Whether a GitHub account with this username exists.
+     * Resolves false on 404; rethrows other errors (rate limit, network)
+     * so callers can distinguish "missing" from "could not check".
+     */
+    async userExists(username: string): Promise<boolean> {
+        try {
+            await this.octokit.request('GET /users/{username}', { username });
+            return true;
+        } catch (err) {
+            if ((err as { status?: number }).status === 404) return false;
+            throw err;
+        }
+    }
 }

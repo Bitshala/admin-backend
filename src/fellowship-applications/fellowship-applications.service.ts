@@ -25,7 +25,10 @@ import {
     FellowshipApplicationResponseDto,
 } from '@/fellowship-applications/fellowship-applications.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
+import { GitHubClassroomClient } from '@/github-classroom/client/github-classroom.client';
 import { MailService } from '@/mail/mail.service';
+
+const GITHUB_USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]){0,38}$/;
 
 @Injectable()
 export class FellowshipApplicationsService {
@@ -37,7 +40,27 @@ export class FellowshipApplicationsService {
         @InjectRepository(Fellowship)
         private readonly fellowshipRepository: Repository<Fellowship>,
         private readonly mailService: MailService,
+        private readonly githubClient: GitHubClassroomClient,
     ) {}
+
+    /**
+     * Advisory GitHub account check used by the application form.
+     * Returns `exists: null` when GitHub could not be reached (rate limit,
+     * network) — callers must treat that as "unknown", never as "missing".
+     */
+    async checkGithubUser(username: string): Promise<boolean | null> {
+        if (!GITHUB_USERNAME_RE.test(username)) return false;
+        try {
+            return await this.githubClient.userExists(username);
+        } catch (err) {
+            this.logger.warn(
+                `GitHub user check failed for "${username}": ${
+                    (err as Error).message
+                }`,
+            );
+            return null;
+        }
+    }
 
     async createApplication(
         user: User,

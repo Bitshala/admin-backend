@@ -28,6 +28,7 @@ import {
 import {
     FellowshipApplicationProposalResponseDto,
     FellowshipApplicationResponseDto,
+    GithubUserCheckResponseDto,
 } from '@/fellowship-applications/fellowship-applications.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { Roles } from '@/auth/roles.decorator';
@@ -76,6 +77,19 @@ export class FellowshipApplicationsController {
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<FellowshipApplicationResponseDto>> {
         return this.service.getMyApplications(user, query);
+    }
+
+    @Get('github/:username')
+    @ApiOperation({
+        summary:
+            'Check whether a GitHub account exists (advisory — exists is null when GitHub is unreachable)',
+    })
+    async checkGithubUser(
+        @Param('username') username: string,
+    ): Promise<GithubUserCheckResponseDto> {
+        return new GithubUserCheckResponseDto(
+            await this.service.checkGithubUser(username),
+        );
     }
 
     @Get(':id/proposal')
