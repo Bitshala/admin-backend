@@ -6,17 +6,20 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { FellowshipReport } from '@/entities/fellowship-report.entity';
 import { Fellowship } from '@/entities/fellowship.entity';
 import { User } from '@/entities/user.entity';
 import {
     FellowshipReportStatus,
     FellowshipStatus,
+    SortOrder,
     UserRole,
 } from '@/common/enum';
 import {
     CreateFellowshipReportRequestDto,
+    FellowshipReportSortBy,
+    ListFellowshipReportsQueryDto,
     ReviewFellowshipReportRequestDto,
     UpdateFellowshipReportRequestDto,
 } from '@/fellowship-reports/fellowship-reports.request.dto';
@@ -25,10 +28,19 @@ import {
     FellowshipReportResponseDto,
 } from '@/fellowship-reports/fellowship-reports.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
+import { escapeLikePattern } from '@/common/common';
 import { MailService } from '@/mail/mail.service';
 import { APITask } from '@/entities/api-task.entity';
 import { TaskType } from '@/task-processor/task.enums';
 import { isLastRetry } from '@/task-processor/task-processor.utils';
+
+const REPORT_SORT_COLUMNS: Record<
+    Exclude<FellowshipReportSortBy, FellowshipReportSortBy.PERIOD>,
+    string
+> = {
+    [FellowshipReportSortBy.CREATED_AT]: 'report.createdAt',
+    [FellowshipReportSortBy.UPDATED_AT]: 'report.updatedAt',
+};
 
 @Injectable()
 export class FellowshipReportsService {
@@ -255,28 +267,67 @@ export class FellowshipReportsService {
     }
 
     async listReports(
-        query: PaginatedQueryDto,
-        status?: FellowshipReportStatus,
-        month?: number,
-        year?: number,
+        query: ListFellowshipReportsQueryDto,
     ): Promise<PaginatedDataDto<FellowshipReportResponseDto>> {
-        const [records, totalRecords] =
-            await this.reportRepository.findAndCount({
-                where: {
-                    ...(status
-                        ? { status }
-                        : { status: Not(FellowshipReportStatus.DRAFT) }),
-                    ...(month && { month }),
-                    ...(year && { year }),
-                },
-                relations: {
-                    fellowship: { user: true },
-                    reviewedBy: true,
-                },
-                order: { createdAt: 'DESC' },
-                skip: query.page * query.pageSize,
-                take: query.pageSize,
+        const qb = this.reportRepository
+            .createQueryBuilder('report')
+            .leftJoinAndSelect('report.fellowship', 'fellowship')
+            .leftJoinAndSelect('fellowship.user', 'fellow')
+            .leftJoinAndSelect('report.reviewedBy', 'reviewedBy');
+
+        if (query.status) {
+            qb.andWhere('report.status = :status', { status: query.status });
+        } else {
+            qb.andWhere('report.status != :draftStatus', {
+                draftStatus: FellowshipReportStatus.DRAFT,
             });
+        }
+
+        if (query.month) {
+            qb.andWhere('report.month = :month', { month: query.month });
+        }
+
+        if (query.year) {
+            qb.andWhere('report.year = :year', { year: query.year });
+        }
+
+        if (query.type) {
+            qb.andWhere('fellowship.type = :type', { type: query.type });
+        }
+
+        if (query.fellowshipId) {
+            qb.andWhere('fellowship.id = :fellowshipId', {
+                fellowshipId: query.fellowshipId,
+            });
+        }
+
+        if (query.search) {
+            qb.andWhere(
+                new Brackets((w) =>
+                    w
+                        .where('fellowship.projectName ILIKE :search')
+                        .orWhere('fellow.name ILIKE :search')
+                        .orWhere('fellow.discordUserName ILIKE :search')
+                        .orWhere('fellow.discordGlobalName ILIKE :search')
+                        .orWhere('fellow.email ILIKE :search'),
+                ),
+                { search: `%${escapeLikePattern(query.search)}%` },
+            );
+        }
+
+        const order = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+
+        if (query.sortBy === FellowshipReportSortBy.PERIOD) {
+            qb.orderBy('report.year', order).addOrderBy('report.month', order);
+        } else {
+            qb.orderBy(REPORT_SORT_COLUMNS[query.sortBy], order);
+        }
+
+        const [records, totalRecords] = await qb
+            .addOrderBy('report.id', 'ASC')
+            .skip(query.page * query.pageSize)
+            .take(query.pageSize)
+            .getManyAndCount();
 
         return new PaginatedDataDto({
             totalRecords,

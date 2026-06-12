@@ -7,7 +7,13 @@ import {
     Matches,
     MaxLength,
 } from 'class-validator';
-import { FellowshipType, FellowshipApplicationStatus } from '@/common/enum';
+import { Transform } from 'class-transformer';
+import { PaginatedQueryDto } from '@/common/dto';
+import {
+    FellowshipType,
+    FellowshipApplicationStatus,
+    SortOrder,
+} from '@/common/enum';
 
 // The client caps the two long-form sections at 3,000 chars each; this bound
 // covers both plus title, links and markdown framing with generous headroom.
@@ -54,4 +60,43 @@ export class ReviewFellowshipApplicationRequestDto {
         },
     )
     driveFolderUrl?: string;
+}
+
+export enum FellowshipApplicationSortBy {
+    CREATED_AT = 'createdAt',
+    UPDATED_AT = 'updatedAt',
+}
+
+export class ListFellowshipApplicationsQueryDto extends PaginatedQueryDto {
+    /**
+     * Defaults to all non-draft applications when omitted.
+     */
+    @IsOptional()
+    @IsEnum(FellowshipApplicationStatus)
+    status?: FellowshipApplicationStatus;
+
+    @IsOptional()
+    @IsEnum(FellowshipType)
+    type?: FellowshipType;
+
+    /**
+     * Case-insensitive substring match on the applicant's name, Discord
+     * username/global name and email.
+     */
+    @IsOptional()
+    @Transform(({ value }) =>
+        typeof value === 'string' ? value.trim() : value,
+    )
+    @IsString()
+    @MaxLength(100)
+    search?: string;
+
+    @IsOptional()
+    @IsEnum(FellowshipApplicationSortBy)
+    sortBy: FellowshipApplicationSortBy =
+        FellowshipApplicationSortBy.CREATED_AT;
+
+    @IsOptional()
+    @IsEnum(SortOrder)
+    sortOrder: SortOrder = SortOrder.DESC;
 }

@@ -6,17 +6,19 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 import { Fellowship } from '@/entities/fellowship.entity';
 import { User } from '@/entities/user.entity';
 import {
     FellowshipApplicationStatus,
-    FellowshipType,
+    SortOrder,
     UserRole,
 } from '@/common/enum';
 import {
     CreateFellowshipApplicationRequestDto,
+    FellowshipApplicationSortBy,
+    ListFellowshipApplicationsQueryDto,
     ReviewFellowshipApplicationRequestDto,
     UpdateFellowshipApplicationRequestDto,
 } from '@/fellowship-applications/fellowship-applications.request.dto';
@@ -25,10 +27,16 @@ import {
     FellowshipApplicationResponseDto,
 } from '@/fellowship-applications/fellowship-applications.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
+import { escapeLikePattern } from '@/common/common';
 import { GitHubClassroomClient } from '@/github-classroom/client/github-classroom.client';
 import { MailService } from '@/mail/mail.service';
 
 const GITHUB_USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]){0,38}$/;
+
+const APPLICATION_SORT_COLUMNS: Record<FellowshipApplicationSortBy, string> = {
+    [FellowshipApplicationSortBy.CREATED_AT]: 'application.createdAt',
+    [FellowshipApplicationSortBy.UPDATED_AT]: 'application.updatedAt',
+};
 
 @Injectable()
 export class FellowshipApplicationsService {
@@ -295,26 +303,48 @@ export class FellowshipApplicationsService {
     }
 
     async listApplications(
-        query: PaginatedQueryDto,
-        status?: FellowshipApplicationStatus,
-        type?: FellowshipType,
+        query: ListFellowshipApplicationsQueryDto,
     ): Promise<PaginatedDataDto<FellowshipApplicationResponseDto>> {
-        const [records, totalRecords] =
-            await this.applicationRepository.findAndCount({
-                where: {
-                    ...(status
-                        ? { status }
-                        : { status: Not(FellowshipApplicationStatus.DRAFT) }),
-                    ...(type && { type }),
-                },
-                relations: {
-                    applicant: true,
-                    reviewedBy: true,
-                },
-                order: { createdAt: 'DESC' },
-                skip: query.page * query.pageSize,
-                take: query.pageSize,
+        const qb = this.applicationRepository
+            .createQueryBuilder('application')
+            .leftJoinAndSelect('application.applicant', 'applicant')
+            .leftJoinAndSelect('application.reviewedBy', 'reviewedBy');
+
+        if (query.status) {
+            qb.andWhere('application.status = :status', {
+                status: query.status,
             });
+        } else {
+            qb.andWhere('application.status != :draftStatus', {
+                draftStatus: FellowshipApplicationStatus.DRAFT,
+            });
+        }
+
+        if (query.type) {
+            qb.andWhere('application.type = :type', { type: query.type });
+        }
+
+        if (query.search) {
+            qb.andWhere(
+                new Brackets((w) =>
+                    w
+                        .where('applicant.name ILIKE :search')
+                        .orWhere('applicant.discordUserName ILIKE :search')
+                        .orWhere('applicant.discordGlobalName ILIKE :search')
+                        .orWhere('applicant.email ILIKE :search'),
+                ),
+                { search: `%${escapeLikePattern(query.search)}%` },
+            );
+        }
+
+        const order = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+
+        const [records, totalRecords] = await qb
+            .orderBy(APPLICATION_SORT_COLUMNS[query.sortBy], order)
+            .addOrderBy('application.id', 'ASC')
+            .skip(query.page * query.pageSize)
+            .take(query.pageSize)
+            .getManyAndCount();
 
         return new PaginatedDataDto({
             totalRecords,

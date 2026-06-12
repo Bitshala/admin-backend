@@ -18,12 +18,19 @@ import {
 import { FellowshipsService } from '@/fellowships/fellowships.service';
 import {
     CompleteFellowshipOnboardingDto,
+    FellowshipSortBy,
+    ListFellowshipsQueryDto,
     StartFellowshipContractDto,
 } from '@/fellowships/fellowships.request.dto';
 import { FellowshipResponseDto } from '@/fellowships/fellowships.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { Roles } from '@/auth/roles.decorator';
-import { UserRole } from '@/common/enum';
+import {
+    FellowshipStatus,
+    FellowshipType,
+    SortOrder,
+    UserRole,
+} from '@/common/enum';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
 
@@ -81,8 +88,13 @@ export class FellowshipsController {
     @Roles(UserRole.ADMIN)
     @ApiQuery({ name: 'page', type: 'number', required: false })
     @ApiQuery({ name: 'pageSize', type: 'number', required: false })
+    @ApiQuery({ name: 'status', enum: FellowshipStatus, required: false })
+    @ApiQuery({ name: 'type', enum: FellowshipType, required: false })
+    @ApiQuery({ name: 'search', type: 'string', required: false })
+    @ApiQuery({ name: 'sortBy', enum: FellowshipSortBy, required: false })
+    @ApiQuery({ name: 'sortOrder', enum: SortOrder, required: false })
     async listFellowships(
-        @Query() query: PaginatedQueryDto,
+        @Query() query: ListFellowshipsQueryDto,
     ): Promise<PaginatedDataDto<FellowshipResponseDto>> {
         return this.service.listFellowships(query);
     }

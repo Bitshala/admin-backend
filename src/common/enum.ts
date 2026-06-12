@@ -99,3 +99,8 @@ export enum FellowshipReportStatus {
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
 }
+
+export enum SortOrder {
+    ASC = 'ASC',
+    DESC = 'DESC',
+}

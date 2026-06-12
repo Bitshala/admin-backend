@@ -22,6 +22,8 @@ import {
 import { FellowshipReportsService } from '@/fellowship-reports/fellowship-reports.service';
 import {
     CreateFellowshipReportRequestDto,
+    FellowshipReportSortBy,
+    ListFellowshipReportsQueryDto,
     ReviewFellowshipReportRequestDto,
     UpdateFellowshipReportRequestDto,
 } from '@/fellowship-reports/fellowship-reports.request.dto';
@@ -31,7 +33,12 @@ import {
 } from '@/fellowship-reports/fellowship-reports.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { Roles } from '@/auth/roles.decorator';
-import { UserRole, FellowshipReportStatus } from '@/common/enum';
+import {
+    UserRole,
+    FellowshipReportStatus,
+    FellowshipType,
+    SortOrder,
+} from '@/common/enum';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
 
@@ -131,13 +138,19 @@ export class FellowshipReportsController {
     })
     @ApiQuery({ name: 'month', type: 'number', required: false })
     @ApiQuery({ name: 'year', type: 'number', required: false })
+    @ApiQuery({ name: 'type', enum: FellowshipType, required: false })
+    @ApiQuery({ name: 'fellowshipId', type: 'string', required: false })
+    @ApiQuery({ name: 'search', type: 'string', required: false })
+    @ApiQuery({
+        name: 'sortBy',
+        enum: FellowshipReportSortBy,
+        required: false,
+    })
+    @ApiQuery({ name: 'sortOrder', enum: SortOrder, required: false })
     async listReports(
-        @Query() query: PaginatedQueryDto,
-        @Query('status') status?: FellowshipReportStatus,
-        @Query('month') month?: number,
-        @Query('year') year?: number,
+        @Query() query: ListFellowshipReportsQueryDto,
     ): Promise<PaginatedDataDto<FellowshipReportResponseDto>> {
-        return this.service.listReports(query, status, month, year);
+        return this.service.listReports(query);
     }
 
     @Patch(':id/review')

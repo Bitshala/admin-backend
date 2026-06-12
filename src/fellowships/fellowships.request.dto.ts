@@ -1,6 +1,7 @@
 import {
     IsArray,
     IsDateString,
+    IsEnum,
     IsInt,
     IsNotEmpty,
     IsNumber,
@@ -8,8 +9,12 @@ import {
     IsPositive,
     IsString,
     Max,
+    MaxLength,
     Min,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { PaginatedQueryDto } from '@/common/dto';
+import { FellowshipStatus, FellowshipType, SortOrder } from '@/common/enum';
 
 export class CompleteFellowshipOnboardingDto {
     @IsOptional()
@@ -102,4 +107,41 @@ export class StartFellowshipContractDto {
     @IsPositive()
     @Max(5000)
     amountUsd!: number;
+}
+
+export enum FellowshipSortBy {
+    CREATED_AT = 'createdAt',
+    START_DATE = 'startDate',
+    END_DATE = 'endDate',
+    AMOUNT_USD = 'amountUsd',
+}
+
+export class ListFellowshipsQueryDto extends PaginatedQueryDto {
+    @IsOptional()
+    @IsEnum(FellowshipStatus)
+    status?: FellowshipStatus;
+
+    @IsOptional()
+    @IsEnum(FellowshipType)
+    type?: FellowshipType;
+
+    /**
+     * Case-insensitive substring match on project name, mentor contact,
+     * GitHub profile, location and the fellow's name/Discord names/email.
+     */
+    @IsOptional()
+    @Transform(({ value }) =>
+        typeof value === 'string' ? value.trim() : value,
+    )
+    @IsString()
+    @MaxLength(100)
+    search?: string;
+
+    @IsOptional()
+    @IsEnum(FellowshipSortBy)
+    sortBy: FellowshipSortBy = FellowshipSortBy.CREATED_AT;
+
+    @IsOptional()
+    @IsEnum(SortOrder)
+    sortOrder: SortOrder = SortOrder.DESC;
 }

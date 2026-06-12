@@ -22,6 +22,8 @@ import {
 import { FellowshipApplicationsService } from '@/fellowship-applications/fellowship-applications.service';
 import {
     CreateFellowshipApplicationRequestDto,
+    FellowshipApplicationSortBy,
+    ListFellowshipApplicationsQueryDto,
     ReviewFellowshipApplicationRequestDto,
     UpdateFellowshipApplicationRequestDto,
 } from '@/fellowship-applications/fellowship-applications.request.dto';
@@ -36,6 +38,7 @@ import {
     UserRole,
     FellowshipApplicationStatus,
     FellowshipType,
+    SortOrder,
 } from '@/common/enum';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
@@ -143,12 +146,17 @@ export class FellowshipApplicationsController {
         required: false,
     })
     @ApiQuery({ name: 'type', enum: FellowshipType, required: false })
+    @ApiQuery({ name: 'search', type: 'string', required: false })
+    @ApiQuery({
+        name: 'sortBy',
+        enum: FellowshipApplicationSortBy,
+        required: false,
+    })
+    @ApiQuery({ name: 'sortOrder', enum: SortOrder, required: false })
     async listApplications(
-        @Query() query: PaginatedQueryDto,
-        @Query('status') status?: FellowshipApplicationStatus,
-        @Query('type') type?: FellowshipType,
+        @Query() query: ListFellowshipApplicationsQueryDto,
     ): Promise<PaginatedDataDto<FellowshipApplicationResponseDto>> {
-        return this.service.listApplications(query, status, type);
+        return this.service.listApplications(query);
     }
 
     @Patch(':id/review')
