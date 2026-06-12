@@ -100,8 +100,14 @@ export class StartFellowshipContractDto {
     @IsDateString({ strict: true })
     startDate!: string;
 
-    @IsDateString({ strict: true })
-    endDate!: string;
+    /**
+     * Duration of the fellowship in months. The contract end date is
+     * derived from the start date and this period.
+     */
+    @IsInt()
+    @Min(1)
+    @Max(24)
+    periodMonths!: number;
 
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsPositive()

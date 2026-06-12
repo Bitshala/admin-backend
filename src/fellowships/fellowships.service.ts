@@ -18,7 +18,7 @@ import { FellowshipStatus, SortOrder } from '@/common/enum';
 import { FellowshipResponseDto } from '@/fellowships/fellowships.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { UserRole } from '@/common/enum';
-import { escapeLikePattern } from '@/common/common';
+import { addMonths, escapeLikePattern } from '@/common/common';
 
 const FELLOWSHIP_SORT_COLUMNS: Record<FellowshipSortBy, string> = {
     [FellowshipSortBy.CREATED_AT]: 'fellowship.createdAt',
@@ -131,14 +131,10 @@ export class FellowshipsService {
             );
         }
 
-        if (new Date(dto.endDate) <= new Date(dto.startDate)) {
-            throw new BadRequestException(
-                'Contract end date must be after the start date',
-            );
-        }
+        const startDate = new Date(dto.startDate);
 
-        fellowship.startDate = new Date(dto.startDate);
-        fellowship.endDate = new Date(dto.endDate);
+        fellowship.startDate = startDate;
+        fellowship.endDate = addMonths(startDate, dto.periodMonths);
         fellowship.amountUsd = dto.amountUsd.toString();
         fellowship.status = FellowshipStatus.ACTIVE;
 
