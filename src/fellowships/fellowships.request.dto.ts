@@ -7,6 +7,7 @@ import {
     IsOptional,
     IsPositive,
     IsString,
+    Max,
     Min,
 } from 'class-validator';
 
@@ -99,5 +100,6 @@ export class StartFellowshipContractDto {
 
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsPositive()
+    @Max(5000)
     amountUsd!: number;
 }
