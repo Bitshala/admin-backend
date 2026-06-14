@@ -37,13 +37,22 @@ export class Migrations1778000000000 implements MigrationInterface {
         //   45..50 -> REJECTED   (6)
         await queryRunner.query(`
             INSERT INTO fellowship_application (
-                "id", "type", "proposal", "status", "reviewerRemarks",
+                "id", "type", "title", "problemStatement", "plan",
+                "mentorName", "mentorContact", "mentorTestimonial",
+                "github", "links", "status", "reviewerRemarks",
                 "applicantId", "reviewedById", "createdAt", "updatedAt"
             )
             SELECT
                 sa.app_id,
                 ((ARRAY['DEVELOPER','DESIGNER','EDUCATOR'])[1 + ((sa.rn - 1) % 3)])::"public"."fellowship_application_type_enum",
-                E'## Proposal #' || sa.rn || E'\n\nDummy fellowship proposal seeded for local testing. The applicant proposes to work on a Bitcoin-related project for ~6 months.\n\n### Goals\n- Deliverable A\n- Deliverable B\n- Deliverable C',
+                E'Fellowship proposal #' || sa.rn,
+                E'Problem statement #' || sa.rn || E': a meaningful gap in the Bitcoin ecosystem that this fellowship aims to close, and why it matters.',
+                E'6-month plan #' || sa.rn || E':\n- Month 1-2: Deliverable A\n- Month 3-4: Deliverable B\n- Month 5-6: Deliverable C',
+                'Mentor ' || sa.rn,
+                'mentor' || sa.rn || '@example.com',
+                CASE WHEN sa.rn % 2 = 0 THEN 'Strong candidate, happy to mentor application #' || sa.rn ELSE NULL END,
+                'dummy-user-' || sa.rn,
+                ARRAY['https://github.com/dummy-user-' || sa.rn, 'https://example.com/portfolio/' || sa.rn]::text[],
                 (CASE
                     WHEN sa.rn <= 7 THEN 'DRAFT'
                     WHEN sa.rn <= 14 THEN 'SUBMITTED'

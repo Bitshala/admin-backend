@@ -12,6 +12,7 @@ import { Fellowship } from '@/entities/fellowship.entity';
 import { User } from '@/entities/user.entity';
 import {
     FellowshipApplicationStatus,
+    FellowshipType,
     SortOrder,
     UserRole,
 } from '@/common/enum';
@@ -30,8 +31,20 @@ import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { escapeLikePattern } from '@/common/common';
 import { GitHubClassroomClient } from '@/github-classroom/client/github-classroom.client';
 import { MailService } from '@/mail/mail.service';
+import {
+    GITHUB_USERNAME_RE,
+    LINK_LIMIT,
+    MAX_LINKS,
+    normalizeLinkForDedup,
+    URL_RE,
+} from '@/fellowship-applications/proposal-validation';
 
-const GITHUB_USERNAME_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]){0,38}$/;
+// Persist empty/blank proposal fields as NULL rather than empty strings so the
+// stored shape is consistent regardless of which endpoint wrote it.
+const emptyToNull = (value: string | undefined): string | null => {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : null;
+};
 
 const APPLICATION_SORT_COLUMNS: Record<FellowshipApplicationSortBy, string> = {
     [FellowshipApplicationSortBy.CREATED_AT]: 'application.createdAt',
@@ -93,9 +106,16 @@ export class FellowshipApplicationsService {
 
         const application = this.applicationRepository.create({
             type: dto.type,
-            proposal: dto.proposal,
             status: FellowshipApplicationStatus.DRAFT,
             applicant: user,
+            title: emptyToNull(dto.title),
+            problemStatement: emptyToNull(dto.problemStatement),
+            plan: emptyToNull(dto.plan),
+            mentorName: emptyToNull(dto.mentorName),
+            mentorContact: emptyToNull(dto.mentorContact),
+            mentorTestimonial: emptyToNull(dto.mentorTestimonial),
+            github: emptyToNull(dto.github),
+            links: dto.links ?? [],
         });
 
         const saved = await this.applicationRepository.save(application);
@@ -143,8 +163,24 @@ export class FellowshipApplicationsService {
             );
         }
 
-        if (dto.proposal !== undefined) {
-            application.proposal = dto.proposal;
+        // Only overwrite fields the client actually sent, so a partial draft
+        // save doesn't wipe untouched fields. Empty strings clear the field.
+        const textFields = [
+            'title',
+            'problemStatement',
+            'plan',
+            'mentorName',
+            'mentorContact',
+            'mentorTestimonial',
+            'github',
+        ] as const;
+        for (const field of textFields) {
+            if (dto[field] !== undefined) {
+                application[field] = emptyToNull(dto[field]);
+            }
+        }
+        if (dto.links !== undefined) {
+            application.links = dto.links;
         }
 
         await this.applicationRepository.save(application);
@@ -183,6 +219,8 @@ export class FellowshipApplicationsService {
             );
         }
 
+        this.validateProposalForSubmit(application);
+
         application.status = FellowshipApplicationStatus.SUBMITTED;
         application.reviewedBy = null;
         application.reviewerRemarks = null;
@@ -204,6 +242,68 @@ export class FellowshipApplicationsService {
         }
 
         return FellowshipApplicationResponseDto.fromEntity(application);
+    }
+
+    /**
+     * Full proposal ruleset enforced only on submit. Draft create/update accept
+     * partial values, so the strict required/min-length/conditional checks live
+     * here rather than on the request DTOs.
+     */
+    private validateProposalForSubmit(
+        application: FellowshipApplication,
+    ): void {
+        const errors: string[] = [];
+
+        const requiredText: [string, string | null][] = [
+            ['Title', application.title],
+            ['Problem statement', application.problemStatement],
+            ['Plan', application.plan],
+            ['Mentor name', application.mentorName],
+            ['Mentor contact', application.mentorContact],
+        ];
+        for (const [label, value] of requiredText) {
+            if (!value || !value.trim()) {
+                errors.push(`${label} is required`);
+            }
+        }
+
+        // github is required for developers; for other tracks it's optional but
+        // must still be a valid username when present.
+        if (
+            application.type === FellowshipType.DEVELOPER &&
+            (!application.github || !application.github.trim())
+        ) {
+            errors.push(
+                'A GitHub username is required for developer applications',
+            );
+        }
+        if (
+            application.github &&
+            !GITHUB_USERNAME_RE.test(application.github)
+        ) {
+            errors.push('GitHub username is invalid');
+        }
+
+        const links = application.links ?? [];
+        if (links.length > MAX_LINKS) {
+            errors.push(`At most ${MAX_LINKS} links are allowed`);
+        }
+        const seen = new Set<string>();
+        for (const link of links) {
+            if (link.length > LINK_LIMIT || !URL_RE.test(link)) {
+                errors.push(`Invalid link: ${link}`);
+                continue;
+            }
+            const key = normalizeLinkForDedup(link);
+            if (seen.has(key)) {
+                errors.push(`Duplicate link: ${link}`);
+            }
+            seen.add(key);
+        }
+
+        if (errors.length > 0) {
+            throw new BadRequestException(errors.join('; '));
+        }
     }
 
     async deleteDraft(id: string, user: User): Promise<void> {
@@ -271,9 +371,7 @@ export class FellowshipApplicationsService {
             throw new ForbiddenException();
         }
 
-        return new FellowshipApplicationProposalResponseDto(
-            application.proposal,
-        );
+        return FellowshipApplicationProposalResponseDto.fromEntity(application);
     }
 
     async getApplicationById(

@@ -2,10 +2,28 @@ import { FellowshipType, FellowshipApplicationStatus } from '@/common/enum';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 
 export class FellowshipApplicationProposalResponseDto {
-    proposal!: string;
+    title!: string | null;
+    problemStatement!: string | null;
+    plan!: string | null;
+    mentorName!: string | null;
+    mentorContact!: string | null;
+    mentorTestimonial!: string | null;
+    github!: string | null;
+    links!: string[];
 
-    constructor(proposal: string) {
-        this.proposal = proposal;
+    static fromEntity(
+        application: FellowshipApplication,
+    ): FellowshipApplicationProposalResponseDto {
+        const dto = new FellowshipApplicationProposalResponseDto();
+        dto.title = application.title;
+        dto.problemStatement = application.problemStatement;
+        dto.plan = application.plan;
+        dto.mentorName = application.mentorName;
+        dto.mentorContact = application.mentorContact;
+        dto.mentorTestimonial = application.mentorTestimonial;
+        dto.github = application.github;
+        dto.links = application.links ?? [];
+        return dto;
     }
 }
 

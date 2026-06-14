@@ -6,6 +6,7 @@ import {
     IsUrl,
     Matches,
     MaxLength,
+    ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PaginatedQueryDto } from '@/common/dto';
@@ -14,28 +15,91 @@ import {
     FellowshipApplicationStatus,
     SortOrder,
 } from '@/common/enum';
+import {
+    cleanLinks,
+    GITHUB_USERNAME_RE,
+    IsLinkArray,
+    LONG_TEXT_LIMIT,
+    normalizeGithub,
+    TITLE_LIMIT,
+} from '@/fellowship-applications/proposal-validation';
 
-// The client caps the two long-form sections at 3,000 chars each; this bound
-// covers both plus title, links and markdown framing with generous headroom.
-const PROPOSAL_MAX_LENGTH = 20_000;
+const trim = ({ value }: { value: unknown }): unknown =>
+    typeof value === 'string' ? value.trim() : value;
 
-export class CreateFellowshipApplicationRequestDto {
+/**
+ * Proposal fields shared by create and update. Every field is optional and only
+ * its *upper bounds* are enforced here — this is what lets drafts auto-save with
+ * partial/empty values. The full required/min-length ruleset is applied at
+ * submit time in the service.
+ */
+export class ProposalFieldsDto {
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(TITLE_LIMIT)
+    title?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    problemStatement?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    plan?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(TITLE_LIMIT)
+    mentorName?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(TITLE_LIMIT)
+    mentorContact?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    mentorTestimonial?: string;
+
+    // Accepts a bare handle, `@handle` or a github.com profile URL and stores
+    // the bare username. Empty values are allowed on drafts; a non-empty but
+    // malformed value is rejected regardless of track.
+    @Transform(({ value }) =>
+        typeof value === 'string' ? normalizeGithub(value) : value,
+    )
+    @ValidateIf(
+        (o: ProposalFieldsDto) =>
+            typeof o.github === 'string' && o.github.length > 0,
+    )
+    @IsString()
+    @Matches(GITHUB_USERNAME_RE, {
+        message:
+            'github must be a valid GitHub username (1–39 chars; letters, digits or hyphens, starting with a letter or digit)',
+    })
+    github?: string;
+
+    @IsOptional()
+    @Transform(({ value }) => cleanLinks(value))
+    @IsLinkArray()
+    links?: string[];
+}
+
+export class CreateFellowshipApplicationRequestDto extends ProposalFieldsDto {
     @IsEnum(FellowshipType)
     type!: FellowshipType;
-
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(PROPOSAL_MAX_LENGTH)
-    proposal!: string;
 }
 
-export class UpdateFellowshipApplicationRequestDto {
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(PROPOSAL_MAX_LENGTH)
-    proposal?: string;
-}
+// `type` is immutable after create, so it is intentionally absent here.
+export class UpdateFellowshipApplicationRequestDto extends ProposalFieldsDto {}
 
 export class ReviewFellowshipApplicationRequestDto {
     @IsEnum(FellowshipApplicationStatus)
