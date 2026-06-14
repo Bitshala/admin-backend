@@ -92,7 +92,7 @@ export class FellowshipReportsService {
         const result = await this.reportRepository.findOneOrFail({
             where: { id: saved.id },
             relations: {
-                fellowship: { user: true },
+                fellowship: { user: true, application: true },
                 reviewedBy: true,
             },
         });
@@ -108,7 +108,7 @@ export class FellowshipReportsService {
         const report = await this.reportRepository.findOne({
             where: { id },
             relations: {
-                fellowship: { user: true },
+                fellowship: { user: true, application: true },
                 reviewedBy: true,
             },
         });
@@ -141,7 +141,7 @@ export class FellowshipReportsService {
         const report = await this.reportRepository.findOne({
             where: { id },
             relations: {
-                fellowship: { user: true },
+                fellowship: { user: true, application: true },
                 reviewedBy: true,
             },
         });
@@ -247,7 +247,7 @@ export class FellowshipReportsService {
         const report = await this.reportRepository.findOne({
             where: { id },
             relations: {
-                fellowship: { user: true },
+                fellowship: { user: true, application: true },
                 reviewedBy: true,
             },
         });
@@ -273,7 +273,7 @@ export class FellowshipReportsService {
             .createQueryBuilder('report')
             .leftJoinAndSelect('report.fellowship', 'fellowship')
             .leftJoinAndSelect('fellowship.user', 'fellow')
-            .leftJoin('fellowship.application', 'application')
+            .leftJoinAndSelect('fellowship.application', 'application')
             .leftJoinAndSelect('report.reviewedBy', 'reviewedBy');
 
         if (query.status) {
@@ -344,7 +344,7 @@ export class FellowshipReportsService {
         const report = await this.reportRepository.findOne({
             where: { id },
             relations: {
-                fellowship: { user: true },
+                fellowship: { user: true, application: true },
                 reviewedBy: true,
             },
         });

@@ -1,5 +1,6 @@
 import { FellowshipReportStatus } from '@/common/enum';
 import { FellowshipReport } from '@/entities/fellowship-report.entity';
+import { FellowshipResponseDto } from '@/fellowships/fellowships.response.dto';
 
 export class FellowshipReportContentResponseDto {
     content!: string;
@@ -21,6 +22,10 @@ export class FellowshipReportResponseDto {
     reviewedByName!: string | null;
     createdAt!: string;
     updatedAt!: string;
+    // The full fellowship the report belongs to, identical field-for-field to a
+    // GET /fellowships list item. A report always references an existing
+    // fellowship (non-nullable FK), so this is never null.
+    fellowship!: FellowshipResponseDto;
 
     constructor(obj: FellowshipReportResponseDto) {
         this.id = obj.id;
@@ -34,6 +39,7 @@ export class FellowshipReportResponseDto {
         this.reviewedByName = obj.reviewedByName;
         this.createdAt = obj.createdAt;
         this.updatedAt = obj.updatedAt;
+        this.fellowship = obj.fellowship;
     }
 
     static fromEntity(report: FellowshipReport): FellowshipReportResponseDto {
@@ -51,6 +57,7 @@ export class FellowshipReportResponseDto {
                 : null,
             createdAt: report.createdAt.toISOString(),
             updatedAt: report.updatedAt.toISOString(),
+            fellowship: FellowshipResponseDto.fromEntity(report.fellowship),
         });
     }
 }
