@@ -17,7 +17,6 @@ import {
 } from '@nestjs/swagger';
 import { FellowshipsService } from '@/fellowships/fellowships.service';
 import {
-    CompleteFellowshipOnboardingDto,
     FellowshipSortBy,
     ListFellowshipsQueryDto,
     StartFellowshipContractDto,
@@ -49,18 +48,6 @@ export class FellowshipsController {
         @Body() body: StartFellowshipContractDto,
     ): Promise<FellowshipResponseDto> {
         return this.service.startContract(id, body);
-    }
-
-    @Patch(':id/onboarding')
-    @ApiOperation({
-        summary: 'Complete fellowship onboarding with additional details',
-    })
-    async completeOnboarding(
-        @Param('id', new ParseUUIDPipe()) id: string,
-        @GetUser() user: User,
-        @Body() body: CompleteFellowshipOnboardingDto,
-    ): Promise<FellowshipResponseDto> {
-        return this.service.completeOnboarding(user, id, body);
     }
 
     @Get('me')

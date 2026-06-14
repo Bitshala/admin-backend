@@ -1,9 +1,7 @@
 import {
-    IsArray,
     IsDateString,
     IsEnum,
     IsInt,
-    IsNotEmpty,
     IsNumber,
     IsOptional,
     IsPositive,
@@ -15,86 +13,6 @@ import {
 import { Transform } from 'class-transformer';
 import { PaginatedQueryDto } from '@/common/dto';
 import { FellowshipStatus, FellowshipType, SortOrder } from '@/common/enum';
-
-export class CompleteFellowshipOnboardingDto {
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    mentorContact?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    projectName?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    projectGithubLink?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    githubProfile?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    location?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    academicBackground?: string;
-
-    @IsOptional()
-    @IsInt()
-    @Min(1900)
-    graduationYear?: number;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    professionalExperience?: string;
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    domains?: string[];
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    codingLanguages?: string[];
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    educationInterests?: string[];
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    bitcoinContributions?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    bitcoinMotivation?: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    bitcoinOssGoal?: string;
-
-    @IsOptional()
-    @IsString()
-    additionalInfo?: string;
-
-    @IsOptional()
-    @IsString()
-    questionsForBitshala?: string;
-}
 
 export class StartFellowshipContractDto {
     @IsDateString({ strict: true })
@@ -132,8 +50,9 @@ export class ListFellowshipsQueryDto extends PaginatedQueryDto {
     type?: FellowshipType;
 
     /**
-     * Case-insensitive substring match on project name, mentor contact,
-     * GitHub profile, location and the fellow's name/Discord names/email.
+     * Case-insensitive substring match on the application's project name,
+     * mentor contact and GitHub handle, plus the fellow's name/Discord
+     * names/email.
      */
     @IsOptional()
     @Transform(({ value }) =>

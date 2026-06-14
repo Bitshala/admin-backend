@@ -62,34 +62,38 @@ export class FellowshipResponseDto {
         this.updatedAt = obj.updatedAt;
     }
 
+    // The onboarding/proposal fields now live on the linked application; the two
+    // profile fields (location, githubProfile) are sourced from the application
+    // handle and the fellow's profile respectively.
     static fromEntity(fellowship: Fellowship): FellowshipResponseDto {
+        const application = fellowship.application;
         return new FellowshipResponseDto({
             id: fellowship.id,
             type: fellowship.type,
             status: fellowship.status,
-            mentorContact: fellowship.mentorContact,
-            projectName: fellowship.projectName,
-            projectGithubLink: fellowship.projectGithubLink,
-            githubProfile: fellowship.githubProfile,
-            location: fellowship.location,
-            academicBackground: fellowship.academicBackground,
-            graduationYear: fellowship.graduationYear,
-            professionalExperience: fellowship.professionalExperience,
-            domains: fellowship.domains,
-            codingLanguages: fellowship.codingLanguages,
-            educationInterests: fellowship.educationInterests,
-            bitcoinContributions: fellowship.bitcoinContributions,
-            bitcoinMotivation: fellowship.bitcoinMotivation,
-            bitcoinOssGoal: fellowship.bitcoinOssGoal,
-            additionalInfo: fellowship.additionalInfo,
-            questionsForBitshala: fellowship.questionsForBitshala,
+            mentorContact: application.mentorContact,
+            projectName: application.projectName,
+            projectGithubLink: application.projectGithubLink,
+            githubProfile: application.github,
+            location: fellowship.user.location,
+            academicBackground: application.academicBackground,
+            graduationYear: application.graduationYear,
+            professionalExperience: application.professionalExperience,
+            domains: application.domains,
+            codingLanguages: application.codingLanguages,
+            educationInterests: application.educationInterests,
+            bitcoinContributions: application.bitcoinContributions,
+            bitcoinMotivation: application.bitcoinMotivation,
+            bitcoinOssGoal: application.bitcoinOssGoal,
+            additionalInfo: application.additionalInfo,
+            questionsForBitshala: application.questionsForBitshala,
             driveFolderUrl: fellowship.driveFolderUrl,
             startDate: fellowship.startDate?.toISOString() ?? null,
             endDate: fellowship.endDate?.toISOString() ?? null,
             amountUsd: fellowship.amountUsd,
             userId: fellowship.user.id,
             userName: fellowship.user.displayName,
-            applicationId: fellowship.application.id,
+            applicationId: application.id,
             createdAt: fellowship.createdAt.toISOString(),
             updatedAt: fellowship.updatedAt.toISOString(),
         });

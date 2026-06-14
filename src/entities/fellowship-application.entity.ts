@@ -43,6 +43,45 @@ export class FellowshipApplication extends BaseEntity {
     @Column('text', { array: true, default: () => "'{}'" })
     links!: string[];
 
+    @Column('text', { nullable: true })
+    projectName!: string | null;
+
+    @Column('text', { nullable: true })
+    projectGithubLink!: string | null;
+
+    @Column('text', { nullable: true })
+    academicBackground!: string | null;
+
+    @Column('int', { nullable: true })
+    graduationYear!: number | null;
+
+    @Column('text', { nullable: true })
+    professionalExperience!: string | null;
+
+    @Column({ type: 'jsonb', nullable: true })
+    domains!: string[] | null;
+
+    @Column({ type: 'jsonb', nullable: true })
+    codingLanguages!: string[] | null;
+
+    @Column({ type: 'jsonb', nullable: true })
+    educationInterests!: string[] | null;
+
+    @Column('text', { nullable: true })
+    bitcoinContributions!: string | null;
+
+    @Column('text', { nullable: true })
+    bitcoinMotivation!: string | null;
+
+    @Column('text', { nullable: true })
+    bitcoinOssGoal!: string | null;
+
+    @Column('text', { nullable: true })
+    additionalInfo!: string | null;
+
+    @Column('text', { nullable: true })
+    questionsForBitshala!: string | null;
+
     @Column({
         type: 'enum',
         enum: FellowshipApplicationStatus,

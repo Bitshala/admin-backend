@@ -273,6 +273,7 @@ export class FellowshipReportsService {
             .createQueryBuilder('report')
             .leftJoinAndSelect('report.fellowship', 'fellowship')
             .leftJoinAndSelect('fellowship.user', 'fellow')
+            .leftJoin('fellowship.application', 'application')
             .leftJoinAndSelect('report.reviewedBy', 'reviewedBy');
 
         if (query.status) {
@@ -305,7 +306,7 @@ export class FellowshipReportsService {
             qb.andWhere(
                 new Brackets((w) =>
                     w
-                        .where('fellowship.projectName ILIKE :search')
+                        .where('application.projectName ILIKE :search')
                         .orWhere('fellow.name ILIKE :search')
                         .orWhere('fellow.discordUserName ILIKE :search')
                         .orWhere('fellow.discordGlobalName ILIKE :search')

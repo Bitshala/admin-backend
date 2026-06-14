@@ -9,7 +9,6 @@ import { Brackets, Repository } from 'typeorm';
 import { Fellowship } from '@/entities/fellowship.entity';
 import { User } from '@/entities/user.entity';
 import {
-    CompleteFellowshipOnboardingDto,
     FellowshipSortBy,
     ListFellowshipsQueryDto,
     StartFellowshipContractDto,
@@ -33,81 +32,6 @@ export class FellowshipsService {
         @InjectRepository(Fellowship)
         private readonly fellowshipRepository: Repository<Fellowship>,
     ) {}
-
-    async completeOnboarding(
-        user: User,
-        fellowshipId: string,
-        dto: CompleteFellowshipOnboardingDto,
-    ): Promise<FellowshipResponseDto> {
-        const fellowship = await this.fellowshipRepository.findOne({
-            where: { id: fellowshipId },
-            relations: {
-                user: true,
-                application: true,
-            },
-        });
-
-        if (!fellowship) {
-            throw new NotFoundException('Fellowship not found');
-        }
-
-        if (fellowship.user.id !== user.id && user.role !== UserRole.ADMIN) {
-            throw new ForbiddenException();
-        }
-
-        if (dto.mentorContact !== undefined) {
-            fellowship.mentorContact = dto.mentorContact;
-        }
-        if (dto.projectName !== undefined) {
-            fellowship.projectName = dto.projectName;
-        }
-        if (dto.projectGithubLink !== undefined) {
-            fellowship.projectGithubLink = dto.projectGithubLink;
-        }
-        if (dto.githubProfile !== undefined) {
-            fellowship.githubProfile = dto.githubProfile;
-        }
-        if (dto.location !== undefined) {
-            fellowship.location = dto.location;
-        }
-        if (dto.academicBackground !== undefined) {
-            fellowship.academicBackground = dto.academicBackground;
-        }
-        if (dto.graduationYear !== undefined) {
-            fellowship.graduationYear = dto.graduationYear;
-        }
-        if (dto.professionalExperience !== undefined) {
-            fellowship.professionalExperience = dto.professionalExperience;
-        }
-        if (dto.domains !== undefined) {
-            fellowship.domains = dto.domains;
-        }
-        if (dto.codingLanguages !== undefined) {
-            fellowship.codingLanguages = dto.codingLanguages;
-        }
-        if (dto.educationInterests !== undefined) {
-            fellowship.educationInterests = dto.educationInterests;
-        }
-        if (dto.bitcoinContributions !== undefined) {
-            fellowship.bitcoinContributions = dto.bitcoinContributions;
-        }
-        if (dto.bitcoinMotivation !== undefined) {
-            fellowship.bitcoinMotivation = dto.bitcoinMotivation;
-        }
-        if (dto.bitcoinOssGoal !== undefined) {
-            fellowship.bitcoinOssGoal = dto.bitcoinOssGoal;
-        }
-        if (dto.additionalInfo !== undefined) {
-            fellowship.additionalInfo = dto.additionalInfo ?? null;
-        }
-        if (dto.questionsForBitshala !== undefined) {
-            fellowship.questionsForBitshala = dto.questionsForBitshala ?? null;
-        }
-
-        await this.fellowshipRepository.save(fellowship);
-
-        return FellowshipResponseDto.fromEntity(fellowship);
-    }
 
     async startContract(
         fellowshipId: string,
@@ -210,10 +134,9 @@ export class FellowshipsService {
             qb.andWhere(
                 new Brackets((w) =>
                     w
-                        .where('fellowship.projectName ILIKE :search')
-                        .orWhere('fellowship.mentorContact ILIKE :search')
-                        .orWhere('fellowship.githubProfile ILIKE :search')
-                        .orWhere('fellowship.location ILIKE :search')
+                        .where('application.projectName ILIKE :search')
+                        .orWhere('application.mentorContact ILIKE :search')
+                        .orWhere('application.github ILIKE :search')
                         .orWhere('user.name ILIKE :search')
                         .orWhere('user.discordUserName ILIKE :search')
                         .orWhere('user.discordGlobalName ILIKE :search')

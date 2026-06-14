@@ -38,54 +38,6 @@ export class Fellowship extends BaseEntity {
     amountUsd!: string | null;
 
     @Column('text', { nullable: true })
-    mentorContact!: string | null;
-
-    @Column('text', { nullable: true })
-    projectName!: string | null;
-
-    @Column('text', { nullable: true })
-    projectGithubLink!: string | null;
-
-    @Column('text', { nullable: true })
-    githubProfile!: string | null;
-
-    @Column('text', { nullable: true })
-    location!: string | null;
-
-    @Column('text', { nullable: true })
-    academicBackground!: string | null;
-
-    @Column('int', { nullable: true })
-    graduationYear!: number | null;
-
-    @Column('text', { nullable: true })
-    professionalExperience!: string | null;
-
-    @Column({ type: 'jsonb', nullable: true })
-    domains!: string[] | null;
-
-    @Column({ type: 'jsonb', nullable: true })
-    codingLanguages!: string[] | null;
-
-    @Column({ type: 'jsonb', nullable: true })
-    educationInterests!: string[] | null;
-
-    @Column('text', { nullable: true })
-    bitcoinContributions!: string | null;
-
-    @Column('text', { nullable: true })
-    bitcoinMotivation!: string | null;
-
-    @Column('text', { nullable: true })
-    bitcoinOssGoal!: string | null;
-
-    @Column('text', { nullable: true })
-    additionalInfo!: string | null;
-
-    @Column('text', { nullable: true })
-    questionsForBitshala!: string | null;
-
-    @Column('text', { nullable: true })
     driveFolderUrl!: string | null;
 
     @ManyToOne(() => User)

@@ -10,6 +10,19 @@ export class FellowshipApplicationProposalResponseDto {
     mentorTestimonial!: string | null;
     github!: string | null;
     links!: string[];
+    projectName!: string | null;
+    projectGithubLink!: string | null;
+    academicBackground!: string | null;
+    graduationYear!: number | null;
+    professionalExperience!: string | null;
+    domains!: string[] | null;
+    codingLanguages!: string[] | null;
+    educationInterests!: string[] | null;
+    bitcoinContributions!: string | null;
+    bitcoinMotivation!: string | null;
+    bitcoinOssGoal!: string | null;
+    additionalInfo!: string | null;
+    questionsForBitshala!: string | null;
 
     static fromEntity(
         application: FellowshipApplication,
@@ -23,6 +36,19 @@ export class FellowshipApplicationProposalResponseDto {
         dto.mentorTestimonial = application.mentorTestimonial;
         dto.github = application.github;
         dto.links = application.links ?? [];
+        dto.projectName = application.projectName;
+        dto.projectGithubLink = application.projectGithubLink;
+        dto.academicBackground = application.academicBackground;
+        dto.graduationYear = application.graduationYear;
+        dto.professionalExperience = application.professionalExperience;
+        dto.domains = application.domains;
+        dto.codingLanguages = application.codingLanguages;
+        dto.educationInterests = application.educationInterests;
+        dto.bitcoinContributions = application.bitcoinContributions;
+        dto.bitcoinMotivation = application.bitcoinMotivation;
+        dto.bitcoinOssGoal = application.bitcoinOssGoal;
+        dto.additionalInfo = application.additionalInfo;
+        dto.questionsForBitshala = application.questionsForBitshala;
         return dto;
     }
 }

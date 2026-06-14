@@ -39,7 +39,13 @@ export class Migrations1778000000000 implements MigrationInterface {
             INSERT INTO fellowship_application (
                 "id", "type", "title", "problemStatement", "plan",
                 "mentorName", "mentorContact", "mentorTestimonial",
-                "github", "links", "status", "reviewerRemarks",
+                "github", "links",
+                "projectName", "projectGithubLink", "academicBackground",
+                "graduationYear", "professionalExperience", "domains",
+                "codingLanguages", "educationInterests", "bitcoinContributions",
+                "bitcoinMotivation", "bitcoinOssGoal", "additionalInfo",
+                "questionsForBitshala",
+                "status", "reviewerRemarks",
                 "applicantId", "reviewedById", "createdAt", "updatedAt"
             )
             SELECT
@@ -53,6 +59,19 @@ export class Migrations1778000000000 implements MigrationInterface {
                 CASE WHEN sa.rn % 2 = 0 THEN 'Strong candidate, happy to mentor application #' || sa.rn ELSE NULL END,
                 'dummy-user-' || sa.rn,
                 ARRAY['https://github.com/dummy-user-' || sa.rn, 'https://example.com/portfolio/' || sa.rn]::text[],
+                'Dummy Project ' || sa.rn,
+                'https://github.com/dummy-org/project-' || sa.rn,
+                'B.Tech, Computer Science',
+                2015 + ((sa.rn - 1) % 9),
+                (3 + ((sa.rn - 1) % 5)) || ' years building backend systems and contributing to OSS.',
+                '["scaling","privacy","wallets"]'::jsonb,
+                '["Rust","TypeScript","Python"]'::jsonb,
+                '["education","mentoring","content"]'::jsonb,
+                'Contributed to bitcoin-core PR #' || (1000 + sa.rn) || ' and reviewed several others.',
+                'I want to deepen my understanding of the Bitcoin protocol and contribute to OSS full-time.',
+                'Build OSS tooling that lowers the bar for new Bitcoin developers.',
+                'Available full-time for the duration of the fellowship.',
+                'Looking forward to collaborating with the Bitshala community.',
                 (CASE
                     WHEN sa.rn <= 7 THEN 'DRAFT'
                     WHEN sa.rn <= 14 THEN 'SUBMITTED'
@@ -84,13 +103,8 @@ export class Migrations1778000000000 implements MigrationInterface {
         await queryRunner.query(`
             INSERT INTO fellowship (
                 "id", "type", "status",
-                "startDate", "endDate", "amountUsd", "mentorContact",
-                "projectName", "projectGithubLink", "githubProfile",
-                "location", "academicBackground", "graduationYear",
-                "professionalExperience", "domains", "codingLanguages",
-                "educationInterests", "bitcoinContributions",
-                "bitcoinMotivation", "bitcoinOssGoal", "additionalInfo",
-                "questionsForBitshala", "userId", "applicationId",
+                "startDate", "endDate", "amountUsd",
+                "userId", "applicationId",
                 "createdAt", "updatedAt"
             )
             SELECT
@@ -111,22 +125,6 @@ export class Migrations1778000000000 implements MigrationInterface {
                     ELSE NOW() - INTERVAL '15 days'
                 END,
                 (1500 + ((sa.rn - 14) * 75))::numeric(10,2),
-                'mentor' || sa.rn || '@example.com',
-                'Dummy Project ' || sa.rn,
-                'https://github.com/dummy-org/project-' || sa.rn,
-                'https://github.com/dummy-user-' || sa.rn,
-                (ARRAY['Bangalore, India','Mumbai, India','Berlin, Germany','San Francisco, USA','Singapore'])[1 + ((sa.rn - 1) % 5)],
-                'B.Tech, Computer Science',
-                2015 + ((sa.rn - 1) % 9),
-                (3 + ((sa.rn - 1) % 5)) || ' years building backend systems and contributing to OSS.',
-                '["scaling","privacy","wallets"]'::jsonb,
-                '["Rust","TypeScript","Python"]'::jsonb,
-                '["education","mentoring","content"]'::jsonb,
-                'Contributed to bitcoin-core PR #' || (1000 + sa.rn) || ' and reviewed several others.',
-                'I want to deepen my understanding of the Bitcoin protocol and contribute to OSS full-time.',
-                'Build OSS tooling that lowers the bar for new Bitcoin developers.',
-                'Available full-time for the duration of the fellowship.',
-                'Looking forward to collaborating with the Bitshala community.',
                 sa.applicant_id,
                 sa.app_id,
                 NOW() - (sa.rn * INTERVAL '7 days'),

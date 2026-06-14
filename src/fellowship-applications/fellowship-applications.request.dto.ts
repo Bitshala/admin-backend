@@ -1,11 +1,16 @@
 import {
+    ArrayMaxSize,
+    IsArray,
     IsEnum,
+    IsInt,
     IsNotEmpty,
     IsOptional,
     IsString,
     IsUrl,
     Matches,
+    Max,
     MaxLength,
+    Min,
     ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
@@ -19,8 +24,13 @@ import {
     cleanLinks,
     GITHUB_USERNAME_RE,
     IsLinkArray,
+    LINK_LIMIT,
     LONG_TEXT_LIMIT,
+    MAX_GRADUATION_YEAR,
+    MAX_TAGS,
+    MIN_GRADUATION_YEAR,
     normalizeGithub,
+    TAG_LIMIT,
     TITLE_LIMIT,
 } from '@/fellowship-applications/proposal-validation';
 
@@ -91,6 +101,105 @@ export class ProposalFieldsDto {
     @Transform(({ value }) => cleanLinks(value))
     @IsLinkArray()
     links?: string[];
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(TITLE_LIMIT)
+    projectName?: string;
+
+    // Repository/project URL. Empty values are allowed on drafts; a non-empty
+    // value must be a valid URL regardless of track.
+    @Transform(trim)
+    @ValidateIf(
+        (o: ProposalFieldsDto) =>
+            typeof o.projectGithubLink === 'string' &&
+            o.projectGithubLink.length > 0,
+    )
+    @IsUrl({ require_protocol: true })
+    @MaxLength(LINK_LIMIT)
+    projectGithubLink?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    academicBackground?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Min(MIN_GRADUATION_YEAR)
+    @Max(MAX_GRADUATION_YEAR)
+    graduationYear?: number;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    professionalExperience?: string;
+
+    @IsOptional()
+    @Transform(({ value }) => cleanLinks(value))
+    @IsArray()
+    @ArrayMaxSize(MAX_TAGS)
+    @IsString({ each: true })
+    @MaxLength(TAG_LIMIT, { each: true })
+    domains?: string[];
+
+    @IsOptional()
+    @Transform(({ value }) => cleanLinks(value))
+    @IsArray()
+    @ArrayMaxSize(MAX_TAGS)
+    @IsString({ each: true })
+    @MaxLength(TAG_LIMIT, { each: true })
+    codingLanguages?: string[];
+
+    @IsOptional()
+    @Transform(({ value }) => cleanLinks(value))
+    @IsArray()
+    @ArrayMaxSize(MAX_TAGS)
+    @IsString({ each: true })
+    @MaxLength(TAG_LIMIT, { each: true })
+    educationInterests?: string[];
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    bitcoinContributions?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    bitcoinMotivation?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    bitcoinOssGoal?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    additionalInfo?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    questionsForBitshala?: string;
+
+    // Profile field: written through to the applicant's user profile rather
+    // than stored on the application (see service), so it is never duplicated.
+    // Limit mirrors UpdateUserRequest.location.
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(255)
+    location?: string;
 }
 
 export class CreateFellowshipApplicationRequestDto extends ProposalFieldsDto {

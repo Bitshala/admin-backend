@@ -60,9 +60,41 @@ export class FellowshipApplicationsService {
         private readonly applicationRepository: Repository<FellowshipApplication>,
         @InjectRepository(Fellowship)
         private readonly fellowshipRepository: Repository<Fellowship>,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
         private readonly mailService: MailService,
         private readonly githubClient: GitHubClassroomClient,
     ) {}
+
+    /**
+     * Onboarding fields that already live on the user profile (e.g. location,
+     * GitHub) are written through to the applicant's profile rather than
+     * duplicated on the application. `github` is stored as a bare handle on the
+     * application but the profile holds a full URL, so it is expanded here.
+     * Only persists when at least one profile field was sent.
+     */
+    private async applyProfileFields(
+        user: User,
+        dto:
+            | CreateFellowshipApplicationRequestDto
+            | UpdateFellowshipApplicationRequestDto,
+    ): Promise<void> {
+        let changed = false;
+        if (dto.location !== undefined) {
+            user.location = emptyToNull(dto.location);
+            changed = true;
+        }
+        if (dto.github !== undefined) {
+            const handle = emptyToNull(dto.github);
+            user.githubProfileUrl = handle
+                ? `https://github.com/${handle}`
+                : null;
+            changed = true;
+        }
+        if (changed) {
+            await this.userRepository.save(user);
+        }
+    }
 
     /**
      * Advisory GitHub account check used by the application form.
@@ -104,6 +136,8 @@ export class FellowshipApplicationsService {
             );
         }
 
+        await this.applyProfileFields(user, dto);
+
         const application = this.applicationRepository.create({
             type: dto.type,
             status: FellowshipApplicationStatus.DRAFT,
@@ -116,6 +150,19 @@ export class FellowshipApplicationsService {
             mentorTestimonial: emptyToNull(dto.mentorTestimonial),
             github: emptyToNull(dto.github),
             links: dto.links ?? [],
+            projectName: emptyToNull(dto.projectName),
+            projectGithubLink: emptyToNull(dto.projectGithubLink),
+            academicBackground: emptyToNull(dto.academicBackground),
+            graduationYear: dto.graduationYear ?? null,
+            professionalExperience: emptyToNull(dto.professionalExperience),
+            domains: dto.domains ?? null,
+            codingLanguages: dto.codingLanguages ?? null,
+            educationInterests: dto.educationInterests ?? null,
+            bitcoinContributions: emptyToNull(dto.bitcoinContributions),
+            bitcoinMotivation: emptyToNull(dto.bitcoinMotivation),
+            bitcoinOssGoal: emptyToNull(dto.bitcoinOssGoal),
+            additionalInfo: emptyToNull(dto.additionalInfo),
+            questionsForBitshala: emptyToNull(dto.questionsForBitshala),
         });
 
         const saved = await this.applicationRepository.save(application);
@@ -173,6 +220,15 @@ export class FellowshipApplicationsService {
             'mentorContact',
             'mentorTestimonial',
             'github',
+            'projectName',
+            'projectGithubLink',
+            'academicBackground',
+            'professionalExperience',
+            'bitcoinContributions',
+            'bitcoinMotivation',
+            'bitcoinOssGoal',
+            'additionalInfo',
+            'questionsForBitshala',
         ] as const;
         for (const field of textFields) {
             if (dto[field] !== undefined) {
@@ -182,6 +238,21 @@ export class FellowshipApplicationsService {
         if (dto.links !== undefined) {
             application.links = dto.links;
         }
+        if (dto.graduationYear !== undefined) {
+            application.graduationYear = dto.graduationYear ?? null;
+        }
+        const arrayFields = [
+            'domains',
+            'codingLanguages',
+            'educationInterests',
+        ] as const;
+        for (const field of arrayFields) {
+            if (dto[field] !== undefined) {
+                application[field] = dto[field] ?? null;
+            }
+        }
+
+        await this.applyProfileFields(application.applicant, dto);
 
         await this.applicationRepository.save(application);
 
@@ -253,6 +324,7 @@ export class FellowshipApplicationsService {
         application: FellowshipApplication,
     ): void {
         const errors: string[] = [];
+        const isDeveloper = application.type === FellowshipType.DEVELOPER;
 
         const requiredText: [string, string | null][] = [
             ['Title', application.title],
@@ -260,9 +332,42 @@ export class FellowshipApplicationsService {
             ['Plan', application.plan],
             ['Mentor name', application.mentorName],
             ['Mentor contact', application.mentorContact],
+            ['Academic background', application.academicBackground],
+            ['Professional experience', application.professionalExperience],
+            ['Bitcoin contributions', application.bitcoinContributions],
+            ['Bitcoin motivation', application.bitcoinMotivation],
+            ['Bitcoin OSS goal', application.bitcoinOssGoal],
         ];
+        // Project details are only required on the developer track.
+        if (isDeveloper) {
+            requiredText.push(
+                ['Project name', application.projectName],
+                ['Project GitHub link', application.projectGithubLink],
+            );
+        }
         for (const [label, value] of requiredText) {
             if (!value || !value.trim()) {
+                errors.push(`${label} is required`);
+            }
+        }
+
+        if (application.graduationYear == null) {
+            errors.push('Graduation year is required');
+        }
+
+        const requiredArrays: [string, string[] | null][] = [
+            ['Domains', application.domains],
+            ['Education interests', application.educationInterests],
+        ];
+        // Coding languages are only required on the developer track.
+        if (isDeveloper) {
+            requiredArrays.push([
+                'Coding languages',
+                application.codingLanguages,
+            ]);
+        }
+        for (const [label, value] of requiredArrays) {
+            if (!value || value.length === 0) {
                 errors.push(`${label} is required`);
             }
         }
@@ -270,7 +375,7 @@ export class FellowshipApplicationsService {
         // github is required for developers; for other tracks it's optional but
         // must still be a valid username when present.
         if (
-            application.type === FellowshipType.DEVELOPER &&
+            isDeveloper &&
             (!application.github || !application.github.trim())
         ) {
             errors.push(
