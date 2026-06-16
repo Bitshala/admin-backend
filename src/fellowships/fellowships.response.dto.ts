@@ -21,7 +21,6 @@ export class FellowshipResponseDto {
     bitcoinOssGoal!: string | null;
     additionalInfo!: string | null;
     questionsForBitshala!: string | null;
-    driveFolderUrl!: string | null;
     startDate!: string | null;
     endDate!: string | null;
     amountUsd!: string | null;
@@ -51,7 +50,6 @@ export class FellowshipResponseDto {
         this.bitcoinOssGoal = obj.bitcoinOssGoal;
         this.additionalInfo = obj.additionalInfo;
         this.questionsForBitshala = obj.questionsForBitshala;
-        this.driveFolderUrl = obj.driveFolderUrl;
         this.startDate = obj.startDate;
         this.endDate = obj.endDate;
         this.amountUsd = obj.amountUsd;
@@ -87,7 +85,6 @@ export class FellowshipResponseDto {
             bitcoinOssGoal: application.bitcoinOssGoal,
             additionalInfo: application.additionalInfo,
             questionsForBitshala: application.questionsForBitshala,
-            driveFolderUrl: fellowship.driveFolderUrl,
             startDate: fellowship.startDate?.toISOString() ?? null,
             endDate: fellowship.endDate?.toISOString() ?? null,
             amountUsd: fellowship.amountUsd,

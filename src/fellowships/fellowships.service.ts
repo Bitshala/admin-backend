@@ -49,9 +49,12 @@ export class FellowshipsService {
             throw new NotFoundException('Fellowship not found');
         }
 
-        if (fellowship.status !== FellowshipStatus.PENDING) {
+        if (fellowship.status !== FellowshipStatus.DOCUMENTS_APPROVED) {
             throw new BadRequestException(
-                `Fellowship contract has already been started`,
+                fellowship.status === FellowshipStatus.ACTIVE ||
+                fellowship.status === FellowshipStatus.COMPLETED
+                    ? 'Fellowship contract has already been started'
+                    : 'Both fellowship documents must be approved before starting the contract',
             );
         }
 
