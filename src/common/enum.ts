@@ -89,8 +89,27 @@ export enum FellowshipApplicationStatus {
 
 export enum FellowshipStatus {
     PENDING = 'PENDING',
+    // Created on accept; one or more fellow documents are still unuploaded or rejected.
+    AWAITING_DOCUMENTS = 'AWAITING_DOCUMENTS',
+    // Both fellow documents uploaded and pending admin review.
+    DOCUMENTS_IN_REVIEW = 'DOCUMENTS_IN_REVIEW',
+    // Both fellow documents approved; start-contract is enabled.
+    DOCUMENTS_APPROVED = 'DOCUMENTS_APPROVED',
     ACTIVE = 'ACTIVE',
     COMPLETED = 'COMPLETED',
+}
+
+export enum FellowshipDocumentType {
+    UNSIGNED_CONTRACT = 'UNSIGNED_CONTRACT',
+    SIGNED_CONTRACT = 'SIGNED_CONTRACT',
+    W8BEN = 'W8BEN',
+}
+
+export enum FellowshipDocumentStatus {
+    AWAITING_UPLOAD = 'AWAITING_UPLOAD',
+    PENDING_REVIEW = 'PENDING_REVIEW',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
 }
 
 export enum FellowshipReportStatus {

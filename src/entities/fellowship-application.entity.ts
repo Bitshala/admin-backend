@@ -91,6 +91,11 @@ export class FellowshipApplication extends BaseEntity {
     @Column('text', { nullable: true })
     reviewerRemarks!: string | null;
 
+    // Drive folder that holds this application's fellowship documents. Created
+    // lazily on accept. An internal detail — never exposed across an API boundary.
+    @Column('text', { nullable: true })
+    driveFolderId!: string | null;
+
     @ManyToOne(() => User)
     applicant!: User;
 

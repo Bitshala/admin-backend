@@ -8,7 +8,7 @@ export class Migrations1775546228053 implements MigrationInterface {
             `CREATE TYPE "public"."fellowship_type_enum" AS ENUM('DEVELOPER', 'DESIGNER', 'EDUCATOR')`,
         );
         await queryRunner.query(
-            `CREATE TYPE "public"."fellowship_status_enum" AS ENUM('PENDING', 'ACTIVE', 'COMPLETED')`,
+            `CREATE TYPE "public"."fellowship_status_enum" AS ENUM('PENDING', 'AWAITING_DOCUMENTS', 'DOCUMENTS_IN_REVIEW', 'DOCUMENTS_APPROVED', 'ACTIVE', 'COMPLETED')`,
         );
         await queryRunner.query(
             `CREATE TABLE "fellowship" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_type_enum" NOT NULL, "status" "public"."fellowship_status_enum" NOT NULL DEFAULT 'PENDING', "startDate" TIMESTAMP WITH TIME ZONE, "endDate" TIMESTAMP WITH TIME ZONE, "amountUsd" numeric(10,2), "driveFolderUrl" text, "userId" uuid, "applicationId" uuid, CONSTRAINT "REL_ecc546fbfc8499e66a948e34d0" UNIQUE ("applicationId"), CONSTRAINT "PK_7cab81bcfea36e9b6aa5a9bd24a" PRIMARY KEY ("id"))`,
@@ -20,7 +20,7 @@ export class Migrations1775546228053 implements MigrationInterface {
             `CREATE TYPE "public"."fellowship_application_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'CHANGES_REQUESTED', 'ACCEPTED', 'REJECTED')`,
         );
         await queryRunner.query(
-            `CREATE TABLE "fellowship_application" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_application_type_enum" NOT NULL, "title" text, "problemStatement" text, "plan" text, "mentorName" text, "mentorContact" text, "mentorTestimonial" text, "github" text, "links" text array NOT NULL DEFAULT '{}', "projectName" text, "projectGithubLink" text, "academicBackground" text, "graduationYear" integer, "professionalExperience" text, "domains" jsonb, "codingLanguages" jsonb, "educationInterests" jsonb, "bitcoinContributions" text, "bitcoinMotivation" text, "bitcoinOssGoal" text, "additionalInfo" text, "questionsForBitshala" text, "status" "public"."fellowship_application_status_enum" NOT NULL, "reviewerRemarks" text, "applicantId" uuid, "reviewedById" uuid, CONSTRAINT "PK_d7f9f34e7d0af11c969d9ca7365" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "fellowship_application" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_application_type_enum" NOT NULL, "title" text, "problemStatement" text, "plan" text, "mentorName" text, "mentorContact" text, "mentorTestimonial" text, "github" text, "links" text array NOT NULL DEFAULT '{}', "projectName" text, "projectGithubLink" text, "academicBackground" text, "graduationYear" integer, "professionalExperience" text, "domains" jsonb, "codingLanguages" jsonb, "educationInterests" jsonb, "bitcoinContributions" text, "bitcoinMotivation" text, "bitcoinOssGoal" text, "additionalInfo" text, "questionsForBitshala" text, "status" "public"."fellowship_application_status_enum" NOT NULL, "reviewerRemarks" text, "driveFolderId" text, "applicantId" uuid, "reviewedById" uuid, CONSTRAINT "PK_d7f9f34e7d0af11c969d9ca7365" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
             `ALTER TABLE "fellowship" ADD CONSTRAINT "FK_701281b1d831e1dc2fc28a065b4" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -33,6 +33,24 @@ export class Migrations1775546228053 implements MigrationInterface {
         );
         await queryRunner.query(
             `ALTER TABLE "fellowship_application" ADD CONSTRAINT "FK_1a11e17efd19f0a5bb79e4dcb66" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `CREATE TYPE "public"."fellowship_document_type_enum" AS ENUM('UNSIGNED_CONTRACT', 'SIGNED_CONTRACT', 'W8BEN')`,
+        );
+        await queryRunner.query(
+            `CREATE TYPE "public"."fellowship_document_status_enum" AS ENUM('AWAITING_UPLOAD', 'PENDING_REVIEW', 'APPROVED', 'REJECTED')`,
+        );
+        await queryRunner.query(
+            `CREATE TABLE "fellowship_document" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_document_type_enum" NOT NULL, "status" "public"."fellowship_document_status_enum" NOT NULL, "driveFileId" text, "fileName" text, "mimeType" text, "sizeBytes" integer, "rejectionReason" text, "applicationId" uuid NOT NULL, "uploadedById" uuid, "reviewedById" uuid, CONSTRAINT "UQ_fellowship_document_application_type" UNIQUE ("applicationId", "type"), CONSTRAINT "PK_fellowship_document" PRIMARY KEY ("id"))`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_fellowship_document_application" FOREIGN KEY ("applicationId") REFERENCES "fellowship_application"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_fellowship_document_uploaded_by" FOREIGN KEY ("uploadedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_fellowship_document_reviewed_by" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
             `CREATE TYPE "public"."fellowship_report_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED')`,
@@ -86,6 +104,22 @@ export class Migrations1775546228053 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "fellowship_report"`);
         await queryRunner.query(
             `DROP TYPE "public"."fellowship_report_status_enum"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_fellowship_document_reviewed_by"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_fellowship_document_uploaded_by"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_fellowship_document_application"`,
+        );
+        await queryRunner.query(`DROP TABLE "fellowship_document"`);
+        await queryRunner.query(
+            `DROP TYPE "public"."fellowship_document_status_enum"`,
+        );
+        await queryRunner.query(
+            `DROP TYPE "public"."fellowship_document_type_enum"`,
         );
         await queryRunner.query(
             `ALTER TABLE "fellowship_application" DROP CONSTRAINT "FK_1a11e17efd19f0a5bb79e4dcb66"`,
