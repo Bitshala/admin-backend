@@ -203,7 +203,7 @@ export class FellowshipReportsService {
                     ...(status && { status }),
                 },
                 relations: {
-                    fellowship: { user: true },
+                    fellowship: { user: true, application: true },
                     reviewedBy: true,
                 },
                 order: { createdAt: 'DESC' },
