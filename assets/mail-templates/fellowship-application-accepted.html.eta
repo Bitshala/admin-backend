@@ -7,7 +7,7 @@
 <body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
 
   <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; visibility:hidden; opacity:0; color:transparent;">
-    Your Bitshala Fellowship workspace, contract, and next steps are inside.
+    Your Bitshala Fellowship contract and next steps are inside the app.
     &#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;
   </div>
 
@@ -38,11 +38,10 @@
                 working with you over the months ahead.
               </p>
               <p style="margin:0;">
-                We've set up a
-                <a href="<%~ it.driveFolderUrl %>" style="color:#f9b233; text-decoration:underline;">Google Drive folder</a>
-                where your contracts and tax forms will be collected. Your monthly
-                work reports are submitted through the
-                <a href="https://app.bitshala.org/" style="color:#f9b233; text-decoration:underline;">Bitshala app</a>.
+                Everything happens right inside the
+                <a href="<%~ it.documentsUrl %>" style="color:#f9b233; text-decoration:underline;">Bitshala app</a>:
+                download your contract, upload your signed copy and tax form, and
+                submit your monthly work reports — all in one place.
               </p>
             </td>
           </tr>
@@ -64,10 +63,10 @@
                   </td>
                   <td style="padding:16px 16px 16px 12px; color:#eaeaea; font-size:13px; line-height:1.6;">
                     <strong style="color:#ffffff;">Sign the Contract.</strong>
-                    Your contract — already signed by Bitshala — is in the Drive
-                    folder. Add your signature and upload the signed copy back to
-                    the same folder. Make sure the contract date matches the date
-                    in the contract document.
+                    Open the app and download your contract — already signed by
+                    Bitshala. Add your signature and upload the signed copy back in
+                    the app. Make sure the contract date matches the date in the
+                    contract document.
                   </td>
                 </tr>
               </table>
@@ -83,7 +82,7 @@
                     monthly payouts. Download the form from
                     <a href="https://www.irs.gov/pub/irs-pdf/fw8ben.pdf" style="color:#f9b233; text-decoration:underline;">irs.gov</a>,
                     fill it out (India-specific guidance below), and upload the
-                    completed form to the Drive folder.
+                    completed form in the app.
                   </td>
                 </tr>
               </table>
@@ -160,13 +159,13 @@
 
           <tr>
             <td align="center" style="padding:24px 32px 8px 32px; color:#eaeaea; font-size:13px; line-height:1.6;">
-              <p style="margin:0 0 16px 0;">Ready to get started? Open your fellowship workspace below.</p>
+              <p style="margin:0 0 16px 0;">Ready to get started? Open your fellowship in the app below.</p>
               <table cellpadding="0" cellspacing="0" border="0" align="center">
                 <tr>
                   <td align="center" bgcolor="#f7931a" style="border-radius:999px;">
-                    <a href="<%~ it.driveFolderUrl %>"
+                    <a href="<%~ it.documentsUrl %>"
                        style="display:inline-block; padding:14px 32px; font-size:15px; font-weight:600; color:#000000; text-decoration:none;">
-                      Open Fellowship Drive Folder
+                      Open Your Fellowship Documents
                     </a>
                   </td>
                 </tr>

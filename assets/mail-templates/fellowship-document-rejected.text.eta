@@ -1,0 +1,17 @@
+Document Needs Another Look — <%~ it.documentName %>
+
+Hi <%~ it.userName %>,
+
+We reviewed your <%~ it.documentName %> and it needs a small revision before we can approve it. No worries — just upload a corrected version in the app and we'll take another look.
+
+---
+
+What needs changing
+
+<%~ it.rejectionReason %>
+
+---
+
+Re-upload in the app: <%~ it.documentsUrl %>
+
+Questions? Reach out to fellowship@bitshala.org and we'll help you out.

@@ -6,17 +6,17 @@ Dear <%~ it.userName %>,
 
 We are thrilled to inform you that you have been selected for the Bitshala <%~ it.fellowshipType %> Fellowship! We're excited to see your impact and contributions and look forward to working with you over the months ahead.
 
-We've set up a Google Drive folder (<%~ it.driveFolderUrl %>) where your contracts and tax forms will be collected. Your monthly work reports are submitted through the Bitshala app at https://app.bitshala.org/.
+Everything happens right inside the Bitshala app (<%~ it.documentsUrl %>): download your contract, upload your signed copy and tax form, and submit your monthly work reports — all in one place.
 
 ---
 
 Next Steps
 
 1. Sign the Contract
-   Your contract — already signed by Bitshala — is in the Drive folder. Add your signature and upload the signed copy back to the same folder. Make sure the contract date matches the date in the contract document.
+   Open the app and download your contract — already signed by Bitshala. Add your signature and upload the signed copy back in the app. Make sure the contract date matches the date in the contract document.
 
 2. Submit Your W-8BEN Form
-   We require a completed W-8BEN form for U.S. tax compliance on monthly payouts. Download the form from https://www.irs.gov/pub/irs-pdf/fw8ben.pdf, fill it out (India-specific guidance below), and upload the completed form to the Drive folder.
+   We require a completed W-8BEN form for U.S. tax compliance on monthly payouts. Download the form from https://www.irs.gov/pub/irs-pdf/fw8ben.pdf, fill it out (India-specific guidance below), and upload the completed form in the app.
 
 3. Share Account Details
    Monthly payments are processed through Skydo. You'll receive a separate email from Skydo with a form for your account and contact info — please fill it in.
@@ -48,7 +48,7 @@ Part III — Certification
 
 ---
 
-Ready to get started? Open your fellowship workspace: <%~ it.driveFolderUrl %>
+Ready to get started? Open your fellowship in the app: <%~ it.documentsUrl %>
 
 If you have any questions or need clarification, email us at fellowship@bitshala.org — we're here to support you every step of the way.
 

@@ -69,7 +69,9 @@ export interface FellowshipApplicationReceivedContext {
 export interface FellowshipApplicationAcceptedContext {
     userName: string;
     fellowshipType: string;
-    driveFolderUrl: string;
+    // Deep link into the app where the fellow downloads the unsigned contract and
+    // uploads their signed contract and W-8BEN.
+    documentsUrl: string;
 }
 
 export interface FellowshipApplicationRejectedContext {
@@ -82,6 +84,13 @@ export interface FellowshipApplicationChangesRequestedContext {
     userName: string;
     fellowshipType: string;
     reviewerRemarks: string;
+}
+
+export interface FellowshipDocumentRejectedContext {
+    userName: string;
+    documentName: string;
+    rejectionReason: string;
+    documentsUrl: string;
 }
 
 export interface FellowshipReportReminderContext {
@@ -116,6 +125,7 @@ export interface TemplateContextMap {
     [MailTemplate.FellowshipApplicationAccepted]: FellowshipApplicationAcceptedContext;
     [MailTemplate.FellowshipApplicationRejected]: FellowshipApplicationRejectedContext;
     [MailTemplate.FellowshipApplicationChangesRequested]: FellowshipApplicationChangesRequestedContext;
+    [MailTemplate.FellowshipDocumentRejected]: FellowshipDocumentRejectedContext;
     [MailTemplate.FellowshipReportReminder]: FellowshipReportReminderContext;
     [MailTemplate.FellowshipReportApproved]: FellowshipReportApprovedContext;
     [MailTemplate.FellowshipReportRejected]: FellowshipReportRejectedContext;

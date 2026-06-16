@@ -381,11 +381,23 @@ export class MailService implements OnModuleInit {
         });
     }
 
+    // Deep link into the app's fellowship area where documents are downloaded and
+    // uploaded. Downloads/uploads are authenticated and proxied, so we link to the
+    // app, never to the raw download route or to Drive.
+    private buildFellowshipDocumentsUrl(fellowshipId: string): string {
+        const frontEndUrl =
+            this.configService.getOrThrow<string>('app.frontEndUrl');
+        return new URL(
+            `/fellowship/fellowships/${fellowshipId}/documents`,
+            frontEndUrl,
+        ).toString();
+    }
+
     async sendFellowshipApplicationAcceptedEmail(
         userEmail: string,
         userName: string,
         fellowshipType: FellowshipType,
-        driveFolderUrl: string,
+        fellowshipId: string,
     ): Promise<void> {
         const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
         const subject = `Welcome to the Bitshala ${displayType} Fellowship`;
@@ -398,7 +410,29 @@ export class MailService implements OnModuleInit {
             context: {
                 userName,
                 fellowshipType: displayType,
-                driveFolderUrl,
+                documentsUrl: this.buildFellowshipDocumentsUrl(fellowshipId),
+            },
+        });
+    }
+
+    async sendFellowshipDocumentRejectedEmail(
+        userEmail: string,
+        userName: string,
+        documentName: string,
+        rejectionReason: string,
+        fellowshipId: string,
+    ): Promise<void> {
+        const subject = `Action needed: your ${documentName} needs another look`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            subject,
+            template: MailTemplate.FellowshipDocumentRejected,
+            context: {
+                userName,
+                documentName,
+                rejectionReason,
+                documentsUrl: this.buildFellowshipDocumentsUrl(fellowshipId),
             },
         });
     }
