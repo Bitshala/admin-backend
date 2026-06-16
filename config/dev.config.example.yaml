@@ -54,6 +54,15 @@ app:
     sessionTtlSeconds: 604800 # 7 days
 github:
   token: '<github_personal_access_token>'
+googleDrive:
+  # Base64-encoded service-account JSON for a service account that is a member of
+  # the Workspace Shared Drive. Supply via env GOOGLE_DRIVE_SERVICE_ACCOUNT_KEY in
+  # real environments. The committed dev.config.yaml ships a harmless base64 JSON
+  # placeholder so the app boots without real Drive access.
+  serviceAccountKey: '<base64_encoded_service_account_json>'
+  sharedDriveId: '<shared_drive_id>'
+  # Optional folder within the Shared Drive; defaults to the drive root when blank.
+  rootFolderId:
 email:
   smtp:
     host: localhost
