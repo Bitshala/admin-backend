@@ -10,15 +10,20 @@ import {
     Patch,
     Post,
     Query,
+    UploadedFile,
+    UseInterceptors,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
     ApiBearerAuth,
+    ApiConsumes,
     ApiOperation,
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
+import { MAX_DOCUMENT_BYTES, pdfFileFilter } from '@/common/upload';
 import { FellowshipApplicationsService } from '@/fellowship-applications/fellowship-applications.service';
 import {
     CreateFellowshipApplicationRequestDto,
@@ -160,13 +165,24 @@ export class FellowshipApplicationsController {
     }
 
     @Patch(':id/review')
-    @ApiOperation({ summary: 'Review a fellowship application (admin)' })
+    @ApiOperation({
+        summary:
+            'Review a fellowship application (admin). Accepting is multipart and carries the Bitshala-signed unsigned-contract PDF as `file`.',
+    })
+    @ApiConsumes('multipart/form-data', 'application/json')
     @Roles(UserRole.ADMIN)
+    @UseInterceptors(
+        FileInterceptor('file', {
+            limits: { fileSize: MAX_DOCUMENT_BYTES },
+            fileFilter: pdfFileFilter,
+        }),
+    )
     async reviewApplication(
         @Param('id', new ParseUUIDPipe()) id: string,
         @GetUser() user: User,
         @Body() body: ReviewFellowshipApplicationRequestDto,
+        @UploadedFile() file?: Express.Multer.File,
     ): Promise<FellowshipApplicationResponseDto> {
-        return this.service.reviewApplication(id, user, body);
+        return this.service.reviewApplication(id, user, body, file);
     }
 }

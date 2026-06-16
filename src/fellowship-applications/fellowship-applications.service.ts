@@ -8,7 +8,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
-import { Fellowship } from '@/entities/fellowship.entity';
 import { User } from '@/entities/user.entity';
 import {
     FellowshipApplicationStatus,
@@ -31,6 +30,7 @@ import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { escapeLikePattern } from '@/common/common';
 import { GitHubClassroomClient } from '@/github-classroom/client/github-classroom.client';
 import { MailService } from '@/mail/mail.service';
+import { FellowshipDocumentsService } from '@/fellowship-documents/fellowship-documents.service';
 import {
     GITHUB_USERNAME_RE,
     LINK_LIMIT,
@@ -58,12 +58,11 @@ export class FellowshipApplicationsService {
     constructor(
         @InjectRepository(FellowshipApplication)
         private readonly applicationRepository: Repository<FellowshipApplication>,
-        @InjectRepository(Fellowship)
-        private readonly fellowshipRepository: Repository<Fellowship>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly mailService: MailService,
         private readonly githubClient: GitHubClassroomClient,
+        private readonly documentsService: FellowshipDocumentsService,
     ) {}
 
     /**
@@ -559,6 +558,7 @@ export class FellowshipApplicationsService {
         id: string,
         reviewer: User,
         dto: ReviewFellowshipApplicationRequestDto,
+        file?: Express.Multer.File,
     ): Promise<FellowshipApplicationResponseDto> {
         const application = await this.applicationRepository.findOne({
             where: { id },
@@ -610,12 +610,9 @@ export class FellowshipApplicationsService {
             );
         }
 
-        if (
-            dto.status === FellowshipApplicationStatus.ACCEPTED &&
-            !dto.driveFolderUrl
-        ) {
+        if (dto.status === FellowshipApplicationStatus.ACCEPTED && !file) {
             throw new BadRequestException(
-                'A Google Drive folder URL is required when accepting an application',
+                'The Bitshala-signed unsigned-contract PDF is required when accepting an application',
             );
         }
 
@@ -625,16 +622,21 @@ export class FellowshipApplicationsService {
             application.reviewerRemarks = dto.reviewerRemarks;
         }
 
-        await this.applicationRepository.save(application);
-
+        // On accept, provisioning persists the application (status/reviewedBy +
+        // driveFolderId), creates the Fellowship and the three document rows, and
+        // uploads the unsigned contract — all in one transaction. Other outcomes
+        // are a simple status save.
+        let acceptedFellowshipId: string | undefined;
         if (dto.status === FellowshipApplicationStatus.ACCEPTED) {
-            const fellowship = this.fellowshipRepository.create({
-                type: application.type,
-                user: application.applicant,
-                application: application,
-                driveFolderUrl: dto.driveFolderUrl,
-            });
-            await this.fellowshipRepository.save(fellowship);
+            const fellowship =
+                await this.documentsService.provisionAcceptedApplication(
+                    application,
+                    reviewer,
+                    file!,
+                );
+            acceptedFellowshipId = fellowship.id;
+        } else {
+            await this.applicationRepository.save(application);
         }
 
         const applicant = application.applicant;
@@ -645,7 +647,7 @@ export class FellowshipApplicationsService {
                         applicant.email,
                         applicant.displayName,
                         application.type,
-                        dto.driveFolderUrl!,
+                        acceptedFellowshipId!,
                     );
                 } else if (
                     dto.status === FellowshipApplicationStatus.REJECTED

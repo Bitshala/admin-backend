@@ -219,20 +219,9 @@ export class ReviewFellowshipApplicationRequestDto {
     @IsNotEmpty()
     reviewerRemarks?: string;
 
-    // Required when status === ACCEPTED (enforced in the service).
-    // Folder hosts the unsigned contract and is where the fellow uploads
-    // their W-8BEN form — so it must be an actual Drive folder URL, not
-    // just any drive.google.com link.
-    @IsOptional()
-    @IsUrl()
-    @Matches(
-        /^https:\/\/drive\.google\.com\/drive\/(u\/\d+\/)?folders\/[\w-]+([?#].*)?$/,
-        {
-            message:
-                'driveFolderUrl must be a Google Drive folder URL (https://drive.google.com/drive/folders/…)',
-        },
-    )
-    driveFolderUrl?: string;
+    // Accepting an application is a multipart request that also carries the
+    // Bitshala-signed unsigned-contract PDF (validated in the controller/service),
+    // which replaces the old `driveFolderUrl` field.
 }
 
 export enum FellowshipApplicationSortBy {
