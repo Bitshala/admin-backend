@@ -141,7 +141,9 @@ export class Migrations1778000000000 implements MigrationInterface {
         // Report status cycles DRAFT/SUBMITTED/APPROVED/REJECTED by (rn + idx) % 4.
         await queryRunner.query(`
             INSERT INTO fellowship_report (
-                "id", "month", "year", "content", "status",
+                "id", "month", "year", "summary", "links",
+                "challengingWork", "keyLearning", "reviewerFeedback", "growthGoal",
+                "status",
                 "reviewerRemarks", "fellowshipId", "reviewedById",
                 "createdAt", "updatedAt"
             )
@@ -150,6 +152,14 @@ export class Migrations1778000000000 implements MigrationInterface {
                 EXTRACT(MONTH FROM (NOW() - (gs.idx * INTERVAL '1 month')))::int,
                 EXTRACT(YEAR FROM (NOW() - (gs.idx * INTERVAL '1 month')))::int,
                 E'## Monthly report #' || gs.idx || E' for fellowship ' || sa.rn || E'\n\n### Progress\n- Shipped feature X\n- Reviewed N PRs\n- Wrote 2 blog posts\n\n### Blockers\n- None this month',
+                ARRAY[
+                    'https://github.com/dummy-org/project-' || sa.rn || '/pull/' || gs.idx,
+                    'https://github.com/dummy-org/project-' || sa.rn || '/issues/' || gs.idx
+                ]::text[],
+                E'The trickiest work this month was task #' || gs.idx || E'. I first tried approach A, then switched to approach B once I understood the constraints.',
+                E'I now understand part X of the codebase and tool Y far better than I did at the start of the month.',
+                E'A maintainer suggested I split large PRs into smaller, reviewable chunks.',
+                E'Next month I want to get better at writing tests and reading unfamiliar code faster.',
                 (CASE ((sa.rn + gs.idx) % 4)
                     WHEN 0 THEN 'DRAFT'
                     WHEN 1 THEN 'SUBMITTED'

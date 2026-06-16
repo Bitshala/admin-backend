@@ -21,6 +21,7 @@ import {
     FellowshipReportSortBy,
     ListFellowshipReportsQueryDto,
     ReviewFellowshipReportRequestDto,
+    SUMMARY_CHAR_LIMIT,
     UpdateFellowshipReportRequestDto,
 } from '@/fellowship-reports/fellowship-reports.request.dto';
 import {
@@ -82,7 +83,12 @@ export class FellowshipReportsService {
         const report = this.reportRepository.create({
             month: dto.month,
             year: dto.year,
-            content: dto.content,
+            summary: dto.summary,
+            links: dto.links ?? [],
+            challengingWork: dto.challengingWork ?? '',
+            keyLearning: dto.keyLearning ?? '',
+            reviewerFeedback: dto.reviewerFeedback ?? '',
+            growthGoal: dto.growthGoal ?? '',
             status: FellowshipReportStatus.DRAFT,
             fellowship: fellowship,
         });
@@ -125,8 +131,28 @@ export class FellowshipReportsService {
             throw new BadRequestException('Only draft reports can be updated');
         }
 
-        if (dto.content !== undefined) {
-            report.content = dto.content;
+        if (dto.summary !== undefined) {
+            report.summary = dto.summary;
+        }
+
+        if (dto.links !== undefined) {
+            report.links = dto.links;
+        }
+
+        if (dto.challengingWork !== undefined) {
+            report.challengingWork = dto.challengingWork;
+        }
+
+        if (dto.keyLearning !== undefined) {
+            report.keyLearning = dto.keyLearning;
+        }
+
+        if (dto.reviewerFeedback !== undefined) {
+            report.reviewerFeedback = dto.reviewerFeedback;
+        }
+
+        if (dto.growthGoal !== undefined) {
+            report.growthGoal = dto.growthGoal;
         }
 
         await this.reportRepository.save(report);
@@ -157,6 +183,24 @@ export class FellowshipReportsService {
         if (report.status !== FellowshipReportStatus.DRAFT) {
             throw new BadRequestException(
                 'Only draft reports can be submitted',
+            );
+        }
+
+        if (report.fellowship.status !== FellowshipStatus.ACTIVE) {
+            throw new BadRequestException(
+                'Reports can only be submitted for active fellowships',
+            );
+        }
+
+        if (!report.summary.trim()) {
+            throw new BadRequestException(
+                'A summary is required to submit a report',
+            );
+        }
+
+        if (report.summary.length > SUMMARY_CHAR_LIMIT) {
+            throw new BadRequestException(
+                `Summary must be at most ${SUMMARY_CHAR_LIMIT} characters`,
             );
         }
 
@@ -237,7 +281,7 @@ export class FellowshipReportsService {
             throw new ForbiddenException();
         }
 
-        return new FellowshipReportContentResponseDto(report.content);
+        return FellowshipReportContentResponseDto.fromEntity(report);
     }
 
     async getReportById(

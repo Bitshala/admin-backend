@@ -3,10 +3,26 @@ import { FellowshipReport } from '@/entities/fellowship-report.entity';
 import { FellowshipResponseDto } from '@/fellowships/fellowships.response.dto';
 
 export class FellowshipReportContentResponseDto {
-    content!: string;
+    summary!: string;
+    // Ordered GitHub PR/issue URLs; [] when none.
+    links!: string[];
+    // Reflective answers; '' when unanswered.
+    challengingWork!: string;
+    keyLearning!: string;
+    reviewerFeedback!: string;
+    growthGoal!: string;
 
-    constructor(content: string) {
-        this.content = content;
+    static fromEntity(
+        report: FellowshipReport,
+    ): FellowshipReportContentResponseDto {
+        const dto = new FellowshipReportContentResponseDto();
+        dto.summary = report.summary;
+        dto.links = report.links;
+        dto.challengingWork = report.challengingWork;
+        dto.keyLearning = report.keyLearning;
+        dto.reviewerFeedback = report.reviewerFeedback;
+        dto.growthGoal = report.growthGoal;
+        return dto;
     }
 }
 

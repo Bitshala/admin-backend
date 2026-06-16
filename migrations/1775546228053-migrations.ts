@@ -38,7 +38,7 @@ export class Migrations1775546228053 implements MigrationInterface {
             `CREATE TYPE "public"."fellowship_report_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED')`,
         );
         await queryRunner.query(
-            `CREATE TABLE "fellowship_report" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "month" integer NOT NULL, "year" integer NOT NULL, "content" text NOT NULL, "status" "public"."fellowship_report_status_enum" NOT NULL, "reviewerRemarks" text, "fellowshipId" uuid, "reviewedById" uuid, CONSTRAINT "PK_989afa645c643ba3ab5f8a0700b" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "fellowship_report" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "month" integer NOT NULL, "year" integer NOT NULL, "summary" text NOT NULL DEFAULT '', "links" text array NOT NULL DEFAULT '{}', "challengingWork" text NOT NULL DEFAULT '', "keyLearning" text NOT NULL DEFAULT '', "reviewerFeedback" text NOT NULL DEFAULT '', "growthGoal" text NOT NULL DEFAULT '', "status" "public"."fellowship_report_status_enum" NOT NULL, "reviewerRemarks" text, "fellowshipId" uuid, "reviewedById" uuid, CONSTRAINT "PK_989afa645c643ba3ab5f8a0700b" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
             `ALTER TABLE "fellowship_report" ADD CONSTRAINT "FK_b05b6cce0d61f864e1ad9228324" FOREIGN KEY ("fellowshipId") REFERENCES "fellowship"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
