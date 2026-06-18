@@ -35,13 +35,13 @@ export class Migrations1775546228053 implements MigrationInterface {
             `ALTER TABLE "fellowship_application" ADD CONSTRAINT "FK_1a11e17efd19f0a5bb79e4dcb66" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
-            `CREATE TABLE "fellowship_application_note" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "body" text NOT NULL, "applicationId" uuid NOT NULL, "authorId" uuid, CONSTRAINT "PK_fellowship_application_note" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "fellowship_application_note" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "body" text NOT NULL, "applicationId" uuid, "authorId" uuid, CONSTRAINT "PK_fellowship_application_note" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_application_note" ADD CONSTRAINT "FK_fellowship_application_note_application" FOREIGN KEY ("applicationId") REFERENCES "fellowship_application"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+            `ALTER TABLE "fellowship_application_note" ADD CONSTRAINT "FK_ea8e1808f1745730e42ee49b167" FOREIGN KEY ("applicationId") REFERENCES "fellowship_application"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_application_note" ADD CONSTRAINT "FK_fellowship_application_note_author" FOREIGN KEY ("authorId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+            `ALTER TABLE "fellowship_application_note" ADD CONSTRAINT "FK_279349cab9bf5a4d2300159b750" FOREIGN KEY ("authorId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
             `CREATE TYPE "public"."fellowship_document_type_enum" AS ENUM('UNSIGNED_CONTRACT', 'SIGNED_CONTRACT', 'W8BEN')`,
@@ -50,16 +50,16 @@ export class Migrations1775546228053 implements MigrationInterface {
             `CREATE TYPE "public"."fellowship_document_status_enum" AS ENUM('AWAITING_UPLOAD', 'PENDING_REVIEW', 'APPROVED', 'REJECTED')`,
         );
         await queryRunner.query(
-            `CREATE TABLE "fellowship_document" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_document_type_enum" NOT NULL, "status" "public"."fellowship_document_status_enum" NOT NULL, "driveFileId" text, "fileName" text, "mimeType" text, "sizeBytes" integer, "rejectionReason" text, "applicationId" uuid NOT NULL, "uploadedById" uuid, "reviewedById" uuid, CONSTRAINT "UQ_fellowship_document_application_type" UNIQUE ("applicationId", "type"), CONSTRAINT "PK_fellowship_document" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "fellowship_document" ("createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "type" "public"."fellowship_document_type_enum" NOT NULL, "status" "public"."fellowship_document_status_enum" NOT NULL, "driveFileId" text, "fileName" text, "mimeType" text, "sizeBytes" integer, "rejectionReason" text, "applicationId" uuid, "uploadedById" uuid, "reviewedById" uuid, CONSTRAINT "UQ_92633813253aeb0cbdb1136d741" UNIQUE ("applicationId", "type"), CONSTRAINT "PK_fellowship_document" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_fellowship_document_application" FOREIGN KEY ("applicationId") REFERENCES "fellowship_application"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_4de87703835e89d92170d7e5141" FOREIGN KEY ("applicationId") REFERENCES "fellowship_application"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_fellowship_document_uploaded_by" FOREIGN KEY ("uploadedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_1c62729607f6a443df941a07ac1" FOREIGN KEY ("uploadedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_fellowship_document_reviewed_by" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+            `ALTER TABLE "fellowship_document" ADD CONSTRAINT "FK_93dff0f9cfe1580833cab3b7482" FOREIGN KEY ("reviewedById") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
             `CREATE TYPE "public"."fellowship_report_status_enum" AS ENUM('DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED')`,
@@ -105,10 +105,10 @@ export class Migrations1775546228053 implements MigrationInterface {
             `DELETE FROM "api_task" WHERE "type" = 'SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS'`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_application_note" DROP CONSTRAINT "FK_fellowship_application_note_author"`,
+            `ALTER TABLE "fellowship_application_note" DROP CONSTRAINT "FK_279349cab9bf5a4d2300159b750"`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_application_note" DROP CONSTRAINT "FK_fellowship_application_note_application"`,
+            `ALTER TABLE "fellowship_application_note" DROP CONSTRAINT "FK_ea8e1808f1745730e42ee49b167"`,
         );
         await queryRunner.query(`DROP TABLE "fellowship_application_note"`);
         await queryRunner.query(
@@ -122,13 +122,13 @@ export class Migrations1775546228053 implements MigrationInterface {
             `DROP TYPE "public"."fellowship_report_status_enum"`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_fellowship_document_reviewed_by"`,
+            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_93dff0f9cfe1580833cab3b7482"`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_fellowship_document_uploaded_by"`,
+            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_1c62729607f6a443df941a07ac1"`,
         );
         await queryRunner.query(
-            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_fellowship_document_application"`,
+            `ALTER TABLE "fellowship_document" DROP CONSTRAINT "FK_4de87703835e89d92170d7e5141"`,
         );
         await queryRunner.query(`DROP TABLE "fellowship_document"`);
         await queryRunner.query(
