@@ -62,6 +62,9 @@ export class ProposalFieldsDto {
     @MaxLength(LONG_TEXT_LIMIT)
     plan?: string;
 
+    // mentorName, mentorContact, mentorTestimonial and projectName are required
+    // at submit for developers and designers, but optional for educators (see
+    // validateProposalForSubmit).
     @IsOptional()
     @Transform(trim)
     @IsString()
@@ -194,7 +197,7 @@ export class ProposalFieldsDto {
 
     // Profile field: written through to the applicant's user profile rather
     // than stored on the application (see service), so it is never duplicated.
-    // Limit mirrors UpdateUserRequest.location.
+    // Limit mirrors UpdateUserRequest.location. Required at submit on all tracks.
     @IsOptional()
     @Transform(trim)
     @IsString()

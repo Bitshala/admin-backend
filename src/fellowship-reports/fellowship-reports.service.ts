@@ -204,6 +204,20 @@ export class FellowshipReportsService {
             );
         }
 
+        // Reflection prompts are lenient on draft writes but required at submit.
+        const requiredReflection: [string, string][] = [
+            ['Challenging work', report.challengingWork],
+            ['Key learning', report.keyLearning],
+            ['Reviewer feedback', report.reviewerFeedback],
+            ['Growth goal', report.growthGoal],
+        ];
+        const missingReflection = requiredReflection
+            .filter(([, value]) => !value?.trim())
+            .map(([label]) => `${label} is required`);
+        if (missingReflection.length > 0) {
+            throw new BadRequestException(missingReflection.join('; '));
+        }
+
         report.status = FellowshipReportStatus.SUBMITTED;
         await this.reportRepository.save(report);
 

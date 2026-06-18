@@ -37,8 +37,9 @@ export const GITHUB_LINK_RE =
 const GITHUB_LINK_MESSAGE =
     'each link must be a valid GitHub pull-request or issue URL';
 
-// Reflective free-text prompts shared by create and update. All optional and
-// lenient everywhere (length-capped only) — they never gate submission.
+// Reflective free-text prompts shared by create and update. Optional and
+// lenient on draft writes (length-capped only), but all four are required at
+// submit (see submitDraft in the service).
 export class ReportReflectionFieldsDto {
     // Q1: the month's most challenging or interesting piece of work.
     @IsOptional()

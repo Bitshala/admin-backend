@@ -324,30 +324,48 @@ export class FellowshipApplicationsService {
     ): void {
         const errors: string[] = [];
         const isDeveloper = application.type === FellowshipType.DEVELOPER;
+        const isEducator = application.type === FellowshipType.EDUCATOR;
 
         const requiredText: [string, string | null][] = [
             ['Title', application.title],
             ['Problem statement', application.problemStatement],
             ['Plan', application.plan],
-            ['Mentor name', application.mentorName],
-            ['Mentor contact', application.mentorContact],
             ['Academic background', application.academicBackground],
             ['Professional experience', application.professionalExperience],
             ['Bitcoin contributions', application.bitcoinContributions],
             ['Bitcoin motivation', application.bitcoinMotivation],
             ['Bitcoin OSS goal', application.bitcoinOssGoal],
         ];
-        // Project details are only required on the developer track.
-        if (isDeveloper) {
+        // Mentor details, the mentor testimonial and the project name are
+        // required for developers and designers but optional for educators.
+        if (!isEducator) {
             requiredText.push(
+                ['Mentor name', application.mentorName],
+                ['Mentor contact', application.mentorContact],
+                ['Mentor testimonial', application.mentorTestimonial],
                 ['Project name', application.projectName],
-                ['Project GitHub link', application.projectGithubLink],
             );
+        }
+        // The project GitHub link is only required on the developer track.
+        if (isDeveloper) {
+            requiredText.push([
+                'Project GitHub link',
+                application.projectGithubLink,
+            ]);
         }
         for (const [label, value] of requiredText) {
             if (!value || !value.trim()) {
                 errors.push(`${label} is required`);
             }
+        }
+
+        // Location lives on the applicant's profile rather than the
+        // application, but is still required to submit.
+        if (
+            !application.applicant?.location ||
+            !application.applicant.location.trim()
+        ) {
+            errors.push('Location is required');
         }
 
         if (application.graduationYear == null) {
