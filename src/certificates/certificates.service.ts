@@ -63,9 +63,8 @@ export class CertificatesService {
             );
         }
 
-        const leaderboard = await this.scoresService.getCohortLeaderboard(
-            cohortId,
-        );
+        const leaderboard =
+            await this.scoresService.getCohortLeaderboard(cohortId);
 
         const absenceThresholdDays = ABSENCE_THRESHOLD_DAYS[cohort.type];
 
@@ -108,9 +107,8 @@ export class CertificatesService {
     async previewCertificatesForCohort(
         cohortId: string,
     ): Promise<CertificatePreviewResponseDto[]> {
-        const { certificateEntities } = await this.buildCertificateEntities(
-            cohortId,
-        );
+        const { certificateEntities } =
+            await this.buildCertificateEntities(cohortId);
         return CertificatePreviewResponseDto.fromCertificateEntities(
             certificateEntities,
         );
@@ -120,9 +118,8 @@ export class CertificatesService {
         cohortId: string,
         sendEmail: boolean,
     ): Promise<void> {
-        const { certificateEntities } = await this.buildCertificateEntities(
-            cohortId,
-        );
+        const { certificateEntities } =
+            await this.buildCertificateEntities(cohortId);
 
         // We first delete existing certificates for the cohort to avoid duplicates
         // This is to ensure that if the generation process is re-run, we don't end up with multiple

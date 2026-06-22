@@ -438,8 +438,8 @@ export class FellowshipDocumentsService {
         const next = allApproved
             ? FellowshipStatus.DOCUMENTS_APPROVED
             : allUploaded
-            ? FellowshipStatus.DOCUMENTS_IN_REVIEW
-            : FellowshipStatus.AWAITING_DOCUMENTS;
+              ? FellowshipStatus.DOCUMENTS_IN_REVIEW
+              : FellowshipStatus.AWAITING_DOCUMENTS;
 
         if (fellowship.status !== next) {
             fellowship.status = next;

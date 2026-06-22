@@ -18,9 +18,8 @@ export class CohortCalendarController {
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
         @Res({ passthrough: true }) res: Response,
     ): Promise<string> {
-        const ical = await this.cohortCalendarService.generateCalendar(
-            cohortId,
-        );
+        const ical =
+            await this.cohortCalendarService.generateCalendar(cohortId);
         res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
         return ical;
     }

@@ -52,7 +52,7 @@ export class FellowshipsService {
         if (fellowship.status !== FellowshipStatus.DOCUMENTS_APPROVED) {
             throw new BadRequestException(
                 fellowship.status === FellowshipStatus.ACTIVE ||
-                fellowship.status === FellowshipStatus.COMPLETED
+                    fellowship.status === FellowshipStatus.COMPLETED
                     ? 'Fellowship contract has already been started'
                     : 'Both fellowship documents must be approved before starting the contract',
             );
