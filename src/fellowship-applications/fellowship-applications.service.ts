@@ -83,6 +83,10 @@ export class FellowshipApplicationsService {
             user.location = emptyToNull(dto.location);
             changed = true;
         }
+        if (dto.name !== undefined) {
+            user.name = emptyToNull(dto.name);
+            changed = true;
+        }
         if (dto.github !== undefined) {
             const handle = emptyToNull(dto.github);
             user.githubProfileUrl = handle

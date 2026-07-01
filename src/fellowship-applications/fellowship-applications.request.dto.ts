@@ -203,6 +203,15 @@ export class ProposalFieldsDto {
     @IsString()
     @MaxLength(255)
     location?: string;
+
+    // Profile field: the applicant's name used on the certificate. Written
+    // through to `user.name` rather than stored on the application (see
+    // service), so it is never duplicated. Mirrors `location`.
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(255)
+    name?: string;
 }
 
 export class CreateFellowshipApplicationRequestDto extends ProposalFieldsDto {
