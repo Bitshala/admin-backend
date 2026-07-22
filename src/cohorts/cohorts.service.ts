@@ -55,12 +55,14 @@ export class CohortsService {
     private readonly programmingBitcoinDiscordRoleId: string;
     private readonly bitcoinProtocolDevelopmentDiscordRoleId: string;
     private readonly masteringLightningNetworkDiscordRoleId: string;
+    private readonly rustForBitcoinDiscordRoleId: string;
 
     private readonly masteringBitcoinAlumniDiscordRoleId: string;
     private readonly learningBitcoinFromCommandLineAlumniDiscordRoleId: string;
     private readonly programmingBitcoinAlumniDiscordRoleId: string;
     private readonly bitcoinProtocolDevelopmentAlumniDiscordRoleId: string;
     private readonly masteringLightningNetworkAlumniDiscordRoleId: string;
+    private readonly rustForBitcoinAlumniDiscordRoleId: string;
 
     constructor(
         @InjectRepository(Cohort)
@@ -104,6 +106,10 @@ export class CohortsService {
             this.configService.getOrThrow<string>(
                 'discord.roles.masteringLightningNetwork',
             );
+        this.rustForBitcoinDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.rustForBitcoin',
+            );
 
         this.masteringBitcoinAlumniDiscordRoleId =
             this.configService.getOrThrow<string>(
@@ -124,6 +130,10 @@ export class CohortsService {
         this.masteringLightningNetworkAlumniDiscordRoleId =
             this.configService.getOrThrow<string>(
                 'discord.roles.alumniMasteringLightningNetwork',
+            );
+        this.rustForBitcoinAlumniDiscordRoleId =
+            this.configService.getOrThrow<string>(
+                'discord.roles.alumniRustForBitcoin',
             );
     }
 
@@ -263,6 +273,11 @@ export class CohortsService {
                 this.mapLatestCohortsToPublicCohortResponseDto(
                     latestCohorts,
                     CohortType.BITCOIN_PROTOCOL_DEVELOPMENT,
+                ),
+            [CohortType.RUST_FOR_BITCOIN]:
+                this.mapLatestCohortsToPublicCohortResponseDto(
+                    latestCohorts,
+                    CohortType.RUST_FOR_BITCOIN,
                 ),
         };
     }
@@ -713,6 +728,8 @@ export class CohortsService {
                 return this.bitcoinProtocolDevelopmentDiscordRoleId;
             case CohortType.MASTERING_LIGHTNING_NETWORK:
                 return this.masteringLightningNetworkDiscordRoleId;
+            case CohortType.RUST_FOR_BITCOIN:
+                return this.rustForBitcoinDiscordRoleId;
             default:
                 throw new BadRequestException(
                     `Invalid cohort type: ${cohortType}`,
@@ -734,6 +751,8 @@ export class CohortsService {
                 return this.bitcoinProtocolDevelopmentAlumniDiscordRoleId;
             case CohortType.MASTERING_LIGHTNING_NETWORK:
                 return this.masteringLightningNetworkAlumniDiscordRoleId;
+            case CohortType.RUST_FOR_BITCOIN:
+                return this.rustForBitcoinAlumniDiscordRoleId;
             default:
                 throw new BadRequestException(
                     `Invalid cohort type: ${cohortType}`,

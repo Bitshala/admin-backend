@@ -86,6 +86,8 @@ export class MailService implements OnModuleInit {
                 return 'BPD';
             case CohortType.MASTERING_LIGHTNING_NETWORK:
                 return 'LN';
+            case CohortType.RUST_FOR_BITCOIN:
+                return 'RFB';
             default:
                 throw new ServiceError(
                     `Unknown cohort type encountered: ${cohortType}`,
@@ -114,6 +116,10 @@ export class MailService implements OnModuleInit {
             case CohortType.MASTERING_LIGHTNING_NETWORK:
                 return this.configService.getOrThrow<string>(
                     'discord.inviteUrls.masteringLightningNetwork',
+                );
+            case CohortType.RUST_FOR_BITCOIN:
+                return this.configService.getOrThrow<string>(
+                    'discord.inviteUrls.rustForBitcoin',
                 );
             default:
                 throw new ServiceError(

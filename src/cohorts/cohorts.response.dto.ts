@@ -159,6 +159,7 @@ export class ListAvailableCohortsResponseDto {
     [CohortType.LEARNING_BITCOIN_FROM_COMMAND_LINE]: PublicCohortResponseDto | null;
     [CohortType.PROGRAMMING_BITCOIN]: PublicCohortResponseDto | null;
     [CohortType.BITCOIN_PROTOCOL_DEVELOPMENT]: PublicCohortResponseDto | null;
+    [CohortType.RUST_FOR_BITCOIN]: PublicCohortResponseDto | null;
 
     constructor(obj: ListAvailableCohortsResponseDto) {
         Object.assign(this, obj);

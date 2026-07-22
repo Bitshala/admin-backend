@@ -14,6 +14,7 @@ const COHORT_FULL_NAMES: Record<CohortType, string> = {
     [CohortType.PROGRAMMING_BITCOIN]: 'Programming Bitcoin',
     [CohortType.BITCOIN_PROTOCOL_DEVELOPMENT]: 'Bitcoin Protocol Development',
     [CohortType.MASTERING_LIGHTNING_NETWORK]: 'Mastering the Lightning Network',
+    [CohortType.RUST_FOR_BITCOIN]: 'Rust for Bitcoin',
 };
 
 export function getCohortFullName(cohortType: CohortType): string {

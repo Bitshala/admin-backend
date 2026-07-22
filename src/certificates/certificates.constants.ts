@@ -52,4 +52,5 @@ export const ABSENCE_THRESHOLD_DAYS: Record<CohortType, number> = {
     [CohortType.PROGRAMMING_BITCOIN]: 2,
     [CohortType.BITCOIN_PROTOCOL_DEVELOPMENT]: 1,
     [CohortType.MASTERING_LIGHTNING_NETWORK]: 2,
+    [CohortType.RUST_FOR_BITCOIN]: 2,
 } as const;
