@@ -1,0 +1,517 @@
+{
+  "$schema": "./cohort-config.schema.json",
+  "gdSessions": 8,
+  "classroomId": "999999",
+  "links": [
+    {
+      "label": "Assignments Repository",
+      "url": "https://github.com/0xEgao/rust-lang-cohort-assignments"
+    }
+  ],
+  "weeks": [
+    {
+      "hasExercise": true,
+      "title": "Rust Setup, Syntax, Data Structures, and Bitcoin Context",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Introduction, Analyzing the Whitepaper, Setting Up",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Chapter 1: Getting Started",
+          "url": "https://doc.rust-lang.org/book/ch01-00-getting-started.html"
+        },
+        {
+          "label": "Rust Book — Chapter 3 (first two sections): Variables and Data Types",
+          "url": "https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "Nakamoto's whitepaper proposes a system with \"no trusted third party.\" What does trust normally provide in a payment system, and what has to replace it once you remove the middleman?"
+        },
+        {
+          "text": "When would a `Vec` serve you better than a `HashMap` for storing transactions, and vice versa? What kinds of operations (lookups, ordering, iteration) push you toward one or the other?"
+        },
+        {
+          "text": "You've seen both `String` and `&str`. Based only on Chapter 1–3 knowledge, why do you think Rust bothers having two string types when most languages have just one?"
+        },
+        {
+          "text": "Rust makes variables immutable unless you write `mut`. How does this default change the way you reason about a program compared to a language where everything is mutable? Is this helpful or annoying so far, and why?"
+        },
+        {
+          "text": "From the whitepaper, what is the \"double-spending problem,\" and why can't it be solved by a simple trusted database? How might the data structures we learned this week eventually represent the chain of blocks?"
+        },
+        {
+          "text": "What's the difference between looping with a `for` loop and using iterator adapters like `.filter()`? When would you reach for each?"
+        },
+        {
+          "text": "Arrays have a fixed size known at compile time; vectors grow at runtime. Why does that distinction exist in Rust, and what does it tell you about how Rust thinks about memory?"
+        },
+        {
+          "text": "The whitepaper describes \"nodes.\" Based on the reading, what responsibilities does a node have? Which of those do you think will be the hardest to build in Rust, and why?"
+        },
+        {
+          "text": "Share a compiler error you hit this week. What was Rust actually trying to protect you from? Did the error message help you fix it?"
+        },
+        {
+          "text": "If you had to store a currency amount, would you use a floating-point type or an integer (e.g., counting satoshis)? What could go wrong with floats when representing money?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Mock Transactions with Vectors and HashMaps",
+        "concepts": "Cargo basics, variables and mutability, control flow, Vec, HashMap, iteration and filtering",
+        "problem": "Using mock transactions, store transactions in vectors and hashmaps, filter and iterate over transactions, and practice mutability and basic control flow. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-01",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "Transactions are stored and queried using both `Vec` and `HashMap` as required by the starter code"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Functions, Ownership, Borrowing, Structs, Enums, Pattern Matching",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Memory Model, Strings, and Lifetimes Introduction",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Chapter 3 (remaining sections): Functions, Comments, Control Flow",
+          "url": "https://doc.rust-lang.org/book/ch03-03-how-functions-work.html"
+        },
+        {
+          "label": "Rust Book — Chapter 4: Understanding Ownership",
+          "url": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html"
+        },
+        {
+          "label": "Rust Book — Chapter 5: Using Structs to Structure Related Data",
+          "url": "https://doc.rust-lang.org/book/ch05-00-structs.html"
+        },
+        {
+          "label": "Rust Book — Chapter 6: Enums and Pattern Matching",
+          "url": "https://doc.rust-lang.org/book/ch06-00-enums.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "When you pass a `String` to a function, ownership moves and the original variable becomes unusable. Why did the Rust designers choose *move* as the default instead of *copy*? What class of bugs does this eliminate?"
+        },
+        {
+          "text": "How do you decide whether a function parameter should be `&str`, `String`, `&String`, or `&mut String`? Walk through your reasoning for a concrete case."
+        },
+        {
+          "text": "You can have many immutable references OR one mutable reference, but not both at once. Why is this rule enough to prevent data races? Can you think of a case where it feels overly strict?"
+        },
+        {
+          "text": "Rust frees memory when values go out of scope, with no garbage collector. What are the trade-offs of this approach compared to a garbage-collected language for a system like Bitcoin?"
+        },
+        {
+          "text": "When would you model a piece of data as a struct versus a tuple? What do named fields buy you, and is there ever a cost?"
+        },
+        {
+          "text": "Bitcoin has different network types (mainnet, testnet). Why is an `enum` a better fit than a set of boolean flags or string constants? What does the compiler guarantee for you?"
+        },
+        {
+          "text": "Rust forces `match` to handle every case. How could this exhaustiveness check save you when you later add a new variant to an enum?"
+        },
+        {
+          "text": "Rust has no null; it uses `Option<T>`. How does this change the way you write a function that \"might not find\" something? What bug does it prevent?"
+        },
+        {
+          "text": "From the strings and lifetimes reading, why can't Rust always just figure out how long a reference is valid? What is the compiler worried about?"
+        },
+        {
+          "text": "Some types (like integers) copy freely; others require an explicit `.clone()`. Why does Rust make cloning explicit for heap-allocated data? How does this connect to performance awareness?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Ownership and Borrowing Utility Functions",
+        "concepts": "Ownership, borrowing, mutable references, String vs &str, functions, pattern matching",
+        "problem": "Implement small utility functions such as palindrome checks, simple hashing, fee calculation, and borrowed string helpers. The assignment is designed to make you think carefully about when to own data and when to borrow it. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-02",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "Function signatures use owned and borrowed types deliberately, as required by the starter code"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Bitcoin Library Architecture and Domain Modeling",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Pattern Matching, Visibility/Privacy, User-Defined Types",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Chapter 10: Generic Types, Traits, and Lifetimes",
+          "url": "https://doc.rust-lang.org/book/ch10-00-generics.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "Why build a reusable `btclib` crate instead of putting everything in one binary? How does this separation help the wallet, miner, and node later?"
+        },
+        {
+          "text": "When designing a piece of behavior, how do you decide whether it should be a method on a type, a standalone function, or part of a trait? What signals guide that choice?"
+        },
+        {
+          "text": "Explain the difference between generics (static dispatch) and `dyn Trait` (dynamic dispatch). What are the runtime and flexibility trade-offs, and where might each fit in a Bitcoin library?"
+        },
+        {
+          "text": "A transaction has inputs and outputs. Why model `TxInput` and `TxOutput` as separate types instead of a single \"entry\" type? What domain rules does this separation protect?"
+        },
+        {
+          "text": "Why represent validation failures as an `enum` rather than returning error strings? How does this improve the callers of your API?"
+        },
+        {
+          "text": "Which fields of your structs should be public and which private? How do you design an API that makes invalid states hard or impossible to construct?"
+        },
+        {
+          "text": "What problem do external crates like Serde and UUID each solve here? What would you have to write yourself if they didn't exist, and why is reusing them idiomatic?"
+        },
+        {
+          "text": "What does \"making illegal states unrepresentable\" mean in practice? Give an example where the type system prevents a bug."
+        },
+        {
+          "text": "Why separate a block's header from the full block? What information lives in the header, and how does that separation reflect how Bitcoin actually works?"
+        },
+        {
+          "text": "Where in a Bitcoin library could a generic type or trait bound reduce duplicated code? Point to a spot where \"the same logic for different types\" tends to appear."
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Bitcoin Data Structures for btclib",
+        "concepts": "Structs, enums, methods, domain modeling, static vs dynamic dispatch, Serde and UUID crates",
+        "problem": "Create basic Bitcoin data structures including Transaction, TxInput, TxOutput, BlockHeader, Block, Network, and ValidationError. Implement methods such as total output calculation, transaction counting, and block lookup. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-03",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "The required types and methods exist with the signatures specified in the starter code"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Error Handling, Traits, Generics, and Iterators",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Error Handling, Difficulty, Mining Introduction, Blockchain Methods",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Chapter 8: Common Collections",
+          "url": "https://doc.rust-lang.org/book/ch08-00-common-collections.html"
+        },
+        {
+          "label": "Rust Book — Chapter 9: Error Handling",
+          "url": "https://doc.rust-lang.org/book/ch09-00-error-handling.html"
+        },
+        {
+          "label": "Rust Book — Chapter 13: Iterators",
+          "url": "https://doc.rust-lang.org/book/ch13-02-iterators.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "When should a function return `Option<T>` and when `Result<T, E>`? Give a Bitcoin example of each."
+        },
+        {
+          "text": "How does the `?` operator change the ergonomics of error handling compared to a manual `match`? What does it actually do with the error type under the hood?"
+        },
+        {
+          "text": "If you were designing a `Hashable` trait, what should its method signature be, and why? What behavior do all \"hashable\" Bitcoin things share?"
+        },
+        {
+          "text": "When you write a generic function like `fn validate<T: Validate>(item: T)`, what does the bound `T: Validate` promise the compiler? Why can't you call trait methods without it?"
+        },
+        {
+          "text": "Why is a rich `enum` error type often better than `Box<dyn Error>` or a string in a library? What do your callers gain?"
+        },
+        {
+          "text": "Rewrite a \"sum all values\" loop as an iterator chain in your head. What does the iterator version communicate that the loop doesn't? Is it always clearer?"
+        },
+        {
+          "text": "Rust iterators are lazy until consumed. Why is laziness useful, and what bug could you introduce by forgetting to consume an iterator?"
+        },
+        {
+          "text": "When is calling `.unwrap()` acceptable, and when is it a code smell? How does the \"library vs. application\" distinction affect your answer?"
+        },
+        {
+          "text": "Rust has traits but no class inheritance. How would you model shared behavior across two types (e.g., both are hashable) without inheritance?"
+        },
+        {
+          "text": "If a block is valid only when all its transactions are valid, how would you express that with iterators and `Result`? How do you propagate the first failure cleanly?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Traits, Generics, and Validation for btclib",
+        "concepts": "Traits, trait bounds, generics, iterators, Option and Result error handling",
+        "problem": "Extend the Bitcoin library by implementing traits such as Hashable, Validate, or SerializablePreview. Add generic helper functions, custom validation errors, iterator-based calculations, and simple validation rules for transactions and blocks. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-04",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "Validation returns rich error enum variants instead of strings or panics"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Testing, Tooling, Closures, Macros, and Serialization",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Keeping Rust Cultured, Splitting Files, Serialization/Deserialization, Utility Binaries",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Chapter 7: Managing Growing Projects with Packages, Crates, and Modules",
+          "url": "https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html"
+        },
+        {
+          "label": "Rust Book — Chapter 11: Writing Automated Tests",
+          "url": "https://doc.rust-lang.org/book/ch11-00-testing.html"
+        },
+        {
+          "label": "Rust Book — Chapter 13: Closures",
+          "url": "https://doc.rust-lang.org/book/ch13-01-closures.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "What makes a unit test valuable versus one that just inflates the test count? How do you decide between testing \"happy paths\" and edge cases?"
+        },
+        {
+          "text": "After organizing code into modules (Chapter 7), what principles should guide where each type lives? How do `mod`, `pub`, and `use` shape your public API surface?"
+        },
+        {
+          "text": "After serializing a value to JSON and deserializing it back, should you always get an identical value? What is a \"round-trip test,\" and why is it powerful?"
+        },
+        {
+          "text": "Closures can capture their environment; functions can't. Give an example where capturing a variable in a closure makes code cleaner than passing it explicitly."
+        },
+        {
+          "text": "The `Fn`, `FnMut`, and `FnOnce` traits confuse many people. What distinguishes them, and how does the way a closure uses its captured variables decide which it implements?"
+        },
+        {
+          "text": "Macros are powerful but can hurt readability. When is a macro justified, and when would a plain function be the better choice?"
+        },
+        {
+          "text": "What kinds of problems does `clippy` catch that the compiler doesn't? Should linting rules ever be overridden, and how do you decide?"
+        },
+        {
+          "text": "Every dependency is a liability as well as a convenience. How do you evaluate whether adding a crate is worth it?"
+        },
+        {
+          "text": "If you later change a struct's fields, how could that break deserialization of previously saved JSON? How do Serde attributes help you manage that?"
+        },
+        {
+          "text": "Serde lets you derive serialization automatically. What does deriving actually generate for you, and why is that preferable to writing serialization code by hand?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Modules, Tests, and Serialization",
+        "concepts": "Modules, unit testing, closures, macros, dependency management, Serde serialization/deserialization",
+        "problem": "Reorganize your Bitcoin code into modules, add tests, serialize and deserialize blocks or transactions, and optionally create a small utility binary that reads a JSON block file and prints a summary. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-05",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "Serialization round-trip tests pass: a value serialized to JSON deserializes back to an equal value"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Smart Pointers, Interior Mutability, and CPU Mining",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Mining and Creating a CPU Miner",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Chapter 15: Smart Pointers",
+          "url": "https://doc.rust-lang.org/book/ch15-00-smart-pointers.html"
+        },
+        {
+          "label": "Rust Book — Chapter 16: Fearless Concurrency",
+          "url": "https://doc.rust-lang.org/book/ch16-00-concurrency.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "`Box`, `Rc`, and `Arc` all put data on the heap, but they exist for different reasons. When would you reach for each, and what does the compiler stop you from doing with `Rc` that `Arc` allows?"
+        },
+        {
+          "text": "What does \"interior mutability\" mean, and how do `Cell` and `RefCell` let you mutate data through a shared reference? What safety guarantee are you trading away when you do this?"
+        },
+        {
+          "text": "`RefCell` moves borrow checking from compile time to runtime. What kinds of bugs can this introduce that the borrow checker would normally catch, and how would they show up?"
+        },
+        {
+          "text": "Why is `Rc<RefCell<T>>` such a common pattern, and what problem does it solve? When does reaching for it signal that your data model might need rethinking?"
+        },
+        {
+          "text": "`Rc` is not thread-safe but `Arc` is. What does `Arc` do differently under the hood, and why does that come at a cost you wouldn't want to pay in single-threaded code?"
+        },
+        {
+          "text": "In a proof-of-work loop, what is the miner actually searching for, and why does adjusting the difficulty target change how long that search takes?"
+        },
+        {
+          "text": "When you move from a single-threaded miner to a multi-threaded one, what state needs to be shared between workers, and what are the trade-offs between sharing it via locks versus channels?"
+        },
+        {
+          "text": "Once one worker finds a valid nonce, all the others should stop. What mechanisms could you use to signal \"stop\" across threads, and what could go wrong if you get the coordination subtly wrong?"
+        },
+        {
+          "text": "Why must the winning block still be validated before it's added to the chain, even though your own miner produced it? What assumptions would break if you skipped that step?"
+        },
+        {
+          "text": "Reference cycles with `Rc` can cause memory leaks. How does that happen, and what role does `Weak` play in breaking the cycle?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Toy CPU Miner with UTXO Set and Worker Threads",
+        "concepts": "Box, Rc, Arc, Cell, RefCell, threads, shared state, channels, proof-of-work",
+        "problem": "Build a toy CPU miner that reuses the earlier btclib model. First, implement a UtxoSet that applies valid transactions, rejects invalid spends, constructs candidate blocks from pending transactions, and mines them through a single-threaded proof-of-work loop. Then extend the miner into a multi-threaded version, coordinating workers through shared state or channels, stopping all workers once a valid nonce is found, and validating the winning block before adding it to the chain. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-06",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "Tests covering UTXO updates, invalid spends, proof-of-work difficulty, and worker coordination all pass"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Async Rust, Tokio, Networking, and Node Foundations",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Async Miner and Building a Bitcoin Node",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Tokio Tutorial",
+          "url": "https://tokio.rs/tokio/tutorial"
+        }
+      ],
+      "questions": [
+        {
+          "text": "What is the core difference between OS threads and async tasks? Why might a Bitcoin node prefer async for handling many network connections?"
+        },
+        {
+          "text": "A future in Rust \"does nothing until awaited.\" What does that laziness actually mean, and how does it differ from how promises work in some other languages?"
+        },
+        {
+          "text": "What does `.await` actually do at a suspension point? What happens to the task while it's waiting, and how does that let a single thread make progress on many tasks?"
+        },
+        {
+          "text": "Why does async code need a runtime like Tokio at all, when synchronous code runs fine without one? What responsibilities does the runtime take on?"
+        },
+        {
+          "text": "Async channels let tasks communicate without shared locks. When would you choose a channel over an `Arc<Mutex<T>>` for coordinating parts of the node?"
+        },
+        {
+          "text": "Your node accepts commands like `ping`, `height`, and `submit_block`. How would you design the message format and dispatch so that adding a new command later stays easy?"
+        },
+        {
+          "text": "What can go wrong when multiple clients talk to the node concurrently, and how does keeping blockchain state in one place (or behind a task) help avoid races?"
+        },
+        {
+          "text": "Why is it a problem to call blocking code inside an async task, and what does it do to the runtime? How would you handle work that genuinely blocks?"
+        },
+        {
+          "text": "When the miner submits a block over TCP, what should the node do before accepting it, and how do you report success or rejection back to the caller cleanly?"
+        },
+        {
+          "text": "Error handling in async code can get noisy. How do `Result` and `?` carry through `async fn`, and where should errors from a dropped connection or malformed command be handled?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "Toy Async Bitcoin Node",
+        "concepts": "Futures, async/await, Tokio runtime, async tasks and channels, TCP networking",
+        "problem": "Build a toy async Bitcoin node. The node accepts simple commands such as ping, height, and submit_block. It keeps an in-memory blockchain state and allows the miner from Week 6 to submit a block. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-07",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "The node responds to ping, height, and submit_block commands over TCP and updates its in-memory chain state"
+        ]
+      }
+    },
+    {
+      "hasExercise": true,
+      "title": "Wallet CLI, Dispatch, and Design Patterns",
+      "readingMaterial": [
+        {
+          "label": "Building Bitcoin in Rust — Making a CLI/TUI Wallet and Conclusion/Next Steps",
+          "url": "https://braiins.com/books/building-bitcoin-in-rust"
+        },
+        {
+          "label": "Rust Book — Using Trait Objects to Abstract over Shared Behavior",
+          "url": "https://doc.rust-lang.org/book/ch18-02-trait-objects.html"
+        },
+        {
+          "label": "Rust Book — Advanced Traits",
+          "url": "https://doc.rust-lang.org/book/ch20-02-advanced-traits.html"
+        }
+      ],
+      "questions": [
+        {
+          "text": "When a wallet needs to fund a transaction, it must select which UTXOs to spend. What trade-offs exist between different selection strategies (fewest inputs, oldest first, minimizing change)?"
+        },
+        {
+          "text": "Why does spending UTXOs almost always require a change output? What goes wrong if you forget to add one, and how does that relate to the fee?"
+        },
+        {
+          "text": "How is a transaction fee actually determined in this model, given there's no explicit \"fee\" field? What does the wallet have to compute to set it correctly?"
+        },
+        {
+          "text": "The guidance is to keep the CLI or TUI layer \"thin\" over reusable wallet and library APIs. Why is that separation valuable, and what tends to go wrong when business logic leaks into the UI layer?"
+        },
+        {
+          "text": "`clap` handles argument parsing for you. What does declaring your commands and flags as types buy you compared to parsing `args` by hand?"
+        },
+        {
+          "text": "When the node dispatches peer-style messages, how do trait objects (`dyn Trait`) help you handle different message types through a common interface? What are the trade-offs versus an enum-based dispatch?"
+        },
+        {
+          "text": "Balance calculation and transaction history both read from the same underlying UTXO/transaction data. How would you design the wallet API so these views stay consistent and don't duplicate logic?"
+        },
+        {
+          "text": "What actions in the wallet and node are worth logging, and what makes a log line useful versus noise when you're debugging a failed block submission later?"
+        },
+        {
+          "text": "When the wallet creates a transaction and submits it to the node, what failure cases can occur along the way, and how should each be surfaced to the user?"
+        },
+        {
+          "text": "Looking back across the whole project — btclib, miner, node, wallet — where did clean boundaries between components pay off, and where would you refactor if you were starting over?"
+        }
+      ],
+      "bonusQuestions": [],
+      "exercise": {
+        "title": "CLI Wallet over btclib and the Node",
+        "concepts": "UTXO selection, change outputs, fee handling, clap, trait-object dispatch, logging",
+        "problem": "Complete a CLI wallet that can track mock balances or UTXOs, create transactions, submit transactions to the node, show wallet balance, display transaction history, and log important actions. Keep the CLI layer thin over reusable wallet and library APIs. Complete the TODOs in the starter code: https://github.com/0xEgao/rust-lang-cohort-assignments/tree/main/weeks/week-08",
+        "expectedOutput": [
+          "All visible tests pass with `cargo test`",
+          "Code is formatted: `cargo fmt --check` reports no changes",
+          "No lint warnings: `cargo clippy -- -D warnings` passes",
+          "The wallet can show a balance, create and submit a transaction to the node, and display transaction history"
+        ]
+      }
+    }
+  ]
+}
