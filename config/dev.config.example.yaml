@@ -31,20 +31,20 @@ discord:
     programmingBitcoin: '1165952193556389928'
     bitcoinProtocolDevelopment: '1221081628021887009'
     masteringLightningNetwork: '1394917163957227671'
-    rustForBitcoin: '1529405864224755933'
+    buildingBitcoinInRust: '1529405864224755933'
     alumniMasteringBitcoin: '1272438636473749597'
     alumniLearningBitcoinFromCommandLine: '1272438804200030258'
     alumniProgrammingBitcoin: '1272438904900812823'
     alumniBitcoinProtocolDevelopment: '1272443289064312892'
     alumniMasteringLightningNetwork: '1474033277546270770'
-    alumniRustForBitcoin: '1529406139467300916'
+    alumniBuildingBitcoinInRust: '1529406139467300916'
   inviteUrls:
     masteringBitcoin: https://discord.gg/PRYytp69TG
     learningBitcoinFromCommandLine: https://discord.gg/FCH4dCwyEk
     programmingBitcoin: https://discord.gg/MHcvqQsDHY
     bitcoinProtocolDevelopment: https://discord.gg/VT8tGxHZEC
     masteringLightningNetwork: https://discord.gg/3vweqyFcnR
-    rustForBitcoin: https://discord.gg/spHkFfWcJw
+    buildingBitcoinInRust: https://discord.gg/spHkFfWcJw
 app:
   baseUrl: 'http://localhost:3000'
   frontEndUrl: 'http://localhost:5173'

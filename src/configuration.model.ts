@@ -85,7 +85,7 @@ class DiscordRolesConfig {
     masteringLightningNetwork: string;
 
     @IsNumberString({ no_symbols: true })
-    rustForBitcoin: string;
+    buildingBitcoinInRust: string;
 
     @IsNumberString({ no_symbols: true })
     alumniMasteringBitcoin: string;
@@ -103,7 +103,7 @@ class DiscordRolesConfig {
     alumniMasteringLightningNetwork: string;
 
     @IsNumberString({ no_symbols: true })
-    alumniRustForBitcoin: string;
+    alumniBuildingBitcoinInRust: string;
 }
 
 class DiscordInviteUrlsConfig {
@@ -153,7 +153,7 @@ class DiscordInviteUrlsConfig {
         require_tld: true,
         host_whitelist: ['discord.gg'],
     })
-    rustForBitcoin: string;
+    buildingBitcoinInRust: string;
 }
 
 class DiscordConfig {
