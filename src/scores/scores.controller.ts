@@ -1,4 +1,5 @@
 import {
+    applyDecorators,
     Body,
     Controller,
     Get,
@@ -9,9 +10,17 @@ import {
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    getSchemaPath,
+} from '@nestjs/swagger';
 import { ScoresService } from '@/scores/scores.service';
 import {
+    CrossCohortPerformanceEntryDto,
     GetUsersScoresResponseDto,
     LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
@@ -25,6 +34,22 @@ import {
 } from '@/scores/scores.request.dto';
 import { GetUser } from '@/decorators/user.decorator';
 import { User } from '@/entities/user.entity';
+
+function ApiCrossCohortPerformanceResponse() {
+    return applyDecorators(
+        ApiExtraModels(CrossCohortPerformanceEntryDto),
+        ApiOkResponse({
+            description:
+                'Map of "<cohortType>_S<season>" to { scoreReceived, maxScore, attendedWeeks, totalWeeks }',
+            schema: {
+                type: 'object',
+                additionalProperties: {
+                    $ref: getSchemaPath(CrossCohortPerformanceEntryDto),
+                },
+            },
+        }),
+    );
+}
 
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @ApiTags('Scores')
@@ -95,6 +120,31 @@ export class ScoresController {
         @Param('userId', new ParseUUIDPipe()) userId: string,
     ): Promise<GetUsersScoresResponseDto> {
         return this.scoresService.getUserScores(userId);
+    }
+
+    @Get('me/cross-cohort-performance')
+    @ApiOperation({
+        summary:
+            "Get the authenticated user's score received vs total score per cohort",
+    })
+    @ApiCrossCohortPerformanceResponse()
+    @Roles(UserRole.STUDENT, UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    async getMyCrossCohortPerformance(
+        @GetUser() user: User,
+    ): Promise<Record<string, CrossCohortPerformanceEntryDto>> {
+        return this.scoresService.getCrossCohortPerformance(user.id);
+    }
+
+    @Get('user/:userId/cross-cohort-performance')
+    @ApiOperation({
+        summary: "Get a user's score received vs total score per cohort",
+    })
+    @ApiCrossCohortPerformanceResponse()
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    async getUserCrossCohortPerformance(
+        @Param('userId', new ParseUUIDPipe()) userId: string,
+    ): Promise<Record<string, CrossCohortPerformanceEntryDto>> {
+        return this.scoresService.getCrossCohortPerformance(userId);
     }
 
     @Post('week/:weekId/assign-groups')
