@@ -325,6 +325,11 @@ export class GetCohortScoresResponseDto {
     weeklyScores!: WeeklyScore[];
     totalScore!: number;
     maxTotalScore!: number;
+    attendedWeeks!: number;
+    totalWeeks!: number; // weeks with an attendance record (same set as weeklyScores)
+    scorePercent!: number; // round(totalScore / maxTotalScore * 100), 0 if maxTotalScore is 0
+    attendancePercent!: number; // round(attendedWeeks / totalWeeks * 100), 0 if totalWeeks is 0
+    avgScore!: number; // totalScore / totalWeeks, 0 if totalWeeks is 0
 
     constructor(partial: GetCohortScoresResponseDto) {
         Object.assign(this, partial);
@@ -337,6 +342,17 @@ export class GetUsersScoresResponseDto {
     maxTotalScore!: number;
 
     constructor(partial: GetUsersScoresResponseDto) {
+        Object.assign(this, partial);
+    }
+}
+
+export class CrossCohortPerformanceEntryDto {
+    scoreReceived!: number;
+    maxScore!: number;
+    attendedWeeks!: number;
+    totalWeeks!: number;
+
+    constructor(partial: CrossCohortPerformanceEntryDto) {
         Object.assign(this, partial);
     }
 }

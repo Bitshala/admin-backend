@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { User } from '@/entities/user.entity';
 import {
+    CrossCohortPerformanceEntryDto,
     GetCohortScoresResponseDto,
     GetUsersScoresResponseDto,
     LeaderboardEntryDto,
@@ -302,6 +303,11 @@ export class ScoresService {
                 }
             }
 
+            // Only weeks with attendance records, so attendancePercent and
+            // avgScore share scorePercent's denominator (same set as weeklyScores)
+            const totalWeeks = weeklyScores.length;
+            const attendedWeeks = weeklyScores.filter((w) => w.attended).length;
+
             cohortScore.push(
                 new GetCohortScoresResponseDto({
                     cohortId: cohort.id,
@@ -310,6 +316,21 @@ export class ScoresService {
                     weeklyScores: weeklyScores,
                     totalScore: cohortTotalScore,
                     maxTotalScore: cohortMaxTotalScore,
+                    attendedWeeks: attendedWeeks,
+                    totalWeeks: totalWeeks,
+                    scorePercent:
+                        cohortMaxTotalScore === 0
+                            ? 0
+                            : Math.round(
+                                  (cohortTotalScore / cohortMaxTotalScore) *
+                                      100,
+                              ),
+                    attendancePercent:
+                        totalWeeks === 0
+                            ? 0
+                            : Math.round((attendedWeeks / totalWeeks) * 100),
+                    avgScore:
+                        totalWeeks === 0 ? 0 : cohortTotalScore / totalWeeks,
                 }),
             );
 
@@ -322,6 +343,24 @@ export class ScoresService {
             totalScore: totalScore,
             maxTotalScore: maxTotalScore,
         });
+    }
+
+    async getCrossCohortPerformance(
+        userId: string,
+    ): Promise<Record<string, CrossCohortPerformanceEntryDto>> {
+        const { cohorts } = await this.getUserScores(userId);
+
+        return Object.fromEntries(
+            cohorts.map((c) => [
+                `${c.cohortType}_S${c.seasonNumber}`,
+                new CrossCohortPerformanceEntryDto({
+                    scoreReceived: c.totalScore,
+                    maxScore: c.maxTotalScore,
+                    attendedWeeks: c.attendedWeeks,
+                    totalWeeks: c.totalWeeks,
+                }),
+            ]),
+        );
     }
 
     async assignGroupsForCohortWeek(
