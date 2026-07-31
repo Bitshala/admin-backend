@@ -18,6 +18,7 @@ import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
 import {
+    CohortMetricsDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     PublicCohortResponseDto,
@@ -40,6 +41,7 @@ import { isLastRetry } from '@/task-processor/task-processor.utils';
 import { TWENTY_FOUR_HOURS_MS } from '@/common/durations.constants';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
+import { computeCohortMetrics } from '@/cohorts/cohort-metrics.util';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
 import { createReadStream, existsSync } from 'fs';
 import { join, basename } from 'path';
@@ -79,6 +81,8 @@ export class CohortsService {
         private readonly certificateRepository: Repository<Certificate>,
         @InjectRepository(APITask)
         private readonly apiTaskRepository: Repository<APITask<any>>,
+        @InjectRepository(Attendance)
+        private readonly attendanceRepository: Repository<Attendance>,
         private readonly dbTransactionService: DbTransactionService,
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
@@ -1178,5 +1182,39 @@ export class CohortsService {
         return {
             cohortWaitlist: waitlistEntries.map((entry) => entry.type),
         };
+    }
+
+    async getAllCohortsMetrics(): Promise<CohortMetricsDto[]> {
+        const [cohorts, attendances] = await Promise.all([
+            this.cohortRepository.find({
+                relations: { weeks: true, memberships: true },
+            }),
+            this.attendanceRepository.find({
+                select: {
+                    id: true,
+                    attended: true,
+                    cohort: { id: true },
+                    cohortWeek: { id: true },
+                },
+                relations: { cohort: true, cohortWeek: true },
+            }),
+        ]);
+
+        // attendedCountByWeek["<cohortWeekId>"] = number of members who attended that week.
+        const attendedCountByWeek = new Map<string, number>();
+        for (const attendance of attendances) {
+            if (!attendance.attended) continue;
+            const key = attendance.cohortWeek.id;
+            attendedCountByWeek.set(
+                key,
+                (attendedCountByWeek.get(key) ?? 0) + 1,
+            );
+        }
+
+        const now = new Date();
+
+        return cohorts.map((cohort) =>
+            computeCohortMetrics(cohort, attendedCountByWeek, now),
+        );
     }
 }

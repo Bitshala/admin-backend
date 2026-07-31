@@ -169,3 +169,19 @@ export class ListAvailableCohortsResponseDto {
 export class UserCohortWaitlistResponseDto {
     cohortWaitlist!: CohortType[];
 }
+
+export class CohortMetricsDto {
+    cohortId!: string;
+    cohortType!: CohortType;
+    seasonNumber!: number;
+    startDate!: string;
+    totalParticipants!: number;
+    retainedStudents!: number;
+    retentionRate!: number;
+    avgAttendanceRate!: number;
+    completionRate!: number;
+
+    constructor(partial: CohortMetricsDto) {
+        Object.assign(this, partial);
+    }
+}

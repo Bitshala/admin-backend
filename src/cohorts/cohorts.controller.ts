@@ -26,6 +26,7 @@ import {
     UpdateCohortWeekRequestDto,
 } from '@/cohorts/cohorts.request.dto';
 import {
+    CohortMetricsDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     UserCohortWaitlistResponseDto,
@@ -96,6 +97,16 @@ export class CohortsController {
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         return this.cohortsService.listMyCohorts(user, query);
+    }
+
+    @Get('metrics')
+    @ApiOperation({
+        summary:
+            'Get retention, attendance, and completion metrics for every cohort',
+    })
+    @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
+    async getAllCohortsMetrics(): Promise<CohortMetricsDto[]> {
+        return this.cohortsService.getAllCohortsMetrics();
     }
 
     @Get('attachments/:id/:filename')
