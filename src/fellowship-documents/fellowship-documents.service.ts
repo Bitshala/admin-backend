@@ -265,10 +265,17 @@ export class FellowshipDocumentsService {
             document.uploadedBy = user;
 
             await this.dbTransactionService.execute(async (manager) => {
+                // Lock before the write: the sync below reads this document's
+                // sibling, so a concurrent upload of the other document must
+                // not interleave between our save and our read.
+                const locked = await this.lockFellowship(
+                    manager,
+                    fellowship.id,
+                );
                 await manager.save(FellowshipDocument, document);
                 await this.syncFellowshipStatus(
                     manager,
-                    fellowship.id,
+                    locked,
                     document.application.id,
                 );
             });
@@ -320,10 +327,11 @@ export class FellowshipDocumentsService {
         document.reviewedBy = reviewer;
 
         await this.dbTransactionService.execute(async (manager) => {
+            const locked = await this.lockFellowship(manager, fellowship.id);
             await manager.save(FellowshipDocument, document);
             await this.syncFellowshipStatus(
                 manager,
-                fellowship.id,
+                locked,
                 document.application.id,
             );
         });
@@ -397,21 +405,45 @@ export class FellowshipDocumentsService {
     }
 
     /**
+     * Takes a row-level write lock on the fellowship, serialising every
+     * document mutation for that fellowship. `fellowship.applicationId` is
+     * UNIQUE, so the fellowship row is a valid mutex for its application's
+     * document rows too.
+     *
+     * Deliberately loads no relations: TypeORM turns this into
+     * `SELECT ... FOR UPDATE`, which Postgres rejects against an outer join.
+     */
+    private async lockFellowship(
+        manager: EntityManager,
+        fellowshipId: string,
+    ): Promise<Fellowship> {
+        const locked = await manager.findOne(Fellowship, {
+            where: { id: fellowshipId },
+            lock: { mode: 'pessimistic_write' },
+        });
+        if (!locked) {
+            throw new NotFoundException('Fellowship not found');
+        }
+        return locked;
+    }
+
+    /**
      * Recomputes the fellowship's document-phase status from its two fellow
      * documents. Leaves ACTIVE/COMPLETED fellowships untouched.
+     *
+     * Expects `fellowship` to have been loaded under `lockFellowship` in this
+     * same transaction — re-reading it here would race with a concurrent
+     * mutation of the sibling document.
      */
     private async syncFellowshipStatus(
         manager: EntityManager,
-        fellowshipId: string,
+        fellowship: Fellowship,
         applicationId: string,
     ): Promise<void> {
-        const fellowship = await manager.findOne(Fellowship, {
-            where: { id: fellowshipId },
-        });
-        if (
-            !fellowship ||
-            !DOCUMENT_PHASE_STATUSES.includes(fellowship.status)
-        ) {
+        if (!DOCUMENT_PHASE_STATUSES.includes(fellowship.status)) {
+            this.logger.warn(
+                `Skipping status sync for fellowship ${fellowship.id}: status ${fellowship.status} is outside the document phase`,
+            );
             return;
         }
 
@@ -442,8 +474,13 @@ export class FellowshipDocumentsService {
               : FellowshipStatus.AWAITING_DOCUMENTS;
 
         if (fellowship.status !== next) {
+            // Targeted update, not save(): a full-entity write would clobber
+            // startDate/endDate/amountUsd set by a concurrent startContract.
+            await manager.update(Fellowship, fellowship.id, { status: next });
+            this.logger.log(
+                `Fellowship ${fellowship.id} status ${fellowship.status} -> ${next}`,
+            );
             fellowship.status = next;
-            await manager.save(Fellowship, fellowship);
         }
     }
 

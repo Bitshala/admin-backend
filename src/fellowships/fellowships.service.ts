@@ -18,6 +18,7 @@ import { FellowshipResponseDto } from '@/fellowships/fellowships.response.dto';
 import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { UserRole } from '@/common/enum';
 import { addMonths, escapeLikePattern } from '@/common/common';
+import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 
 const FELLOWSHIP_SORT_COLUMNS: Record<FellowshipSortBy, string> = {
     [FellowshipSortBy.CREATED_AT]: 'fellowship.createdAt',
@@ -31,6 +32,7 @@ export class FellowshipsService {
     constructor(
         @InjectRepository(Fellowship)
         private readonly fellowshipRepository: Repository<Fellowship>,
+        private readonly dbTransactionService: DbTransactionService,
     ) {}
 
     async startContract(
@@ -49,23 +51,39 @@ export class FellowshipsService {
             throw new NotFoundException('Fellowship not found');
         }
 
-        if (fellowship.status !== FellowshipStatus.DOCUMENTS_APPROVED) {
-            throw new BadRequestException(
-                fellowship.status === FellowshipStatus.ACTIVE ||
-                    fellowship.status === FellowshipStatus.COMPLETED
-                    ? 'Fellowship contract has already been started'
-                    : 'Both fellowship documents must be approved before starting the contract',
-            );
-        }
-
         const startDate = new Date(dto.startDate);
 
-        fellowship.startDate = startDate;
-        fellowship.endDate = addMonths(startDate, dto.periodMonths);
-        fellowship.amountUsd = dto.amountUsd.toString();
-        fellowship.status = FellowshipStatus.ACTIVE;
+        await this.dbTransactionService.execute(async (manager) => {
+            // Re-read under a write lock: the status checked above is a
+            // pre-lock value that a concurrent document sync may have moved.
+            const locked = await manager.findOne(Fellowship, {
+                where: { id: fellowshipId },
+                lock: { mode: 'pessimistic_write' },
+            });
+            if (!locked) {
+                throw new NotFoundException('Fellowship not found');
+            }
+            if (locked.status !== FellowshipStatus.DOCUMENTS_APPROVED) {
+                throw new BadRequestException(
+                    locked.status === FellowshipStatus.ACTIVE ||
+                        locked.status === FellowshipStatus.COMPLETED
+                        ? 'Fellowship contract has already been started'
+                        : 'Both fellowship documents must be approved before starting the contract',
+                );
+            }
 
-        await this.fellowshipRepository.save(fellowship);
+            fellowship.startDate = startDate;
+            fellowship.endDate = addMonths(startDate, dto.periodMonths);
+            fellowship.amountUsd = dto.amountUsd.toString();
+            fellowship.status = FellowshipStatus.ACTIVE;
+
+            await manager.update(Fellowship, fellowshipId, {
+                startDate: fellowship.startDate,
+                endDate: fellowship.endDate,
+                amountUsd: fellowship.amountUsd,
+                status: fellowship.status,
+            });
+        });
 
         return FellowshipResponseDto.fromEntity(fellowship);
     }
