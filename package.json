@@ -12,7 +12,7 @@
     "start:dev": "NODE_ENV=dev nest start --watch",
     "start:debug": "NODE_ENV=dev nest start --debug --watch",
     "start:e2e": "NODE_ENV=e2e nest start",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "format:fix": "prettier --write --loglevel=silent \"src/**/*.ts\"",
     "lint:check": "eslint \"{src,test}/**/*.ts\"",
