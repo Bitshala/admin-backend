@@ -1236,25 +1236,17 @@ export class CohortsService {
                       (totalParticipants * completedGdWeeks.length)
                     : 0;
 
-            // Retention curve: each completed GD week's turnout against the
-            // first GD week's, averaged into a single number — how well the
-            // cohort is holding onto its opening-week crowd.
-            const firstWeekAttendance = completedGdWeeks.length
-                ? (attendedCountByWeek.get(completedGdWeeks[0].id) ?? 0)
+            // Retention: fraction of registered members still showing up as
+            // of the most recently completed GD week. Bounded 0-100% and
+            // tied to totalParticipants (unlike avgAttendanceRate, this is a
+            // snapshot of the latest week, not an average across all of them).
+            const lastCompletedWeek =
+                completedGdWeeks[completedGdWeeks.length - 1];
+            const retainedStudents = lastCompletedWeek
+                ? (attendedCountByWeek.get(lastCompletedWeek.id) ?? 0)
                 : 0;
-            const retentionRate = firstWeekAttendance
-                ? completedGdWeeks.reduce(
-                      (sum, week) =>
-                          sum +
-                          (attendedCountByWeek.get(week.id) ?? 0) /
-                              firstWeekAttendance,
-                      0,
-                  ) / completedGdWeeks.length
-                : 0;
-            const retainedStudents = completedGdWeeks.length
-                ? (attendedCountByWeek.get(
-                      completedGdWeeks[completedGdWeeks.length - 1].id,
-                  ) ?? 0)
+            const retentionRate = totalParticipants
+                ? retainedStudents / totalParticipants
                 : 0;
 
             // Completion = actual graduates: a Certificate row only exists
