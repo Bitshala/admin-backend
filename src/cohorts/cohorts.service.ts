@@ -1197,7 +1197,11 @@ export class CohortsService {
     private async computeAllCohortMetrics(): Promise<CohortMetricsDto[]> {
         const [cohorts, attendances] = await Promise.all([
             this.cohortRepository.find({
-                relations: { weeks: true, memberships: true, certificates: true },
+                relations: {
+                    weeks: true,
+                    memberships: true,
+                    certificates: true,
+                },
             }),
             this.attendanceRepository.find({
                 select: { id: true, attended: true, cohortWeek: { id: true } },
