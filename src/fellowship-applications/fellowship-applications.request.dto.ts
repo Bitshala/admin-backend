@@ -18,6 +18,7 @@ import { PaginatedQueryDto } from '@/common/dto';
 import {
     FellowshipType,
     FellowshipApplicationStatus,
+    FellowshipKind,
     SortOrder,
 } from '@/common/enum';
 import {
@@ -230,6 +231,14 @@ export class ReviewFellowshipApplicationRequestDto {
     @IsString()
     @IsNotEmpty()
     reviewerRemarks?: string;
+
+    // The fellowship tier to provision on accept. Only consumed when status is
+    // ACCEPTED; defaults to FELLOWSHIP when omitted. Applicants never send
+    // this — it is the admin's invite-only classification (starter grants are
+    // not self-selectable).
+    @IsOptional()
+    @IsEnum(FellowshipKind)
+    kind?: FellowshipKind;
 
     // Accepting an application is a multipart request that also carries the
     // Bitshala-signed unsigned-contract PDF (validated in the controller/service),

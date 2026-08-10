@@ -16,6 +16,7 @@ import { User } from '@/entities/user.entity';
 import {
     FellowshipDocumentStatus,
     FellowshipDocumentType,
+    FellowshipKind,
     FellowshipStatus,
     UserRole,
 } from '@/common/enum';
@@ -75,6 +76,7 @@ export class FellowshipDocumentsService {
         application: FellowshipApplication,
         reviewer: User,
         file: Express.Multer.File,
+        kind: FellowshipKind = FellowshipKind.FELLOWSHIP,
     ): Promise<Fellowship> {
         this.assertValidPdf(file);
 
@@ -119,6 +121,7 @@ export class FellowshipDocumentsService {
 
                 const fellowship = manager.create(Fellowship, {
                     type: application.type,
+                    kind,
                     user: application.applicant,
                     application,
                     status: FellowshipStatus.AWAITING_DOCUMENTS,

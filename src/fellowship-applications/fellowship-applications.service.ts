@@ -11,6 +11,7 @@ import { FellowshipApplication } from '@/entities/fellowship-application.entity'
 import { User } from '@/entities/user.entity';
 import {
     FellowshipApplicationStatus,
+    FellowshipKind,
     FellowshipType,
     SortOrder,
     UserRole,
@@ -655,6 +656,7 @@ export class FellowshipApplicationsService {
                     application,
                     reviewer,
                     file!,
+                    dto.kind ?? FellowshipKind.FELLOWSHIP,
                 );
             acceptedFellowshipId = fellowship.id;
         } else {
