@@ -39,6 +39,9 @@ export type SendFellowshipReportReminderEmailsTaskData = {
     year: number;
 };
 
+// Global (non-scoped) job: recompute cross-cohort metrics. No payload.
+export type ComputeCohortMetricsTaskData = Record<string, never>;
+
 export type TaskDataMap = {
     [TaskType.ASSIGN_COHORT_ROLE]: AssignCohortRoleTaskData;
     [TaskType.ASSIGN_COHORT_ALUMNI_ROLE]: AssignCohortAlumniRoleTaskData;
@@ -49,6 +52,7 @@ export type TaskDataMap = {
     [TaskType.SEND_FEEDBACK_REMINDER_EMAILS]: SendFeedbackReminderEmailsTaskData;
     [TaskType.SEND_CALENDAR_UPDATE_EMAILS]: SendCalendarUpdateEmailsTaskData;
     [TaskType.SEND_FELLOWSHIP_REPORT_REMINDER_EMAILS]: SendFellowshipReportReminderEmailsTaskData;
+    [TaskType.COMPUTE_COHORT_METRICS]: ComputeCohortMetricsTaskData;
 };
 
 export type TaskData<T extends TaskType> = TaskDataMap[T];
