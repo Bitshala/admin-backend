@@ -16,6 +16,7 @@ export type CohortMetricsEntry = {
     cohortType: CohortType;
     seasonNumber: number;
     startDate: string;
+    endDate: string | null; // ISO; null when the cohort has no weeks scheduled
     totalParticipants: number;
     retainedStudents: number;
     retentionRate: number;

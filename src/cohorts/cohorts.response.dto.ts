@@ -175,6 +175,7 @@ export class CohortMetricsDto {
     cohortType!: CohortType;
     seasonNumber!: number;
     startDate!: string;
+    endDate!: string | null;
     totalParticipants!: number;
     retainedStudents!: number;
     retentionRate!: number;
@@ -182,6 +183,15 @@ export class CohortMetricsDto {
     completionRate!: number;
 
     constructor(partial: CohortMetricsDto) {
+        Object.assign(this, partial);
+    }
+}
+
+export class CohortMetricsResponseDto {
+    computedAt!: string | null; // ISO of last run; null until the first run
+    cohorts!: CohortMetricsDto[];
+
+    constructor(partial: CohortMetricsResponseDto) {
         Object.assign(this, partial);
     }
 }

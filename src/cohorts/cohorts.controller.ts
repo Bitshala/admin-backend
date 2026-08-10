@@ -26,7 +26,7 @@ import {
     UpdateCohortWeekRequestDto,
 } from '@/cohorts/cohorts.request.dto';
 import {
-    CohortMetricsDto,
+    CohortMetricsResponseDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     UserCohortWaitlistResponseDto,
@@ -105,7 +105,7 @@ export class CohortsController {
             'Get retention, attendance, and completion metrics for every cohort',
     })
     @Roles(UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
-    async getAllCohortsMetrics(): Promise<CohortMetricsDto[]> {
+    async getAllCohortsMetrics(): Promise<CohortMetricsResponseDto> {
         return this.cohortsService.getAllCohortsMetrics();
     }
 
