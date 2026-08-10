@@ -12,6 +12,7 @@ import { FellowshipApplicationNote } from '@/entities/fellowship-application-not
 import { Fellowship } from '@/entities/fellowship.entity';
 import { FellowshipDocument } from '@/entities/fellowship-document.entity';
 import { FellowshipReport } from '@/entities/fellowship-report.entity';
+import { FellowshipReportNote } from '@/entities/fellowship-report-note.entity';
 
 export const entities = [
     APITask,
@@ -26,6 +27,7 @@ export const entities = [
     FellowshipApplicationNote,
     FellowshipDocument,
     FellowshipReport,
+    FellowshipReportNote,
     GroupDiscussionScore,
     User,
 ];
