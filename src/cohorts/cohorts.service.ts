@@ -1236,17 +1236,30 @@ export class CohortsService {
                       (totalParticipants * completedGdWeeks.length)
                     : 0;
 
-            // Retention: fraction of registered members still showing up as
-            // of the most recently completed GD week. Bounded 0-100% and
-            // tied to totalParticipants (unlike avgAttendanceRate, this is a
-            // snapshot of the latest week, not an average across all of them).
+            // Retention: each completed GD week's attendance against the
+            // cohort's peak attendance (its best-attended week, not
+            // necessarily the first), averaged into one number. Anchoring to
+            // the peak instead of week one keeps every ratio <= 1 — a later
+            // week outdrawing an earlier one can no longer push this over
+            // 100%, unlike an anchor that's fixed to a single early week.
+            const peakAttendance = completedGdWeeks.reduce(
+                (max, week) =>
+                    Math.max(max, attendedCountByWeek.get(week.id) ?? 0),
+                0,
+            );
+            const retentionRate = peakAttendance
+                ? completedGdWeeks.reduce(
+                      (sum, week) =>
+                          sum +
+                          (attendedCountByWeek.get(week.id) ?? 0) /
+                              peakAttendance,
+                      0,
+                  ) / completedGdWeeks.length
+                : 0;
             const lastCompletedWeek =
                 completedGdWeeks[completedGdWeeks.length - 1];
             const retainedStudents = lastCompletedWeek
                 ? (attendedCountByWeek.get(lastCompletedWeek.id) ?? 0)
-                : 0;
-            const retentionRate = totalParticipants
-                ? retainedStudents / totalParticipants
                 : 0;
 
             // Completion = actual graduates: a Certificate row only exists
