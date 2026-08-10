@@ -36,6 +36,7 @@ import { CohortType, CohortWeekType, UserRole } from '@/common/enum';
 import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
+import { ABSENCE_THRESHOLD_DAYS } from '@/certificates/certificates.constants';
 import { APITask } from '@/entities/api-task.entity';
 import { ComputedMetric } from '@/entities/computed-metric.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
@@ -1197,26 +1198,51 @@ export class CohortsService {
     private async computeAllCohortMetrics(): Promise<CohortMetricsDto[]> {
         const [cohorts, attendances] = await Promise.all([
             this.cohortRepository.find({
-                relations: { weeks: true, memberships: true },
+                relations: { weeks: true, memberships: { user: true } },
             }),
             this.attendanceRepository.find({
                 select: {
                     id: true,
                     attended: true,
+                    user: { id: true },
+                    cohort: { id: true },
                     cohortWeek: { id: true },
                 },
-                relations: { cohortWeek: true },
+                relations: { user: true, cohort: true, cohortWeek: true },
             }),
         ]);
 
+        // Group-discussion week ids, used to count per-member GD attendance
+        // for the completion metric below.
+        const gdWeekIds = new Set(
+            cohorts.flatMap((cohort) =>
+                cohort.weeks
+                    .filter(
+                        (week) => week.type === CohortWeekType.GROUP_DISCUSSION,
+                    )
+                    .map((week) => week.id),
+            ),
+        );
+
         const attendedCountByWeek = new Map<string, number>();
+        // GD weeks a member actually attended, keyed by
+        // `${cohortId}::${userId}` (scoped per cohort — a user can be in more
+        // than one).
+        const attendedGdWeeksByMember = new Map<string, number>();
         for (const attendance of attendances) {
             if (!attendance.attended) continue;
-            const key = attendance.cohortWeek.id;
+            const weekId = attendance.cohortWeek.id;
             attendedCountByWeek.set(
-                key,
-                (attendedCountByWeek.get(key) ?? 0) + 1,
+                weekId,
+                (attendedCountByWeek.get(weekId) ?? 0) + 1,
             );
+            if (gdWeekIds.has(weekId)) {
+                const memberKey = `${attendance.cohort.id}::${attendance.user.id}`;
+                attendedGdWeeksByMember.set(
+                    memberKey,
+                    (attendedGdWeeksByMember.get(memberKey) ?? 0) + 1,
+                );
+            }
         }
 
         const now = new Date();
@@ -1229,7 +1255,6 @@ export class CohortsService {
             const completedGdWeeks = gdWeeks.filter(
                 (week) => week.scheduledDate <= now,
             );
-            const finalGdWeek = gdWeeks[gdWeeks.length - 1];
             const lastCompletedWeek =
                 completedGdWeeks[completedGdWeeks.length - 1];
 
@@ -1251,11 +1276,29 @@ export class CohortsService {
                 ? retainedStudents / totalParticipants
                 : 0;
 
+            // Completion mirrors certificate eligibility
+            // (certificates.service.ts): a member "completes" the cohort by
+            // attending all but ABSENCE_THRESHOLD_DAYS[type] of its GD weeks.
+            // Like certificates, it's only defined once the cohort has ended —
+            // before that, unheld GD weeks still count toward the requirement
+            // and would understate it, so report 0 (not-applicable) until then,
+            // matching the other rates.
+            // getEndDate() throws on a cohort with no weeks, and this job runs
+            // over every cohort — compute it once, treating an unscheduled
+            // cohort as having no end date (and therefore not yet ended).
+            const endDate =
+                cohort.weeks.length > 0 ? cohort.getEndDate() : null;
+            const cohortHasEnded = endDate !== null && endDate <= now;
+            const requiredGdAttendance =
+                gdWeeks.length - ABSENCE_THRESHOLD_DAYS[cohort.type];
             const completedStudents =
-                totalParticipants &&
-                finalGdWeek &&
-                finalGdWeek.scheduledDate <= now
-                    ? (attendedCountByWeek.get(finalGdWeek.id) ?? 0)
+                totalParticipants && cohortHasEnded
+                    ? cohort.memberships.filter(
+                          (membership) =>
+                              (attendedGdWeeksByMember.get(
+                                  `${cohort.id}::${membership.user.id}`,
+                              ) ?? 0) >= requiredGdAttendance,
+                      ).length
                     : 0;
             const completionRate = totalParticipants
                 ? completedStudents / totalParticipants
@@ -1266,10 +1309,7 @@ export class CohortsService {
                 cohortType: cohort.type,
                 seasonNumber: cohort.season,
                 startDate: cohort.startDate.toISOString(),
-                endDate:
-                    cohort.weeks.length > 0
-                        ? cohort.getEndDate().toISOString()
-                        : null,
+                endDate: endDate ? endDate.toISOString() : null,
                 totalParticipants,
                 retainedStudents,
                 retentionRate,
