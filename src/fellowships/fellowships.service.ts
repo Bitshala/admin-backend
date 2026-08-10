@@ -151,6 +151,10 @@ export class FellowshipsService {
             qb.andWhere('fellowship.type = :type', { type: query.type });
         }
 
+        if (query.kind) {
+            qb.andWhere('fellowship.kind = :kind', { kind: query.kind });
+        }
+
         if (query.search) {
             qb.andWhere(
                 new Brackets((w) =>

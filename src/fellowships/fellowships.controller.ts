@@ -35,6 +35,7 @@ import { Roles } from '@/auth/roles.decorator';
 import {
     FellowshipStatus,
     FellowshipType,
+    FellowshipKind,
     SortOrder,
     UserRole,
 } from '@/common/enum';
@@ -158,6 +159,7 @@ export class FellowshipsController {
     @ApiQuery({ name: 'pageSize', type: 'number', required: false })
     @ApiQuery({ name: 'status', enum: FellowshipStatus, required: false })
     @ApiQuery({ name: 'type', enum: FellowshipType, required: false })
+    @ApiQuery({ name: 'kind', enum: FellowshipKind, required: false })
     @ApiQuery({ name: 'search', type: 'string', required: false })
     @ApiQuery({ name: 'sortBy', enum: FellowshipSortBy, required: false })
     @ApiQuery({ name: 'sortOrder', enum: SortOrder, required: false })

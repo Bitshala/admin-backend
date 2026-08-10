@@ -1,9 +1,14 @@
-import { FellowshipType, FellowshipStatus } from '@/common/enum';
+import {
+    FellowshipType,
+    FellowshipStatus,
+    FellowshipKind,
+} from '@/common/enum';
 import { Fellowship } from '@/entities/fellowship.entity';
 
 export class FellowshipResponseDto {
     id!: string;
     type!: FellowshipType;
+    kind!: FellowshipKind;
     status!: FellowshipStatus;
     mentorContact!: string | null;
     projectName!: string | null;
@@ -33,6 +38,7 @@ export class FellowshipResponseDto {
     constructor(obj: FellowshipResponseDto) {
         this.id = obj.id;
         this.type = obj.type;
+        this.kind = obj.kind;
         this.status = obj.status;
         this.mentorContact = obj.mentorContact;
         this.projectName = obj.projectName;
@@ -68,6 +74,7 @@ export class FellowshipResponseDto {
         return new FellowshipResponseDto({
             id: fellowship.id,
             type: fellowship.type,
+            kind: fellowship.kind,
             status: fellowship.status,
             mentorContact: application.mentorContact,
             projectName: application.projectName,

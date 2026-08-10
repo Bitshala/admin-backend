@@ -12,7 +12,12 @@ import {
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PaginatedQueryDto } from '@/common/dto';
-import { FellowshipStatus, FellowshipType, SortOrder } from '@/common/enum';
+import {
+    FellowshipStatus,
+    FellowshipType,
+    FellowshipKind,
+    SortOrder,
+} from '@/common/enum';
 
 export class StartFellowshipContractDto {
     @IsDateString({ strict: true })
@@ -48,6 +53,10 @@ export class ListFellowshipsQueryDto extends PaginatedQueryDto {
     @IsOptional()
     @IsEnum(FellowshipType)
     type?: FellowshipType;
+
+    @IsOptional()
+    @IsEnum(FellowshipKind)
+    kind?: FellowshipKind;
 
     /**
      * Case-insensitive substring match on the application's project name,
