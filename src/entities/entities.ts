@@ -2,6 +2,7 @@ import { Attendance } from '@/entities/attendance.entity';
 import { Cohort } from '@/entities/cohort.entity';
 import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWeek } from '@/entities/cohort-week.entity';
+import { ComputedMetric } from '@/entities/computed-metric.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { GroupDiscussionScore } from '@/entities/group-discussion-score.entity';
 import { User } from '@/entities/user.entity';
@@ -19,6 +20,7 @@ export const entities = [
     Cohort,
     CohortMembership,
     CohortWeek,
+    ComputedMetric,
     ExerciseScore,
     Feedback,
     Fellowship,
