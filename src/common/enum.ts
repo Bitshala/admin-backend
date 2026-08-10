@@ -80,6 +80,15 @@ export enum FellowshipType {
     EDUCATOR = 'EDUCATOR',
 }
 
+// The tier of a fellowship. STARTER_GRANT is a higher-tier, full-time,
+// invite-only variant; it is orthogonal to FellowshipType (a starter grant can
+// still be a DEVELOPER, etc.) and is set by an admin when accepting an
+// application.
+export enum FellowshipKind {
+    FELLOWSHIP = 'FELLOWSHIP',
+    STARTER_GRANT = 'STARTER_GRANT',
+}
+
 export enum FellowshipApplicationStatus {
     DRAFT = 'DRAFT',
     SUBMITTED = 'SUBMITTED',

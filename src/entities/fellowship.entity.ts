@@ -8,7 +8,11 @@ import {
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from '@/entities/base.entity';
-import { FellowshipType, FellowshipStatus } from '@/common/enum';
+import {
+    FellowshipType,
+    FellowshipStatus,
+    FellowshipKind,
+} from '@/common/enum';
 import { User } from '@/entities/user.entity';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 import { FellowshipReport } from '@/entities/fellowship-report.entity';
@@ -20,6 +24,15 @@ export class Fellowship extends BaseEntity {
 
     @Column({ type: 'enum', enum: FellowshipType })
     type!: FellowshipType;
+
+    // Fellowship tier. Defaults to FELLOWSHIP so existing rows backfill; set to
+    // STARTER_GRANT by an admin at accept time.
+    @Column({
+        type: 'enum',
+        enum: FellowshipKind,
+        default: FellowshipKind.FELLOWSHIP,
+    })
+    kind!: FellowshipKind;
 
     @Column({
         type: 'enum',
