@@ -421,6 +421,30 @@ export class MailService implements OnModuleInit {
         });
     }
 
+    // Acceptance where the signed contract and W-8BEN were supplied out of band
+    // by the admin. Unlike the standard accepted email, there is nothing for the
+    // fellow to upload, so this omits the contract/W-8BEN steps and the documents
+    // deep link.
+    async sendFellowshipApplicationAcceptedNoDocumentsEmail(
+        userEmail: string,
+        userName: string,
+        fellowshipType: FellowshipType,
+    ): Promise<void> {
+        const displayType = this.getFellowshipTypeDisplayName(fellowshipType);
+        const subject = `Welcome to the Bitshala ${displayType} Fellowship`;
+
+        return this.sendTemplatedEmail({
+            to: userEmail,
+            cc: 'fellowship@bitshala.org',
+            subject,
+            template: MailTemplate.FellowshipApplicationAcceptedNoDocuments,
+            context: {
+                userName,
+                fellowshipType: displayType,
+            },
+        });
+    }
+
     async sendFellowshipDocumentRejectedEmail(
         userEmail: string,
         userName: string,

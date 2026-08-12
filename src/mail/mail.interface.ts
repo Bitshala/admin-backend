@@ -74,6 +74,14 @@ export interface FellowshipApplicationAcceptedContext {
     documentsUrl: string;
 }
 
+// Acceptance where the signed contract and W-8BEN were provided out of band by
+// the admin, so there is nothing for the fellow to upload — hence no
+// `documentsUrl`.
+export interface FellowshipApplicationAcceptedNoDocumentsContext {
+    userName: string;
+    fellowshipType: string;
+}
+
 export interface FellowshipApplicationRejectedContext {
     userName: string;
     fellowshipType: string;
@@ -123,6 +131,7 @@ export interface TemplateContextMap {
     [MailTemplate.CohortCalendarUpdate]: CohortCalendarUpdateContext;
     [MailTemplate.FellowshipApplicationReceived]: FellowshipApplicationReceivedContext;
     [MailTemplate.FellowshipApplicationAccepted]: FellowshipApplicationAcceptedContext;
+    [MailTemplate.FellowshipApplicationAcceptedNoDocuments]: FellowshipApplicationAcceptedNoDocumentsContext;
     [MailTemplate.FellowshipApplicationRejected]: FellowshipApplicationRejectedContext;
     [MailTemplate.FellowshipApplicationChangesRequested]: FellowshipApplicationChangesRequestedContext;
     [MailTemplate.FellowshipDocumentRejected]: FellowshipDocumentRejectedContext;

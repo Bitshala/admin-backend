@@ -1,0 +1,24 @@
+Welcome <%~ it.userName %>!
+
+Your <%~ it.fellowshipType %> Fellowship Application Has Been Accepted
+
+Dear <%~ it.userName %>,
+
+We are thrilled to inform you that you have been selected for the Bitshala <%~ it.fellowshipType %> Fellowship! We're excited to see your impact and contributions and look forward to working with you over the months ahead.
+
+Your signed contract and W-8BEN form are already on file, so there's nothing further you need to upload — you're all set on the paperwork.
+
+---
+
+Next Steps
+
+1. Share Account Details
+   Monthly payments are processed through Skydo. You'll receive a separate email from Skydo with a form for your account and contact info — please fill it in.
+
+---
+
+If you have any questions or need clarification, email us at fellowship@bitshala.org — we're here to support you every step of the way.
+
+Welcome aboard, and we look forward to achieving great things together!
+
+— Team Bitshala

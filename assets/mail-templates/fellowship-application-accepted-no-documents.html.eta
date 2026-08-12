@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to the Bitshala Fellowship</title>
+</head>
+<body style="margin:0; padding:0; background-color:#111111; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; visibility:hidden; opacity:0; color:transparent;">
+    Your Bitshala Fellowship is confirmed — your contract and tax form are already on file.
+    &#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;&#8199;
+  </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111111; padding:24px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#1b1b1b; border-radius:16px; overflow:hidden;">
+
+          <tr>
+            <td align="center" style="background-color:#000000; padding:24px 24px 20px 24px;">
+              <h1 style="margin:0; font-size:24px; color:#ffffff; font-weight:700;">
+                Welcome <%~ it.userName %>!
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#f9b233; font-weight:500;">
+                Your <%~ it.fellowshipType %> Fellowship Application Has Been Accepted
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 8px 32px; color:#eaeaea; font-size:14px; line-height:1.6;">
+              <p style="margin:0 0 12px 0;">Dear <%~ it.userName %>,</p>
+              <p style="margin:0 0 12px 0;">
+                We are thrilled to inform you that you have been selected for the
+                <strong style="color:#f9b233;">Bitshala <%~ it.fellowshipType %> Fellowship</strong>!
+                We're excited to see your impact and contributions and look forward to
+                working with you over the months ahead.
+              </p>
+              <p style="margin:0;">
+                Your signed contract and W-8BEN form are already on file, so there's
+                nothing further you need to upload — you're all set on the paperwork.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 0 32px;">
+              <div style="height:1px; background-color:#2e2e2e; line-height:1px; font-size:1px;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:20px 32px 8px 32px;">
+              <h2 style="margin:0 0 16px 0; font-size:18px; color:#ffd580;">Next Steps</h2>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#262626; border-radius:12px;">
+                <tr>
+                  <td width="48" valign="top" style="padding:16px 0 16px 16px;">
+                    <div style="width:32px; height:32px; line-height:32px; text-align:center; border-radius:999px; background-color:#f7931a; color:#000000; font-weight:700; font-size:14px;">1</div>
+                  </td>
+                  <td style="padding:16px 16px 16px 12px; color:#eaeaea; font-size:13px; line-height:1.6;">
+                    <strong style="color:#ffffff;">Share Account Details.</strong>
+                    Monthly payments are processed through <strong>Skydo</strong>.
+                    You'll receive a separate email from Skydo with a form for your
+                    account and contact info — please fill it in.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 32px 0 32px;">
+              <div style="height:1px; background-color:#2e2e2e; line-height:1px; font-size:1px;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:20px 32px 32px 32px; color:#eaeaea; font-size:13px; line-height:1.6;">
+              <p style="margin:0 0 12px 0;">
+                If you have any questions or need clarification, email us at
+                <a href="mailto:fellowship@bitshala.org" style="color:#f9b233; text-decoration:underline;">fellowship@bitshala.org</a>
+                — we're here to support you every step of the way.
+              </p>
+              <p style="margin:0;">Welcome aboard, and we look forward to achieving great things together!</p>
+              <p style="margin:16px 0 0 0; color:#9a9a9a;">— Team Bitshala</p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
