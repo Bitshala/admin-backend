@@ -1,15 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { FellowshipApplicationsService } from '@/fellowship-applications/fellowship-applications.service';
+import {
+    FellowshipApplicationsService,
+    ReviewApplicationFiles,
+} from '@/fellowship-applications/fellowship-applications.service';
+import { ReviewFellowshipApplicationRequestDto } from '@/fellowship-applications/fellowship-applications.request.dto';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 import { User } from '@/entities/user.entity';
 import { MailService } from '@/mail/mail.service';
 import { GitHubClassroomClient } from '@/github-classroom/client/github-classroom.client';
 import { FellowshipDocumentsService } from '@/fellowship-documents/fellowship-documents.service';
 import {
+    AcceptContractMode,
     CohortType,
     EducationCategory,
     FellowshipApplicationStatus,
+    FellowshipKind,
     FellowshipType,
 } from '@/common/enum';
 
@@ -434,6 +440,228 @@ describe('FellowshipApplicationsService — submit validation', () => {
                     'Coding languages is required; ' +
                     'A GitHub username is required for developer applications',
             );
+        });
+    });
+});
+
+// Exercises reviewApplication's accept dispatch: which contract documents are
+// required, what gets passed to provisioning, and which acceptance email is sent
+// for each contractMode. Provisioning itself is mocked (covered separately in the
+// documents service spec).
+describe('FellowshipApplicationsService — review (accept) contract modes', () => {
+    let service: FellowshipApplicationsService;
+
+    const applicationRepository = {
+        findOne: jest.fn(),
+        save: jest.fn(),
+    };
+    const documentsService = {
+        provisionAcceptedApplication: jest.fn(),
+    };
+    const mailService = {
+        sendFellowshipApplicationAcceptedEmail: jest.fn(),
+        sendFellowshipApplicationAcceptedNoDocumentsEmail: jest.fn(),
+        sendFellowshipApplicationRejectedEmail: jest.fn(),
+        sendFellowshipApplicationChangesRequestedEmail: jest.fn(),
+    };
+
+    const reviewer = {
+        id: 'admin-1',
+        displayName: 'Admin',
+        email: 'admin@example.com',
+    } as unknown as User;
+
+    const applicant = {
+        id: 'user-1',
+        displayName: 'Alice',
+        email: 'alice@example.com',
+    } as unknown as User;
+
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                FellowshipApplicationsService,
+                {
+                    provide: getRepositoryToken(FellowshipApplication),
+                    useValue: applicationRepository,
+                },
+                { provide: getRepositoryToken(User), useValue: {} },
+                { provide: MailService, useValue: mailService },
+                { provide: GitHubClassroomClient, useValue: {} },
+                {
+                    provide: FellowshipDocumentsService,
+                    useValue: documentsService,
+                },
+            ],
+        }).compile();
+
+        service = module.get(FellowshipApplicationsService);
+        applicationRepository.save.mockImplementation(
+            async (a: FellowshipApplication) => a,
+        );
+        documentsService.provisionAcceptedApplication.mockResolvedValue({
+            id: 'fellowship-1',
+        });
+        mailService.sendFellowshipApplicationAcceptedEmail.mockResolvedValue(
+            undefined,
+        );
+        mailService.sendFellowshipApplicationAcceptedNoDocumentsEmail.mockResolvedValue(
+            undefined,
+        );
+    });
+
+    afterEach(() => jest.resetAllMocks());
+
+    function submittedApplication(): FellowshipApplication {
+        return {
+            id: 'app-1',
+            type: FellowshipType.DEVELOPER,
+            status: FellowshipApplicationStatus.SUBMITTED,
+            applicant,
+            reviewedBy: null,
+            reviewerRemarks: null,
+            driveFolderId: null,
+            fellowship: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        } as unknown as FellowshipApplication;
+    }
+
+    // A minimal stand-in for a multipart PDF part. Content is irrelevant here
+    // because provisioning (which runs the %PDF- check) is mocked.
+    function pdf(originalname: string): Express.Multer.File {
+        return {
+            buffer: Buffer.from('%PDF-1.4 test'),
+            size: 13,
+            originalname,
+            mimetype: 'application/pdf',
+        } as unknown as Express.Multer.File;
+    }
+
+    async function review(
+        dto: ReviewFellowshipApplicationRequestDto,
+        files: ReviewApplicationFiles = {},
+    ): Promise<void> {
+        applicationRepository.findOne.mockResolvedValue(submittedApplication());
+        await service.reviewApplication('app-1', reviewer, dto, files);
+    }
+
+    async function reviewError(
+        dto: ReviewFellowshipApplicationRequestDto,
+        files: ReviewApplicationFiles = {},
+    ): Promise<string> {
+        applicationRepository.findOne.mockResolvedValue(submittedApplication());
+        try {
+            await service.reviewApplication('app-1', reviewer, dto, files);
+        } catch (e) {
+            return (e as Error).message;
+        }
+        throw new Error('Expected reviewApplication to throw, but it resolved');
+    }
+
+    describe('PRESIGNED', () => {
+        it('requires the signed contract', async () => {
+            const message = await reviewError(
+                {
+                    status: FellowshipApplicationStatus.ACCEPTED,
+                    contractMode: AcceptContractMode.PRESIGNED,
+                },
+                { w8ben: [pdf('w8ben.pdf')] },
+            );
+            expect(message).toContain('signed contract');
+            expect(
+                documentsService.provisionAcceptedApplication,
+            ).not.toHaveBeenCalled();
+        });
+
+        it('requires the W-8BEN', async () => {
+            const message = await reviewError(
+                {
+                    status: FellowshipApplicationStatus.ACCEPTED,
+                    contractMode: AcceptContractMode.PRESIGNED,
+                },
+                { signedContract: [pdf('signed.pdf')] },
+            );
+            expect(message).toContain('W-8BEN');
+            expect(
+                documentsService.provisionAcceptedApplication,
+            ).not.toHaveBeenCalled();
+        });
+
+        it('provisions with both documents and sends the no-documents email', async () => {
+            const signedContract = pdf('signed.pdf');
+            const w8ben = pdf('w8ben.pdf');
+            await review(
+                {
+                    status: FellowshipApplicationStatus.ACCEPTED,
+                    contractMode: AcceptContractMode.PRESIGNED,
+                },
+                { signedContract: [signedContract], w8ben: [w8ben] },
+            );
+
+            expect(
+                documentsService.provisionAcceptedApplication,
+            ).toHaveBeenCalledWith(
+                expect.objectContaining({ id: 'app-1' }),
+                reviewer,
+                {
+                    mode: AcceptContractMode.PRESIGNED,
+                    signedContract,
+                    w8ben,
+                },
+                FellowshipKind.FELLOWSHIP,
+            );
+            expect(
+                mailService.sendFellowshipApplicationAcceptedNoDocumentsEmail,
+            ).toHaveBeenCalledWith(
+                'alice@example.com',
+                'Alice',
+                FellowshipType.DEVELOPER,
+            );
+            expect(
+                mailService.sendFellowshipApplicationAcceptedEmail,
+            ).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('UNSIGNED (default)', () => {
+        it('requires the unsigned contract', async () => {
+            const message = await reviewError(
+                { status: FellowshipApplicationStatus.ACCEPTED },
+                {},
+            );
+            expect(message).toContain('unsigned-contract');
+            expect(
+                documentsService.provisionAcceptedApplication,
+            ).not.toHaveBeenCalled();
+        });
+
+        it('provisions with the unsigned contract and sends the standard email', async () => {
+            const file = pdf('unsigned.pdf');
+            await review(
+                { status: FellowshipApplicationStatus.ACCEPTED },
+                { file: [file] },
+            );
+
+            expect(
+                documentsService.provisionAcceptedApplication,
+            ).toHaveBeenCalledWith(
+                expect.objectContaining({ id: 'app-1' }),
+                reviewer,
+                { mode: AcceptContractMode.UNSIGNED, unsignedContract: file },
+                FellowshipKind.FELLOWSHIP,
+            );
+            expect(
+                mailService.sendFellowshipApplicationAcceptedEmail,
+            ).toHaveBeenCalledWith(
+                'alice@example.com',
+                'Alice',
+                FellowshipType.DEVELOPER,
+                'fellowship-1',
+            );
+            expect(
+                mailService.sendFellowshipApplicationAcceptedNoDocumentsEmail,
+            ).not.toHaveBeenCalled();
         });
     });
 });
