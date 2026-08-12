@@ -110,6 +110,19 @@ export class FellowshipsService {
         });
     }
 
+    async getUserFellowships(userId: string): Promise<FellowshipResponseDto[]> {
+        const fellowships = await this.fellowshipRepository.find({
+            where: { user: { id: userId } },
+            relations: {
+                user: true,
+                application: true,
+            },
+            order: { createdAt: 'DESC' },
+        });
+
+        return fellowships.map(FellowshipResponseDto.fromEntity);
+    }
+
     async getFellowshipById(
         id: string,
         user: User,

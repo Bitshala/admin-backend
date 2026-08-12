@@ -1,15 +1,32 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@/entities/user.entity';
-import { Repository } from 'typeorm';
-import { UserRole } from '@/common/enum';
+import { Brackets, Repository } from 'typeorm';
+import { SortOrder, UserRole } from '@/common/enum';
 import { randomUUID } from 'crypto';
-import { GetUserResponse } from '@/users/users.response';
 import {
+    GetUserResponse,
+    UserOverviewResponseDto,
+    UserSummaryResponseDto,
+} from '@/users/users.response';
+import {
+    ListUsersQueryDto,
     UpdateUserRequest,
     UpdateUserRoleRequest,
+    UserSortBy,
 } from '@/users/users.request';
 import { ConfigService } from '@nestjs/config';
+import { escapeLikePattern } from '@/common/common';
+import { PaginatedDataDto } from '@/common/dto';
+import { ScoresService } from '@/scores/scores.service';
+import { CertificatesService } from '@/certificates/certificates.service';
+import { FellowshipsService } from '@/fellowships/fellowships.service';
+
+const USER_SORT_COLUMNS: Record<UserSortBy, string> = {
+    [UserSortBy.CREATED_AT]: 'user.createdAt',
+    [UserSortBy.NAME]: 'user.name',
+    [UserSortBy.EMAIL]: 'user.email',
+};
 
 @Injectable()
 export class UsersService {
@@ -19,6 +36,9 @@ export class UsersService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
         private readonly configService: ConfigService,
+        private readonly scoresService: ScoresService,
+        private readonly certificatesService: CertificatesService,
+        private readonly fellowshipsService: FellowshipsService,
     ) {
         this.adminRoleId = this.configService.getOrThrow<string>(
             'discord.roles.admin',
@@ -120,6 +140,56 @@ export class UsersService {
     async getUserById(userId: string): Promise<GetUserResponse> {
         const user = await this.findByUserId(userId);
         return GetUserResponse.fromEntity(user);
+    }
+
+    async searchUsers(
+        query: ListUsersQueryDto,
+    ): Promise<PaginatedDataDto<UserSummaryResponseDto>> {
+        const qb = this.userRepository.createQueryBuilder('user');
+
+        if (query.search) {
+            qb.andWhere(
+                new Brackets((w) =>
+                    w
+                        .where('user.name ILIKE :search')
+                        .orWhere('user.email ILIKE :search')
+                        .orWhere('user.discordUserName ILIKE :search')
+                        .orWhere('user.discordGlobalName ILIKE :search'),
+                ),
+                { search: `%${escapeLikePattern(query.search)}%` },
+            );
+        }
+
+        const order = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+
+        const [records, totalRecords] = await qb
+            .orderBy(USER_SORT_COLUMNS[query.sortBy], order, 'NULLS LAST')
+            .addOrderBy('user.id', 'ASC')
+            .skip(query.page * query.pageSize)
+            .take(query.pageSize)
+            .getManyAndCount();
+
+        return new PaginatedDataDto({
+            totalRecords,
+            records: records.map(UserSummaryResponseDto.fromEntity),
+        });
+    }
+
+    async getUserOverview(userId: string): Promise<UserOverviewResponseDto> {
+        const user = await this.findByUserId(userId);
+
+        const [scores, certificates, fellowships] = await Promise.all([
+            this.scoresService.getUserScores(userId),
+            this.certificatesService.getUserCertificates(userId),
+            this.fellowshipsService.getUserFellowships(userId),
+        ]);
+
+        return UserOverviewResponseDto.fromParts(
+            user,
+            scores,
+            certificates,
+            fellowships,
+        );
     }
 
     async updateMe(
