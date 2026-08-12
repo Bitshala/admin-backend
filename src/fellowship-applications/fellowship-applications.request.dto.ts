@@ -19,6 +19,7 @@ import {
     FellowshipType,
     FellowshipApplicationStatus,
     FellowshipKind,
+    AcceptContractMode,
     SortOrder,
     EducationCategory,
     CohortType,
@@ -271,9 +272,19 @@ export class ReviewFellowshipApplicationRequestDto {
     @IsEnum(FellowshipKind)
     kind?: FellowshipKind;
 
-    // Accepting an application is a multipart request that also carries the
-    // Bitshala-signed unsigned-contract PDF (validated in the controller/service),
-    // which replaces the old `driveFolderUrl` field.
+    // How the contract is provided on accept. Only consumed when status is
+    // ACCEPTED; defaults to UNSIGNED. UNSIGNED expects the Bitshala-signed
+    // unsigned contract as the `file` part; PRESIGNED expects an already-signed
+    // contract as `signedContract` plus the tax form as `w8ben`, skipping the
+    // fellow's upload/review step.
+    @IsOptional()
+    @IsEnum(AcceptContractMode)
+    contractMode?: AcceptContractMode;
+
+    // Accepting an application is a multipart request. In UNSIGNED mode it carries
+    // the Bitshala-signed unsigned-contract PDF as `file`; in PRESIGNED mode it
+    // carries `signedContract` + `w8ben` instead. File parts are validated in the
+    // controller/service, not here.
 }
 
 export enum FellowshipApplicationSortBy {

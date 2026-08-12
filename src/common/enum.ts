@@ -131,6 +131,17 @@ export enum FellowshipDocumentStatus {
     REJECTED = 'REJECTED',
 }
 
+// How the contract is provided when an admin accepts an application.
+// UNSIGNED (default): the admin uploads the Bitshala-signed unsigned contract and
+// the fellow signs it offline, then uploads the signed contract + W-8BEN for
+// review. PRESIGNED: the contract was signed out of band, so the admin uploads
+// the already-signed contract + W-8BEN directly and the fellow upload/review
+// step is skipped.
+export enum AcceptContractMode {
+    UNSIGNED = 'UNSIGNED',
+    PRESIGNED = 'PRESIGNED',
+}
+
 export enum FellowshipReportStatus {
     DRAFT = 'DRAFT',
     SUBMITTED = 'SUBMITTED',
