@@ -1,5 +1,6 @@
 // dto/get-user.response.ts
 import { User } from '@/entities/user.entity';
+import { UserRole } from '@/common/enum';
 
 export class GetUserResponse {
     id: string;
@@ -46,6 +47,34 @@ export class GetUserResponse {
             weeklyCohortCommitmentHours: user.weeklyCohortCommitmentHours,
             location: user.location,
             referral: user.referral,
+        });
+    }
+}
+
+export class UserSummaryResponseDto {
+    id: string;
+    displayName: string;
+    name: string | null;
+    email: string | null;
+    discordUsername: string;
+    discordGlobalName: string | null;
+    role: UserRole;
+    createdAt: string;
+
+    constructor(partial: Partial<UserSummaryResponseDto>) {
+        Object.assign(this, partial);
+    }
+
+    static fromEntity(user: User): UserSummaryResponseDto {
+        return new UserSummaryResponseDto({
+            id: user.id,
+            displayName: user.displayName,
+            name: user.name,
+            email: user.email,
+            discordUsername: user.discordUserName,
+            discordGlobalName: user.discordGlobalName,
+            role: user.role,
+            createdAt: user.createdAt.toISOString(),
         });
     }
 }
