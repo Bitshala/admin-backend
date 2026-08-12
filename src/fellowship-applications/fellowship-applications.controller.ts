@@ -10,12 +10,12 @@ import {
     Patch,
     Post,
     Query,
-    UploadedFile,
+    UploadedFiles,
     UseInterceptors,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
     ApiBearerAuth,
     ApiConsumes,
@@ -24,7 +24,10 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { MAX_DOCUMENT_BYTES, pdfFileFilter } from '@/common/upload';
-import { FellowshipApplicationsService } from '@/fellowship-applications/fellowship-applications.service';
+import {
+    FellowshipApplicationsService,
+    ReviewApplicationFiles,
+} from '@/fellowship-applications/fellowship-applications.service';
 import {
     CreateFellowshipApplicationRequestDto,
     FellowshipApplicationSortBy,
@@ -167,22 +170,29 @@ export class FellowshipApplicationsController {
     @Patch(':id/review')
     @ApiOperation({
         summary:
-            'Review a fellowship application (admin). Accepting is multipart and carries the Bitshala-signed unsigned-contract PDF as `file`.',
+            'Review a fellowship application (admin). Accepting is multipart: with contractMode=UNSIGNED (default) send the Bitshala unsigned contract as `file`; with contractMode=PRESIGNED send an already-signed `signedContract` plus `w8ben` to skip the fellow upload/review flow.',
     })
     @ApiConsumes('multipart/form-data', 'application/json')
     @Roles(UserRole.ADMIN)
     @UseInterceptors(
-        FileInterceptor('file', {
-            limits: { fileSize: MAX_DOCUMENT_BYTES },
-            fileFilter: pdfFileFilter,
-        }),
+        FileFieldsInterceptor(
+            [
+                { name: 'file', maxCount: 1 },
+                { name: 'signedContract', maxCount: 1 },
+                { name: 'w8ben', maxCount: 1 },
+            ],
+            {
+                limits: { fileSize: MAX_DOCUMENT_BYTES },
+                fileFilter: pdfFileFilter,
+            },
+        ),
     )
     async reviewApplication(
         @Param('id', new ParseUUIDPipe()) id: string,
         @GetUser() user: User,
         @Body() body: ReviewFellowshipApplicationRequestDto,
-        @UploadedFile() file?: Express.Multer.File,
+        @UploadedFiles() files: ReviewApplicationFiles,
     ): Promise<FellowshipApplicationResponseDto> {
-        return this.service.reviewApplication(id, user, body, file);
+        return this.service.reviewApplication(id, user, body, files);
     }
 }

@@ -14,6 +14,7 @@ import { Fellowship } from '@/entities/fellowship.entity';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 import { User } from '@/entities/user.entity';
 import {
+    AcceptContractMode,
     FellowshipDocumentStatus,
     FellowshipDocumentType,
     FellowshipKind,
@@ -47,6 +48,26 @@ export interface DownloadedDocument {
     mimeType: string;
 }
 
+/**
+ * The contract documents supplied when an admin accepts an application.
+ *
+ * - UNSIGNED: the standard flow — the admin provides the Bitshala-signed unsigned
+ *   contract; the fellow later uploads the signed contract + W-8BEN for review.
+ * - PRESIGNED: the contract was signed out of band, so the admin provides the
+ *   already-signed contract and the W-8BEN directly and the fellow upload/review
+ *   step is skipped.
+ */
+export type AcceptedContract =
+    | {
+          mode: AcceptContractMode.UNSIGNED;
+          unsignedContract: Express.Multer.File;
+      }
+    | {
+          mode: AcceptContractMode.PRESIGNED;
+          signedContract: Express.Multer.File;
+          w8ben: Express.Multer.File;
+      };
+
 @Injectable()
 export class FellowshipDocumentsService {
     private readonly logger = new Logger(FellowshipDocumentsService.name);
@@ -63,11 +84,19 @@ export class FellowshipDocumentsService {
 
     /**
      * Accept-time provisioning, run from the application review flow. Lazily
-     * creates the per-application Drive folder, streams in the unsigned contract,
-     * and writes — in one transaction — the accepted application (with its new
-     * `driveFolderId`), the `Fellowship` (AWAITING_DOCUMENTS) and the three
-     * document rows. Drive happens first; on DB failure the folder is best-effort
-     * deleted so we never leak an orphan.
+     * creates the per-application Drive folder, streams in the contract
+     * document(s), and writes — in one transaction — the accepted application
+     * (with its new `driveFolderId`), the `Fellowship` and the document rows.
+     * Drive happens first; on DB failure the folder is best-effort deleted so we
+     * never leak an orphan.
+     *
+     * The document set and starting statuses depend on `contract.mode`:
+     * - UNSIGNED: uploads the Bitshala unsigned contract (APPROVED) and seeds the
+     *   two fellow documents as AWAITING_UPLOAD; the fellowship starts in
+     *   AWAITING_DOCUMENTS and follows the normal upload/review flow.
+     * - PRESIGNED: uploads an already-signed contract and W-8BEN, both APPROVED
+     *   and reviewed by the admin; no unsigned-contract row is created and the
+     *   fellowship starts in DOCUMENTS_APPROVED, ready for start-contract.
      *
      * The caller is expected to have already set `application.status`,
      * `reviewedBy` and `reviewerRemarks`; this method persists them.
@@ -75,17 +104,23 @@ export class FellowshipDocumentsService {
     async provisionAcceptedApplication(
         application: FellowshipApplication,
         reviewer: User,
-        file: Express.Multer.File,
+        contract: AcceptedContract,
         kind: FellowshipKind = FellowshipKind.FELLOWSHIP,
     ): Promise<Fellowship> {
-        this.assertValidPdf(file);
+        // Content-level %PDF- check on every provided file, before we touch Drive.
+        if (contract.mode === AcceptContractMode.PRESIGNED) {
+            this.assertValidPdf(contract.signedContract);
+            this.assertValidPdf(contract.w8ben);
+        } else {
+            this.assertValidPdf(contract.unsignedContract);
+        }
 
-        // Run folder creation, the Drive upload and the row writes inside one
+        // Run folder creation, the Drive upload(s) and the row writes inside one
         // transaction, guarded by a pessimistic lock on the application row. Two
         // concurrent accepts of the same application serialize on the lock; the
         // loser re-reads a non-null driveFolderId and bails before creating
         // anything, so a folder is never orphaned. On any failure we best-effort
-        // delete the folder this attempt created.
+        // delete the folder this attempt created (which removes any files in it).
         let createdFolderId: string | null = null;
         try {
             return await this.dbTransactionService.execute(async (manager) => {
@@ -107,14 +142,111 @@ export class FellowshipDocumentsService {
                     this.drive.rootFolderId,
                 );
                 createdFolderId = folderId;
-                const unsignedFileId = await this.drive.uploadFile({
-                    parentId: folderId,
-                    name: this.documentFileName(
-                        FellowshipDocumentType.UNSIGNED_CONTRACT,
-                    ),
-                    mimeType: PDF_MIME_TYPE,
-                    body: Readable.from(file.buffer),
-                });
+
+                // Drive first: upload every contract document (and build the row
+                // specs) before any DB write, so a failed upload rolls back the
+                // whole transaction and the best-effort folder delete is the only
+                // cleanup needed.
+                let fellowshipStatus: FellowshipStatus;
+                let documents: FellowshipDocument[];
+
+                if (contract.mode === AcceptContractMode.PRESIGNED) {
+                    // Admin-provided, admin-approved: upload the signed contract
+                    // and the W-8BEN, mark both APPROVED, and skip the fellow's
+                    // upload/review cycle. Both fellow documents approved means the
+                    // fellowship lands directly in DOCUMENTS_APPROVED.
+                    const signedFileId = await this.drive.uploadFile({
+                        parentId: folderId,
+                        name: this.documentFileName(
+                            FellowshipDocumentType.SIGNED_CONTRACT,
+                        ),
+                        mimeType: PDF_MIME_TYPE,
+                        body: Readable.from(contract.signedContract.buffer),
+                    });
+                    const w8benFileId = await this.drive.uploadFile({
+                        parentId: folderId,
+                        name: this.documentFileName(
+                            FellowshipDocumentType.W8BEN,
+                        ),
+                        mimeType: PDF_MIME_TYPE,
+                        body: Readable.from(contract.w8ben.buffer),
+                    });
+
+                    fellowshipStatus = FellowshipStatus.DOCUMENTS_APPROVED;
+                    documents = [
+                        manager.create(FellowshipDocument, {
+                            application,
+                            type: FellowshipDocumentType.SIGNED_CONTRACT,
+                            status: FellowshipDocumentStatus.APPROVED,
+                            driveFileId: signedFileId,
+                            fileName: this.sanitizeFileName(
+                                contract.signedContract.originalname,
+                                this.documentFileName(
+                                    FellowshipDocumentType.SIGNED_CONTRACT,
+                                ),
+                            ),
+                            mimeType: PDF_MIME_TYPE,
+                            sizeBytes: contract.signedContract.size,
+                            uploadedBy: reviewer,
+                            reviewedBy: reviewer,
+                        }),
+                        manager.create(FellowshipDocument, {
+                            application,
+                            type: FellowshipDocumentType.W8BEN,
+                            status: FellowshipDocumentStatus.APPROVED,
+                            driveFileId: w8benFileId,
+                            fileName: this.sanitizeFileName(
+                                contract.w8ben.originalname,
+                                this.documentFileName(
+                                    FellowshipDocumentType.W8BEN,
+                                ),
+                            ),
+                            mimeType: PDF_MIME_TYPE,
+                            sizeBytes: contract.w8ben.size,
+                            uploadedBy: reviewer,
+                            reviewedBy: reviewer,
+                        }),
+                    ];
+                } else {
+                    // Standard flow: the admin uploads the Bitshala unsigned
+                    // contract; the fellow will upload the signed contract +
+                    // W-8BEN, which an admin then reviews.
+                    const unsignedFileId = await this.drive.uploadFile({
+                        parentId: folderId,
+                        name: this.documentFileName(
+                            FellowshipDocumentType.UNSIGNED_CONTRACT,
+                        ),
+                        mimeType: PDF_MIME_TYPE,
+                        body: Readable.from(contract.unsignedContract.buffer),
+                    });
+
+                    fellowshipStatus = FellowshipStatus.AWAITING_DOCUMENTS;
+                    documents = [
+                        manager.create(FellowshipDocument, {
+                            application,
+                            type: FellowshipDocumentType.UNSIGNED_CONTRACT,
+                            status: FellowshipDocumentStatus.APPROVED,
+                            driveFileId: unsignedFileId,
+                            fileName: this.documentFileName(
+                                FellowshipDocumentType.UNSIGNED_CONTRACT,
+                            ),
+                            mimeType: PDF_MIME_TYPE,
+                            sizeBytes: contract.unsignedContract.size,
+                            uploadedBy: reviewer,
+                            reviewedBy: reviewer,
+                        }),
+                        manager.create(FellowshipDocument, {
+                            application,
+                            type: FellowshipDocumentType.SIGNED_CONTRACT,
+                            status: FellowshipDocumentStatus.AWAITING_UPLOAD,
+                        }),
+                        manager.create(FellowshipDocument, {
+                            application,
+                            type: FellowshipDocumentType.W8BEN,
+                            status: FellowshipDocumentStatus.AWAITING_UPLOAD,
+                        }),
+                    ];
+                }
 
                 application.driveFolderId = folderId;
                 await manager.save(FellowshipApplication, application);
@@ -124,35 +256,9 @@ export class FellowshipDocumentsService {
                     kind,
                     user: application.applicant,
                     application,
-                    status: FellowshipStatus.AWAITING_DOCUMENTS,
+                    status: fellowshipStatus,
                 });
                 await manager.save(Fellowship, fellowship);
-
-                const documents = [
-                    manager.create(FellowshipDocument, {
-                        application,
-                        type: FellowshipDocumentType.UNSIGNED_CONTRACT,
-                        status: FellowshipDocumentStatus.APPROVED,
-                        driveFileId: unsignedFileId,
-                        fileName: this.documentFileName(
-                            FellowshipDocumentType.UNSIGNED_CONTRACT,
-                        ),
-                        mimeType: PDF_MIME_TYPE,
-                        sizeBytes: file.size,
-                        uploadedBy: reviewer,
-                        reviewedBy: reviewer,
-                    }),
-                    manager.create(FellowshipDocument, {
-                        application,
-                        type: FellowshipDocumentType.SIGNED_CONTRACT,
-                        status: FellowshipDocumentStatus.AWAITING_UPLOAD,
-                    }),
-                    manager.create(FellowshipDocument, {
-                        application,
-                        type: FellowshipDocumentType.W8BEN,
-                        status: FellowshipDocumentStatus.AWAITING_UPLOAD,
-                    }),
-                ];
                 await manager.save(FellowshipDocument, documents);
 
                 return fellowship;

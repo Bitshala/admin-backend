@@ -10,6 +10,7 @@ import { Brackets, In, Repository } from 'typeorm';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 import { User } from '@/entities/user.entity';
 import {
+    AcceptContractMode,
     FellowshipApplicationStatus,
     FellowshipKind,
     FellowshipType,
@@ -32,7 +33,10 @@ import { PaginatedDataDto, PaginatedQueryDto } from '@/common/dto';
 import { escapeLikePattern } from '@/common/common';
 import { GitHubClassroomClient } from '@/github-classroom/client/github-classroom.client';
 import { MailService } from '@/mail/mail.service';
-import { FellowshipDocumentsService } from '@/fellowship-documents/fellowship-documents.service';
+import {
+    AcceptedContract,
+    FellowshipDocumentsService,
+} from '@/fellowship-documents/fellowship-documents.service';
 import {
     GITHUB_USERNAME_RE,
     LINK_LIMIT,
@@ -52,6 +56,16 @@ const APPLICATION_SORT_COLUMNS: Record<FellowshipApplicationSortBy, string> = {
     [FellowshipApplicationSortBy.CREATED_AT]: 'application.createdAt',
     [FellowshipApplicationSortBy.UPDATED_AT]: 'application.updatedAt',
 };
+
+// Multipart file parts accepted on the review (accept) endpoint. `file` is the
+// unsigned contract for the standard flow; `signedContract` + `w8ben` are the
+// pre-signed documents for the skip-signing flow. Each field is an array because
+// it comes from FileFieldsInterceptor.
+export interface ReviewApplicationFiles {
+    file?: Express.Multer.File[];
+    signedContract?: Express.Multer.File[];
+    w8ben?: Express.Multer.File[];
+}
 
 @Injectable()
 export class FellowshipApplicationsService {
@@ -646,7 +660,7 @@ export class FellowshipApplicationsService {
         id: string,
         reviewer: User,
         dto: ReviewFellowshipApplicationRequestDto,
-        file?: Express.Multer.File,
+        files: ReviewApplicationFiles = {},
     ): Promise<FellowshipApplicationResponseDto> {
         const application = await this.applicationRepository.findOne({
             where: { id },
@@ -698,10 +712,45 @@ export class FellowshipApplicationsService {
             );
         }
 
-        if (dto.status === FellowshipApplicationStatus.ACCEPTED && !file) {
-            throw new BadRequestException(
-                'The Bitshala-signed unsigned-contract PDF is required when accepting an application',
-            );
+        // Resolve the accept-time contract documents. In UNSIGNED mode (default)
+        // the admin uploads the Bitshala unsigned contract as `file`; in PRESIGNED
+        // mode they upload an already-signed `signedContract` plus `w8ben` and the
+        // fellow's upload/review step is skipped. File presence is validated here
+        // (files are multipart parts, not DTO fields).
+        const contractMode = dto.contractMode ?? AcceptContractMode.UNSIGNED;
+        const unsignedContract = files.file?.[0];
+        const signedContract = files.signedContract?.[0];
+        const w8ben = files.w8ben?.[0];
+
+        let acceptedContract: AcceptedContract | undefined;
+        if (dto.status === FellowshipApplicationStatus.ACCEPTED) {
+            if (contractMode === AcceptContractMode.PRESIGNED) {
+                if (!signedContract) {
+                    throw new BadRequestException(
+                        'A signed contract PDF (`signedContract`) is required when accepting with a pre-signed contract',
+                    );
+                }
+                if (!w8ben) {
+                    throw new BadRequestException(
+                        'A W-8BEN PDF (`w8ben`) is required when accepting with a pre-signed contract',
+                    );
+                }
+                acceptedContract = {
+                    mode: AcceptContractMode.PRESIGNED,
+                    signedContract,
+                    w8ben,
+                };
+            } else {
+                if (!unsignedContract) {
+                    throw new BadRequestException(
+                        'The Bitshala-signed unsigned-contract PDF is required when accepting an application',
+                    );
+                }
+                acceptedContract = {
+                    mode: AcceptContractMode.UNSIGNED,
+                    unsignedContract,
+                };
+            }
         }
 
         application.status = dto.status;
@@ -711,16 +760,16 @@ export class FellowshipApplicationsService {
         }
 
         // On accept, provisioning persists the application (status/reviewedBy +
-        // driveFolderId), creates the Fellowship and the three document rows, and
-        // uploads the unsigned contract — all in one transaction. Other outcomes
-        // are a simple status save.
+        // driveFolderId), creates the Fellowship and the document rows, and uploads
+        // the contract document(s) — all in one transaction. Other outcomes are a
+        // simple status save.
         let acceptedFellowshipId: string | undefined;
         if (dto.status === FellowshipApplicationStatus.ACCEPTED) {
             const fellowship =
                 await this.documentsService.provisionAcceptedApplication(
                     application,
                     reviewer,
-                    file!,
+                    acceptedContract!,
                     dto.kind ?? FellowshipKind.FELLOWSHIP,
                 );
             acceptedFellowshipId = fellowship.id;
@@ -732,12 +781,22 @@ export class FellowshipApplicationsService {
         if (applicant.email) {
             try {
                 if (dto.status === FellowshipApplicationStatus.ACCEPTED) {
-                    await this.mailService.sendFellowshipApplicationAcceptedEmail(
-                        applicant.email,
-                        applicant.displayName,
-                        application.type,
-                        acceptedFellowshipId!,
-                    );
+                    if (contractMode === AcceptContractMode.PRESIGNED) {
+                        // Signed contract + W-8BEN are already on file; the fellow
+                        // has nothing to upload, so send the no-documents variant.
+                        await this.mailService.sendFellowshipApplicationAcceptedNoDocumentsEmail(
+                            applicant.email,
+                            applicant.displayName,
+                            application.type,
+                        );
+                    } else {
+                        await this.mailService.sendFellowshipApplicationAcceptedEmail(
+                            applicant.email,
+                            applicant.displayName,
+                            application.type,
+                            acceptedFellowshipId!,
+                        );
+                    }
                 } else if (
                     dto.status === FellowshipApplicationStatus.REJECTED
                 ) {
