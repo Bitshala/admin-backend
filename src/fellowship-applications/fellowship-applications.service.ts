@@ -13,6 +13,7 @@ import {
     FellowshipApplicationStatus,
     FellowshipKind,
     FellowshipType,
+    EducationCategory,
     SortOrder,
     UserRole,
 } from '@/common/enum';
@@ -167,6 +168,11 @@ export class FellowshipApplicationsService {
             bitcoinOssGoal: emptyToNull(dto.bitcoinOssGoal),
             additionalInfo: emptyToNull(dto.additionalInfo),
             questionsForBitshala: emptyToNull(dto.questionsForBitshala),
+            educationCategory: dto.educationCategory ?? null,
+            cohortType: dto.cohortType ?? null,
+            city: emptyToNull(dto.city),
+            educationCategoryOther: emptyToNull(dto.educationCategoryOther),
+            scopeOfWork: emptyToNull(dto.scopeOfWork),
         });
 
         const saved = await this.applicationRepository.save(application);
@@ -233,6 +239,9 @@ export class FellowshipApplicationsService {
             'bitcoinOssGoal',
             'additionalInfo',
             'questionsForBitshala',
+            'city',
+            'educationCategoryOther',
+            'scopeOfWork',
         ] as const;
         for (const field of textFields) {
             if (dto[field] !== undefined) {
@@ -244,6 +253,12 @@ export class FellowshipApplicationsService {
         }
         if (dto.graduationYear !== undefined) {
             application.graduationYear = dto.graduationYear ?? null;
+        }
+        if (dto.educationCategory !== undefined) {
+            application.educationCategory = dto.educationCategory ?? null;
+        }
+        if (dto.cohortType !== undefined) {
+            application.cohortType = dto.cohortType ?? null;
         }
         const arrayFields = [
             'domains',
@@ -331,16 +346,30 @@ export class FellowshipApplicationsService {
         const isDeveloper = application.type === FellowshipType.DEVELOPER;
         const isEducator = application.type === FellowshipType.EDUCATOR;
 
-        const requiredText: [string, string | null][] = [
-            ['Title', application.title],
-            ['Problem statement', application.problemStatement],
+        const requiredText: [string, string | null][] = [];
+        // Title leads the developer/designer proposal. For educators the
+        // problem statement was streamlined out, and the title is applicant-
+        // entered only for Club/Other (checked in the educator block below) and
+        // auto-filled by the client for Cohort-TA/Meetup — so neither belongs
+        // in the shared required list.
+        if (!isEducator) {
+            requiredText.push(
+                ['Title', application.title],
+                ['Problem statement', application.problemStatement],
+            );
+        }
+        requiredText.push(
             ['Plan', application.plan],
             ['Academic background', application.academicBackground],
             ['Professional experience', application.professionalExperience],
             ['Bitcoin contributions', application.bitcoinContributions],
             ['Bitcoin motivation', application.bitcoinMotivation],
             ['Bitcoin OSS goal', application.bitcoinOssGoal],
-        ];
+        );
+        // The monthly scope-of-work breakdown is required for educators only.
+        if (isEducator) {
+            requiredText.push(['Scope of work', application.scopeOfWork]);
+        }
         // Mentor details, the mentor testimonial and the project name are
         // required for developers and designers but optional for educators.
         if (!isEducator) {
@@ -361,6 +390,42 @@ export class FellowshipApplicationsService {
         for (const [label, value] of requiredText) {
             if (!value || !value.trim()) {
                 errors.push(`${label} is required`);
+            }
+        }
+
+        // Education category and its conditional companions (educator only).
+        if (isEducator) {
+            if (!application.educationCategory) {
+                errors.push('Education category is required');
+            } else if (
+                application.educationCategory === EducationCategory.MEETUP &&
+                !application.city?.trim()
+            ) {
+                errors.push('City is required for a meetup');
+            } else if (
+                application.educationCategory === EducationCategory.COHORT_TA &&
+                !application.cohortType
+            ) {
+                errors.push(
+                    'A cohort is required when the category is Cohort TA',
+                );
+            } else if (
+                application.educationCategory === EducationCategory.OTHER &&
+                !application.educationCategoryOther?.trim()
+            ) {
+                errors.push(
+                    'A description is required when the category is Other',
+                );
+            }
+            // Title is applicant-entered for Club and Other (auto-filled by the
+            // client for Cohort-TA/Meetup, so not required from the applicant).
+            if (
+                (application.educationCategory === EducationCategory.CLUB ||
+                    application.educationCategory ===
+                        EducationCategory.OTHER) &&
+                !application.title?.trim()
+            ) {
+                errors.push('Title is required');
             }
         }
 
