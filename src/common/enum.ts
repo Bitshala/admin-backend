@@ -80,6 +80,15 @@ export enum FellowshipType {
     EDUCATOR = 'EDUCATOR',
 }
 
+// The category of an education (EDUCATOR) fellowship application: TAing a
+// cohort, running a meetup, running a club, or a free-form "other".
+export enum EducationCategory {
+    MEETUP = 'MEETUP',
+    CLUB = 'CLUB',
+    COHORT_TA = 'COHORT_TA',
+    OTHER = 'OTHER',
+}
+
 // The tier of a fellowship. STARTER_GRANT is a higher-tier, full-time,
 // invite-only variant; it is orthogonal to FellowshipType (a starter grant can
 // still be a DEVELOPER, etc.) and is set by an admin when accepting an
