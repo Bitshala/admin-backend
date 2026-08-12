@@ -6,7 +6,12 @@ import {
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from '@/entities/base.entity';
-import { FellowshipType, FellowshipApplicationStatus } from '@/common/enum';
+import {
+    FellowshipType,
+    FellowshipApplicationStatus,
+    EducationCategory,
+    CohortType,
+} from '@/common/enum';
 import { User } from '@/entities/user.entity';
 import { Fellowship } from '@/entities/fellowship.entity';
 
@@ -81,6 +86,27 @@ export class FellowshipApplication extends BaseEntity {
 
     @Column('text', { nullable: true })
     questionsForBitshala!: string | null;
+
+    // Education (EDUCATOR) track fields. Populated only for education
+    // applications; null for the developer/designer tracks.
+    @Column({ type: 'enum', enum: EducationCategory, nullable: true })
+    educationCategory!: EducationCategory | null;
+
+    // The course the applicant wants to TA, when educationCategory is COHORT_TA.
+    @Column({ type: 'enum', enum: CohortType, nullable: true })
+    cohortType!: CohortType | null;
+
+    // The city where a meetup will be held, when educationCategory is MEETUP.
+    @Column('text', { nullable: true })
+    city!: string | null;
+
+    // Free-form description of the activity, when educationCategory is OTHER.
+    @Column('text', { nullable: true })
+    educationCategoryOther!: string | null;
+
+    // Monthly scope-of-work breakdown for the education activity.
+    @Column('text', { nullable: true })
+    scopeOfWork!: string | null;
 
     @Column({
         type: 'enum',
