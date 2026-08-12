@@ -6,6 +6,7 @@ import { SortOrder, UserRole } from '@/common/enum';
 import { randomUUID } from 'crypto';
 import {
     GetUserResponse,
+    UserOverviewResponseDto,
     UserSummaryResponseDto,
 } from '@/users/users.response';
 import {
@@ -17,6 +18,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { escapeLikePattern } from '@/common/common';
 import { PaginatedDataDto } from '@/common/dto';
+import { ScoresService } from '@/scores/scores.service';
+import { CertificatesService } from '@/certificates/certificates.service';
+import { FellowshipsService } from '@/fellowships/fellowships.service';
 
 const USER_SORT_COLUMNS: Record<UserSortBy, string> = {
     [UserSortBy.CREATED_AT]: 'user.createdAt',
@@ -32,6 +36,9 @@ export class UsersService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
         private readonly configService: ConfigService,
+        private readonly scoresService: ScoresService,
+        private readonly certificatesService: CertificatesService,
+        private readonly fellowshipsService: FellowshipsService,
     ) {
         this.adminRoleId = this.configService.getOrThrow<string>(
             'discord.roles.admin',
@@ -166,6 +173,23 @@ export class UsersService {
             totalRecords,
             records: records.map(UserSummaryResponseDto.fromEntity),
         });
+    }
+
+    async getUserOverview(userId: string): Promise<UserOverviewResponseDto> {
+        const user = await this.findByUserId(userId);
+
+        const [scores, certificates, fellowships] = await Promise.all([
+            this.scoresService.getUserScores(userId),
+            this.certificatesService.getUserCertificates(userId),
+            this.fellowshipsService.getUserFellowships(userId),
+        ]);
+
+        return UserOverviewResponseDto.fromParts(
+            user,
+            scores,
+            certificates,
+            fellowships,
+        );
     }
 
     async updateMe(

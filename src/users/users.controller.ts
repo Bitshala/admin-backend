@@ -3,6 +3,7 @@ import {
     Controller,
     Get,
     Param,
+    ParseUUIDPipe,
     Patch,
     Query,
     UsePipes,
@@ -49,6 +50,16 @@ export class UsersController {
     @ApiOperation({ summary: 'Get current user profile' })
     getMe(@GetUser() user: User) {
         return this.usersService.getMe(user);
+    }
+
+    @Get(':id/overview')
+    @ApiOperation({
+        summary:
+            'Get a user overview: profile, cohort participation and fellowships (admin)',
+    })
+    @Roles(UserRole.ADMIN)
+    getUserOverview(@Param('id', new ParseUUIDPipe()) id: string) {
+        return this.usersService.getUserOverview(id);
     }
 
     @Get(':id')
