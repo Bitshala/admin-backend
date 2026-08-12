@@ -1,4 +1,9 @@
-import { FellowshipType, FellowshipApplicationStatus } from '@/common/enum';
+import {
+    FellowshipType,
+    FellowshipApplicationStatus,
+    EducationCategory,
+    CohortType,
+} from '@/common/enum';
 import { FellowshipApplication } from '@/entities/fellowship-application.entity';
 
 export class FellowshipApplicationProposalResponseDto {
@@ -23,6 +28,11 @@ export class FellowshipApplicationProposalResponseDto {
     bitcoinOssGoal!: string | null;
     additionalInfo!: string | null;
     questionsForBitshala!: string | null;
+    educationCategory!: EducationCategory | null;
+    cohortType!: CohortType | null;
+    city!: string | null;
+    educationCategoryOther!: string | null;
+    scopeOfWork!: string | null;
 
     static fromEntity(
         application: FellowshipApplication,
@@ -49,6 +59,11 @@ export class FellowshipApplicationProposalResponseDto {
         dto.bitcoinOssGoal = application.bitcoinOssGoal;
         dto.additionalInfo = application.additionalInfo;
         dto.questionsForBitshala = application.questionsForBitshala;
+        dto.educationCategory = application.educationCategory;
+        dto.cohortType = application.cohortType;
+        dto.city = application.city;
+        dto.educationCategoryOther = application.educationCategoryOther;
+        dto.scopeOfWork = application.scopeOfWork;
         return dto;
     }
 }

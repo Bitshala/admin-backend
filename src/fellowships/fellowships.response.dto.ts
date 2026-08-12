@@ -2,6 +2,8 @@ import {
     FellowshipType,
     FellowshipStatus,
     FellowshipKind,
+    EducationCategory,
+    CohortType,
 } from '@/common/enum';
 import { Fellowship } from '@/entities/fellowship.entity';
 
@@ -26,6 +28,11 @@ export class FellowshipResponseDto {
     bitcoinOssGoal!: string | null;
     additionalInfo!: string | null;
     questionsForBitshala!: string | null;
+    educationCategory!: EducationCategory | null;
+    cohortType!: CohortType | null;
+    city!: string | null;
+    educationCategoryOther!: string | null;
+    scopeOfWork!: string | null;
     startDate!: string | null;
     endDate!: string | null;
     amountUsd!: string | null;
@@ -56,6 +63,11 @@ export class FellowshipResponseDto {
         this.bitcoinOssGoal = obj.bitcoinOssGoal;
         this.additionalInfo = obj.additionalInfo;
         this.questionsForBitshala = obj.questionsForBitshala;
+        this.educationCategory = obj.educationCategory;
+        this.cohortType = obj.cohortType;
+        this.city = obj.city;
+        this.educationCategoryOther = obj.educationCategoryOther;
+        this.scopeOfWork = obj.scopeOfWork;
         this.startDate = obj.startDate;
         this.endDate = obj.endDate;
         this.amountUsd = obj.amountUsd;
@@ -92,6 +104,11 @@ export class FellowshipResponseDto {
             bitcoinOssGoal: application.bitcoinOssGoal,
             additionalInfo: application.additionalInfo,
             questionsForBitshala: application.questionsForBitshala,
+            educationCategory: application.educationCategory,
+            cohortType: application.cohortType,
+            city: application.city,
+            educationCategoryOther: application.educationCategoryOther,
+            scopeOfWork: application.scopeOfWork,
             startDate: fellowship.startDate?.toISOString() ?? null,
             endDate: fellowship.endDate?.toISOString() ?? null,
             amountUsd: fellowship.amountUsd,
