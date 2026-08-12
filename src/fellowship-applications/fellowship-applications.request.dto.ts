@@ -20,6 +20,8 @@ import {
     FellowshipApplicationStatus,
     FellowshipKind,
     SortOrder,
+    EducationCategory,
+    CohortType,
 } from '@/common/enum';
 import {
     cleanLinks,
@@ -195,6 +197,35 @@ export class ProposalFieldsDto {
     @IsString()
     @MaxLength(LONG_TEXT_LIMIT)
     questionsForBitshala?: string;
+
+    // Education (EDUCATOR) track fields. Optional at the DTO layer like every
+    // other field so drafts autosave with partial data; the conditional
+    // required ruleset runs at submit time in the service.
+    @IsOptional()
+    @IsEnum(EducationCategory)
+    educationCategory?: EducationCategory;
+
+    @IsOptional()
+    @IsEnum(CohortType)
+    cohortType?: CohortType;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(TITLE_LIMIT)
+    city?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    educationCategoryOther?: string;
+
+    @IsOptional()
+    @Transform(trim)
+    @IsString()
+    @MaxLength(LONG_TEXT_LIMIT)
+    scopeOfWork?: string;
 
     // Profile field: written through to the applicant's user profile rather
     // than stored on the application (see service), so it is never duplicated.
