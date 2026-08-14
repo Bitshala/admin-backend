@@ -105,7 +105,6 @@ export class CohortCalendarService {
         const calendar = ical({
             name: calendarName,
             method,
-            timezone: 'Asia/Kolkata',
             x: [
                 ['X-WR-CALNAME', calendarName],
                 ['REFRESH-INTERVAL', 'P1H'],
@@ -136,7 +135,6 @@ export class CohortCalendarService {
                 description,
                 location,
                 url: DISCORD_GENERAL_INVITE_URL,
-                timezone: 'Asia/Kolkata',
             });
 
             event.createAlarm({
