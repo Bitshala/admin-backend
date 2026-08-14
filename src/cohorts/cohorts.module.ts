@@ -15,6 +15,7 @@ import { Feedback } from '@/entities/feedback.entity';
 import { Attendance } from '@/entities/attendance.entity';
 import { Certificate } from '@/entities/certificate.entity';
 import { APITask } from '@/entities/api-task.entity';
+import { ComputedMetric } from '@/entities/computed-metric.entity';
 import { MailModule } from '@/mail/mail.module';
 import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
 
@@ -30,6 +31,7 @@ import { CohortCalendarModule } from '@/cohort-calendar/cohort-calendar.module';
             Attendance,
             Certificate,
             APITask,
+            ComputedMetric,
         ]),
         DbTransactionModule,
         DiscordClientModule,

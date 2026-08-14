@@ -118,6 +118,11 @@ export class APITaskProcessorService {
                         task,
                     );
                     break;
+                case TaskType.COMPUTE_COHORT_METRICS:
+                    await this.cohortsService.handleRecomputeCohortMetricsTask(
+                        task,
+                    );
+                    break;
                 default:
                     throw new ApiError(
                         `Unknown task type ${task.type} for task ${task.id}`,

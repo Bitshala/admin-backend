@@ -18,6 +18,8 @@ import { DbTransactionService } from '@/db-transaction/db-transaction.service';
 import { CohortWeek } from '@/entities/cohort-week.entity';
 import { randomUUID } from 'crypto';
 import {
+    CohortMetricsDto,
+    CohortMetricsResponseDto,
     GetCohortResponseDto,
     ListAvailableCohortsResponseDto,
     PublicCohortResponseDto,
@@ -35,8 +37,14 @@ import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
 import { APITask } from '@/entities/api-task.entity';
+import { ComputedMetric } from '@/entities/computed-metric.entity';
 import { APITaskStatus, TaskType } from '@/task-processor/task.enums';
 import { isLastRetry } from '@/task-processor/task-processor.utils';
+import { MetricType } from '@/metrics/metric.enums';
+import {
+    COHORT_METRICS_VERSION,
+    CohortMetricsData,
+} from '@/metrics/metric.types';
 import { TWENTY_FOUR_HOURS_MS } from '@/common/durations.constants';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
@@ -79,6 +87,12 @@ export class CohortsService {
         private readonly certificateRepository: Repository<Certificate>,
         @InjectRepository(APITask)
         private readonly apiTaskRepository: Repository<APITask<any>>,
+        @InjectRepository(ComputedMetric)
+        private readonly computedMetricRepository: Repository<
+            ComputedMetric<any>
+        >,
+        @InjectRepository(Attendance)
+        private readonly attendanceRepository: Repository<Attendance>,
         private readonly dbTransactionService: DbTransactionService,
         private readonly discordClient: DiscordClient,
         private readonly configService: ConfigService,
@@ -1178,5 +1192,188 @@ export class CohortsService {
         return {
             cohortWaitlist: waitlistEntries.map((entry) => entry.type),
         };
+    }
+
+    private async computeAllCohortMetrics(): Promise<CohortMetricsDto[]> {
+        const [cohorts, attendances] = await Promise.all([
+            this.cohortRepository.find({
+                relations: {
+                    weeks: true,
+                    memberships: true,
+                    certificates: true,
+                },
+            }),
+            this.attendanceRepository.find({
+                select: { id: true, attended: true, cohortWeek: { id: true } },
+                relations: { cohortWeek: true },
+            }),
+        ]);
+
+        const attendedCountByWeek = new Map<string, number>();
+        for (const attendance of attendances) {
+            if (!attendance.attended) continue;
+            const weekId = attendance.cohortWeek.id;
+            attendedCountByWeek.set(
+                weekId,
+                (attendedCountByWeek.get(weekId) ?? 0) + 1,
+            );
+        }
+
+        const now = new Date();
+
+        return cohorts.map((cohort) => {
+            const totalParticipants = cohort.memberships.length;
+            const gdWeeks = cohort.weeks
+                .filter((week) => week.type === CohortWeekType.GROUP_DISCUSSION)
+                .sort((a, b) => a.week - b.week);
+            const completedGdWeeks = gdWeeks.filter(
+                (week) => week.scheduledDate <= now,
+            );
+
+            const avgAttendanceRate =
+                totalParticipants && completedGdWeeks.length
+                    ? completedGdWeeks.reduce(
+                          (sum, week) =>
+                              sum + (attendedCountByWeek.get(week.id) ?? 0),
+                          0,
+                      ) /
+                      (totalParticipants * completedGdWeeks.length)
+                    : 0;
+
+            // Retention: each completed GD week's attendance against the
+            // cohort's peak attendance (its best-attended week, not
+            // necessarily the first), averaged into one number. Anchoring to
+            // the peak instead of week one keeps every ratio <= 1 — a later
+            // week outdrawing an earlier one can no longer push this over
+            // 100%, unlike an anchor that's fixed to a single early week.
+            const peakAttendance = completedGdWeeks.reduce(
+                (max, week) =>
+                    Math.max(max, attendedCountByWeek.get(week.id) ?? 0),
+                0,
+            );
+            const retentionRate = peakAttendance
+                ? completedGdWeeks.reduce(
+                      (sum, week) =>
+                          sum +
+                          (attendedCountByWeek.get(week.id) ?? 0) /
+                              peakAttendance,
+                      0,
+                  ) / completedGdWeeks.length
+                : 0;
+            const lastCompletedWeek =
+                completedGdWeeks[completedGdWeeks.length - 1];
+            const retainedStudents = lastCompletedWeek
+                ? (attendedCountByWeek.get(lastCompletedWeek.id) ?? 0)
+                : 0;
+
+            // Completion = actual graduates: a Certificate row only exists
+            // once an admin runs certificate generation for an ended cohort
+            // (certificates.service.ts), so this stays 0 until that happens
+            // even if the cohort already ended.
+            const completedStudents = cohort.certificates.length;
+            const completionRate = totalParticipants
+                ? completedStudents / totalParticipants
+                : 0;
+
+            // getEndDate() throws on a cohort with no weeks, and this job
+            // runs over every cohort — treat an unscheduled cohort as having
+            // no end date yet.
+            const endDate =
+                cohort.weeks.length > 0 ? cohort.getEndDate() : null;
+
+            return new CohortMetricsDto({
+                cohortId: cohort.id,
+                cohortType: cohort.type,
+                seasonNumber: cohort.season,
+                startDate: cohort.startDate.toISOString(),
+                endDate: endDate ? endDate.toISOString() : null,
+                totalParticipants,
+                retainedStudents,
+                retentionRate,
+                avgAttendanceRate,
+                completionRate,
+            });
+        });
+    }
+
+    // Daily job (COMPUTE_COHORT_METRICS): run the heavy cross-cohort
+    // aggregation once, overwrite the single stored row, and enqueue the next
+    // run. Mirrors handleReconcileDiscordRolesTask's success/last-retry
+    // reschedule so the daily chain survives a transient failure.
+    async handleRecomputeCohortMetricsTask(
+        task: APITask<TaskType.COMPUTE_COHORT_METRICS>,
+    ): Promise<void> {
+        try {
+            const cohorts = await this.computeAllCohortMetrics();
+            const data: CohortMetricsData = {
+                computedAt: new Date().toISOString(),
+                cohorts,
+            };
+            // Single-row overwrite on the `type` unique constraint — no
+            // delete+insert, no transaction, no empty-criteria gotcha. Upsert
+            // against the concrete metric generic so the CohortMetricsData
+            // payload is type-checked (the `<any>` store repo widens
+            // `type`/`data` to `any`, which TypeORM's QueryDeepPartialEntity
+            // rejects); write-time strong typing lives in the `data` local.
+            await (
+                this.computedMetricRepository as Repository<
+                    ComputedMetric<MetricType.COHORT_METRICS>
+                >
+            ).upsert(
+                {
+                    type: MetricType.COHORT_METRICS,
+                    version: COHORT_METRICS_VERSION,
+                    data,
+                },
+                { conflictPaths: ['type'] },
+            );
+            await this.scheduleNextMetricsRecompute();
+        } catch (error) {
+            // On the last retry, still enqueue the next run so a transient
+            // failure can't break the daily chain; then rethrow so the
+            // processor marks this attempt FAILED and fires a Discord alert.
+            if (isLastRetry(task)) {
+                await this.scheduleNextMetricsRecompute();
+            }
+            throw error;
+        }
+    }
+
+    // Next 00:00 UTC, anchored to wall-clock so the daily cadence never drifts.
+    private computeNextMetricsRunTime(): Date {
+        const now = new Date();
+        return new Date(
+            Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + 1,
+                0,
+                0,
+                0,
+            ),
+        );
+    }
+
+    private async scheduleNextMetricsRecompute(): Promise<void> {
+        const next = this.apiTaskRepository.create({
+            type: TaskType.COMPUTE_COHORT_METRICS,
+            data: {},
+            executeOnTime: this.computeNextMetricsRunTime(),
+        });
+        await this.apiTaskRepository.save(next);
+    }
+
+    // Endpoint read: return the stored payload verbatim (no live fallback).
+    // The table is empty until the seeded job's first run (~10s post-deploy),
+    // during which this returns { computedAt: null, cohorts: [] }.
+    async getAllCohortsMetrics(): Promise<CohortMetricsResponseDto> {
+        const row = await this.computedMetricRepository.findOne({
+            where: { type: MetricType.COHORT_METRICS },
+        });
+        return new CohortMetricsResponseDto(
+            row
+                ? (row.data as CohortMetricsData)
+                : { computedAt: null, cohorts: [] },
+        );
     }
 }
