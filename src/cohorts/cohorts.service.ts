@@ -30,7 +30,7 @@ import { Attendance } from '@/entities/attendance.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
-import { CohortType, CohortWeekType, UserRole } from '@/common/enum';
+import { CohortType, CohortWeekType } from '@/common/enum';
 import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
@@ -41,6 +41,7 @@ import { TWENTY_FOUR_HOURS_MS } from '@/common/durations.constants';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
+import { ViewerRole } from '@/cohorts/cohort-access.util';
 import { createReadStream, existsSync } from 'fs';
 import { join, basename } from 'path';
 import { lookup } from 'mime-types';
@@ -139,7 +140,7 @@ export class CohortsService {
 
     async getCohort(
         cohortId: string,
-        role: UserRole,
+        role: ViewerRole,
     ): Promise<GetCohortResponseDto> {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
@@ -221,7 +222,7 @@ export class CohortsService {
 
     async listCohorts(
         query: PaginatedQueryDto,
-        role: UserRole,
+        role: ViewerRole,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         const [cohorts, total]: [Cohort[], number] =
             await this.cohortRepository.findAndCount({

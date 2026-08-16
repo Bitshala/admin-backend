@@ -45,8 +45,13 @@ import { User } from '@/entities/user.entity';
 export class CohortsController {
     constructor(private readonly cohortsService: CohortsService) {}
 
+    @Public()
     @Get()
-    @ApiOperation({ summary: 'List cohorts with pagination' })
+    @ApiOperation({
+        summary: 'List cohorts with pagination',
+        description:
+            'Readable without authentication; the response is filtered down to public content for anonymous viewers.',
+    })
     @ApiQuery({
         name: 'page',
         type: 'number',
@@ -60,10 +65,11 @@ export class CohortsController {
         description: 'Number of items per page',
     })
     async listCohorts(
-        @GetUser() user: User,
+        // undefined on an anonymous request — this route is @Public().
+        @GetUser() user: User | undefined,
         @Query() query: PaginatedQueryDto,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
-        return this.cohortsService.listCohorts(query, user.role);
+        return this.cohortsService.listCohorts(query, user?.role ?? null);
     }
 
     @Public()
@@ -108,13 +114,19 @@ export class CohortsController {
         return this.cohortsService.getAttachment(id, filename, res);
     }
 
+    @Public()
     @Get(':id')
-    @ApiOperation({ summary: 'Get a cohort by ID' })
+    @ApiOperation({
+        summary: 'Get a cohort by ID',
+        description:
+            'Readable without authentication; the response is filtered down to public content for anonymous viewers.',
+    })
     async getCohort(
         @Param('id', new ParseUUIDPipe()) id: string,
-        @GetUser() user: User,
+        // undefined on an anonymous request — this route is @Public().
+        @GetUser() user: User | undefined,
     ): Promise<GetCohortResponseDto> {
-        return this.cohortsService.getCohort(id, user.role);
+        return this.cohortsService.getCohort(id, user?.role ?? null);
     }
 
     @Post()
