@@ -227,6 +227,7 @@ export class CohortsService {
                 .map(
                     (cohort) =>
                         new PublicCohortResponseDto({
+                            id: cohort.id,
                             type: cohort.type,
                             season: cohort.season,
                             startDate: cohort.startDate.toISOString(),

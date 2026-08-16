@@ -146,6 +146,7 @@ export class GetCohortResponseDto {
 }
 
 export class PublicCohortResponseDto {
+    id!: string;
     type!: string;
     season!: number;
     startDate!: string;
@@ -153,6 +154,7 @@ export class PublicCohortResponseDto {
     registrationDeadline!: string;
 
     constructor(obj: PublicCohortResponseDto) {
+        this.id = obj.id;
         this.type = obj.type;
         this.season = obj.season;
         this.startDate = obj.startDate;
