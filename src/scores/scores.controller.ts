@@ -24,8 +24,10 @@ import {
     GetUsersScoresResponseDto,
     LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
+    PublicLeaderboardEntryDto,
 } from '@/scores/scores.response.dto';
 import { Roles } from '@/auth/roles.decorator';
+import { Public } from '@/auth/public-route.decorator';
 import { UserRole } from '@/common/enum';
 import {
     AssignGroupsRequestDto,
@@ -79,6 +81,15 @@ export class ScoresController {
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
     ): Promise<LeaderboardEntryDto[]> {
         return this.scoresService.getCohortLeaderboard(cohortId);
+    }
+
+    @Public()
+    @Get('cohort/:cohortId/leaderboard/public')
+    @ApiOperation({ summary: 'Public cohort leaderboard (no PII)' })
+    async getPublicCohortLeaderboard(
+        @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
+    ): Promise<PublicLeaderboardEntryDto[]> {
+        return this.scoresService.getPublicCohortLeaderboard(cohortId);
     }
 
     @Patch('user/:userId/cohort/:cohortId/week/:weekId')

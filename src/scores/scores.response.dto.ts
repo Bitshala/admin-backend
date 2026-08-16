@@ -310,6 +310,31 @@ export class LeaderboardEntryDto {
     }
 }
 
+/**
+ * A leaderboard row as served to anonymous viewers: Discord handle, rank and
+ * total score only.
+ *
+ * Deliberately a hand-written projection rather than an Omit<> of, or a spread
+ * from, LeaderboardEntryDto — that DTO carries the member's real name, Discord
+ * global name, user id, attendance counts and a per-component score breakdown.
+ * Listing the four permitted fields explicitly means a field added there later
+ * cannot surface here by default: leaking a new one has to be an act of
+ * commission. The constructor copies field by field for the same reason.
+ */
+export class PublicLeaderboardEntryDto {
+    rank!: number;
+    discordUsername!: string;
+    totalScore!: number;
+    maxTotalScore!: number;
+
+    constructor(obj: PublicLeaderboardEntryDto) {
+        this.rank = obj.rank;
+        this.discordUsername = obj.discordUsername;
+        this.totalScore = obj.totalScore;
+        this.maxTotalScore = obj.maxTotalScore;
+    }
+}
+
 export class ListScoresForCohortAndWeekResponseDto {
     scores!: UsersWeekScoreResponseDto[];
 
