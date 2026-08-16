@@ -25,9 +25,11 @@ import {
     LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
     PublicLeaderboardEntryDto,
+    StudentLeaderboardEntryDto,
 } from '@/scores/scores.response.dto';
 import { Roles } from '@/auth/roles.decorator';
 import { Public } from '@/auth/public-route.decorator';
+import { isAtLeastRole } from '@/cohorts/cohort-access.util';
 import { UserRole } from '@/common/enum';
 import {
     AssignGroupsRequestDto,
@@ -47,6 +49,27 @@ function ApiCrossCohortPerformanceResponse() {
                 type: 'object',
                 additionalProperties: {
                     $ref: getSchemaPath(CrossCohortPerformanceEntryDto),
+                },
+            },
+        }),
+    );
+}
+
+// The leaderboard row shape depends on the caller's role, so the response is
+// documented as a union rather than a single model.
+function ApiLeaderboardResponse() {
+    return applyDecorators(
+        ApiExtraModels(LeaderboardEntryDto, StudentLeaderboardEntryDto),
+        ApiOkResponse({
+            description:
+                'LeaderboardEntryDto[] for TA/Admin, StudentLeaderboardEntryDto[] for students',
+            schema: {
+                type: 'array',
+                items: {
+                    oneOf: [
+                        { $ref: getSchemaPath(LeaderboardEntryDto) },
+                        { $ref: getSchemaPath(StudentLeaderboardEntryDto) },
+                    ],
                 },
             },
         }),
@@ -76,11 +99,21 @@ export class ScoresController {
     @ApiOperation({
         summary:
             'Get aggregated scores for a cohort across all weeks for leaderboard',
+        description:
+            'Every row carries the full score and attendance breakdown. Staff additionally see member identity (real name, Discord global name); students see the Discord handle only.',
     })
+    @ApiLeaderboardResponse()
+    @Roles(UserRole.STUDENT, UserRole.TEACHING_ASSISTANT, UserRole.ADMIN)
     async getCohortLeaderboard(
         @Param('cohortId', new ParseUUIDPipe()) cohortId: string,
-    ): Promise<LeaderboardEntryDto[]> {
-        return this.scoresService.getCohortLeaderboard(cohortId);
+        @GetUser() user: User,
+    ): Promise<LeaderboardEntryDto[] | StudentLeaderboardEntryDto[]> {
+        // Members' real names are staff-only. Students get the same scores and
+        // attendance figures over a Discord-handle-only identity, so the
+        // leaderboard UI keeps working without leaking who anyone is.
+        return isAtLeastRole(user.role, UserRole.TEACHING_ASSISTANT)
+            ? this.scoresService.getCohortLeaderboard(cohortId)
+            : this.scoresService.getStudentCohortLeaderboard(cohortId);
     }
 
     @Public()
