@@ -104,14 +104,26 @@ export class CohortsController {
         return this.cohortsService.listMyCohorts(user, query);
     }
 
+    @Public()
     @Get('attachments/:id/:filename')
-    @ApiOperation({ summary: 'Stream a cohort question attachment' })
+    @ApiOperation({
+        summary: 'Stream a cohort question attachment',
+        description:
+            'Readable without authentication for attachments referenced by a non-bonus question; bonus-question attachments stay staff-only.',
+    })
     async getAttachment(
         @Param('id', new ParseUUIDPipe()) id: string,
         @Param('filename') filename: string,
         @Res({ passthrough: true }) res: Response,
+        // undefined on an anonymous request — this route is @Public().
+        @GetUser() user: User | undefined,
     ): Promise<StreamableFile> {
-        return this.cohortsService.getAttachment(id, filename, res);
+        return this.cohortsService.getAttachment(
+            id,
+            filename,
+            res,
+            user?.role ?? null,
+        );
     }
 
     @Public()
