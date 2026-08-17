@@ -310,6 +310,78 @@ export class LeaderboardEntryDto {
     }
 }
 
+/**
+ * A leaderboard row as served to anonymous viewers: Discord handle, rank and
+ * total score only.
+ *
+ * Deliberately a hand-written projection rather than an Omit<> of, or a spread
+ * from, LeaderboardEntryDto — that DTO carries the member's real name, Discord
+ * global name, user id, attendance counts and a per-component score breakdown.
+ * Listing the four permitted fields explicitly means a field added there later
+ * cannot surface here by default: leaking a new one has to be an act of
+ * commission. The constructor copies field by field for the same reason.
+ */
+export class PublicLeaderboardEntryDto {
+    rank!: number;
+    discordUsername!: string;
+    totalScore!: number;
+    maxTotalScore!: number;
+
+    constructor(obj: PublicLeaderboardEntryDto) {
+        this.rank = obj.rank;
+        this.discordUsername = obj.discordUsername;
+        this.totalScore = obj.totalScore;
+        this.maxTotalScore = obj.maxTotalScore;
+    }
+}
+
+/**
+ * A leaderboard row as served to students: the full score and attendance
+ * breakdown, with member identity reduced to the Discord handle.
+ *
+ * Hand-written projection for the same reason as PublicLeaderboardEntryDto — and
+ * here it is load-bearing rather than merely defensive. These rows are built
+ * from a LeaderboardEntryDto, which carries the member's real name, so an
+ * Object.assign or a spread would copy that straight through. Naming every field
+ * is what keeps it out.
+ *
+ * userId is retained so the client can highlight the signed-in member's own row.
+ */
+export class StudentLeaderboardEntryDto {
+    userId!: string;
+    discordUsername!: string;
+    groupDiscussionTotalScore!: number;
+    groupDiscussionMaxTotalScore!: number;
+    exerciseTotalScore!: number;
+    exerciseMaxTotalScore!: number;
+    attendanceTotalScore!: number;
+    attendanceMaxTotalScore!: number;
+    totalScore!: number;
+    maxTotalScore!: number;
+    totalAttendance!: number;
+    maxAttendance!: number;
+    totalGroupDiscussionAttendance!: number;
+    maxGroupDiscussionAttendance!: number;
+
+    constructor(obj: StudentLeaderboardEntryDto) {
+        this.userId = obj.userId;
+        this.discordUsername = obj.discordUsername;
+        this.groupDiscussionTotalScore = obj.groupDiscussionTotalScore;
+        this.groupDiscussionMaxTotalScore = obj.groupDiscussionMaxTotalScore;
+        this.exerciseTotalScore = obj.exerciseTotalScore;
+        this.exerciseMaxTotalScore = obj.exerciseMaxTotalScore;
+        this.attendanceTotalScore = obj.attendanceTotalScore;
+        this.attendanceMaxTotalScore = obj.attendanceMaxTotalScore;
+        this.totalScore = obj.totalScore;
+        this.maxTotalScore = obj.maxTotalScore;
+        this.totalAttendance = obj.totalAttendance;
+        this.maxAttendance = obj.maxAttendance;
+        this.totalGroupDiscussionAttendance =
+            obj.totalGroupDiscussionAttendance;
+        this.maxGroupDiscussionAttendance = obj.maxGroupDiscussionAttendance;
+    }
+}
+
 export class ListScoresForCohortAndWeekResponseDto {
     scores!: UsersWeekScoreResponseDto[];
 

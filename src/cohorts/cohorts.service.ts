@@ -30,7 +30,7 @@ import { Attendance } from '@/entities/attendance.entity';
 import { ExerciseScore } from '@/entities/exercise-score.entity';
 import { DiscordClient } from '@/discord-client/discord.client';
 import { ConfigService } from '@nestjs/config';
-import { CohortType, CohortWeekType, UserRole } from '@/common/enum';
+import { CohortType, CohortWeekType } from '@/common/enum';
 import { CohortMembership } from '@/entities/cohort-membership.entity';
 import { CohortWaitlist } from '@/entities/cohort-waitlist.entity';
 import { Certificate } from '@/entities/certificate.entity';
@@ -41,6 +41,10 @@ import { TWENTY_FOUR_HOURS_MS } from '@/common/durations.constants';
 import { MailService } from '@/mail/mail.service';
 import { CohortsConfigService } from '@/cohorts/cohorts.config.service';
 import { CohortCalendarService } from '@/cohort-calendar/cohort-calendar.service';
+import {
+    canViewBonusQuestions,
+    ViewerRole,
+} from '@/cohorts/cohort-access.util';
 import { createReadStream, existsSync } from 'fs';
 import { join, basename } from 'path';
 import { lookup } from 'mime-types';
@@ -139,7 +143,7 @@ export class CohortsService {
 
     async getCohort(
         cohortId: string,
-        role: UserRole,
+        role: ViewerRole,
     ): Promise<GetCohortResponseDto> {
         const cohort: Cohort | null = await this.cohortRepository.findOne({
             where: { id: cohortId },
@@ -159,10 +163,11 @@ export class CohortsService {
         cohortId: string,
         filename: string,
         res: Response,
+        role: ViewerRole,
     ): Promise<StreamableFile> {
         const cohort = await this.cohortRepository.findOne({
             where: { id: cohortId },
-            select: ['type'],
+            relations: { weeks: true },
         });
 
         if (!cohort) {
@@ -175,6 +180,20 @@ export class CohortsService {
         const sanitized = basename(filename);
         if (sanitized !== filename || filename.includes('\0')) {
             throw new BadRequestException('Invalid filename.');
+        }
+
+        // This route resolves <cohort type>/<filename> straight off disk, so on
+        // its own it would serve bonus-question images — which are staff-only —
+        // to anyone holding the cohort id. Non-staff may only fetch a filename
+        // some non-bonus question actually references. 404 rather than 403, so
+        // the response does not confirm that a staff-only file exists.
+        const isCurriculumAttachment = cohort.weeks.some((week) =>
+            (week.questions ?? []).some((question) =>
+                (question.attachments ?? []).includes(sanitized),
+            ),
+        );
+        if (!isCurriculumAttachment && !canViewBonusQuestions(role)) {
+            throw new NotFoundException('Attachment not found.');
         }
 
         const dir = cohort.type.toLowerCase().replace(/_/g, '-');
@@ -208,6 +227,7 @@ export class CohortsService {
                 .map(
                     (cohort) =>
                         new PublicCohortResponseDto({
+                            id: cohort.id,
                             type: cohort.type,
                             season: cohort.season,
                             startDate: cohort.startDate.toISOString(),
@@ -221,7 +241,7 @@ export class CohortsService {
 
     async listCohorts(
         query: PaginatedQueryDto,
-        role: UserRole,
+        role: ViewerRole,
     ): Promise<PaginatedDataDto<GetCohortResponseDto>> {
         const [cohorts, total]: [Cohort[], number] =
             await this.cohortRepository.findAndCount({

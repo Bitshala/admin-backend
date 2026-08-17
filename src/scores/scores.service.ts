@@ -11,6 +11,8 @@ import {
     GetUsersScoresResponseDto,
     LeaderboardEntryDto,
     ListScoresForCohortAndWeekResponseDto,
+    PublicLeaderboardEntryDto,
+    StudentLeaderboardEntryDto,
     UsersWeekScoreResponseDto,
     WeeklyScore,
 } from '@/scores/scores.response.dto';
@@ -634,5 +636,60 @@ export class ScoresService {
                     return b.exerciseTotalScore - a.exerciseTotalScore;
                 return b.totalScore - a.totalScore;
             });
+    }
+
+    // Projects the leaderboard down to what a student may see: every score and
+    // attendance figure the authenticated view has, minus the member identity
+    // fields (real name, Discord global name). Ordering is untouched, so the
+    // client can keep deriving rank from position as it does today.
+    async getStudentCohortLeaderboard(
+        cohortId: string,
+    ): Promise<StudentLeaderboardEntryDto[]> {
+        const leaderboard = await this.getCohortLeaderboard(cohortId);
+
+        return leaderboard.map(
+            (entry) =>
+                new StudentLeaderboardEntryDto({
+                    userId: entry.userId,
+                    discordUsername: entry.discordUsername,
+                    groupDiscussionTotalScore: entry.groupDiscussionTotalScore,
+                    groupDiscussionMaxTotalScore:
+                        entry.groupDiscussionMaxTotalScore,
+                    exerciseTotalScore: entry.exerciseTotalScore,
+                    exerciseMaxTotalScore: entry.exerciseMaxTotalScore,
+                    attendanceTotalScore: entry.attendanceTotalScore,
+                    attendanceMaxTotalScore: entry.attendanceMaxTotalScore,
+                    totalScore: entry.totalScore,
+                    maxTotalScore: entry.maxTotalScore,
+                    totalAttendance: entry.totalAttendance,
+                    maxAttendance: entry.maxAttendance,
+                    totalGroupDiscussionAttendance:
+                        entry.totalGroupDiscussionAttendance,
+                    maxGroupDiscussionAttendance:
+                        entry.maxGroupDiscussionAttendance,
+                }),
+        );
+    }
+
+    // Projects the leaderboard down to what an anonymous viewer may see.
+    // Ranks come from the position in the already-sorted authenticated result,
+    // so the public ordering matches the real one and the client never needs
+    // the raw component scores to derive it. Note that ordering is primarily by
+    // exercise score (see docs/leaderboard-algorithm.md), so a lower totalScore
+    // can legitimately outrank a higher one here.
+    async getPublicCohortLeaderboard(
+        cohortId: string,
+    ): Promise<PublicLeaderboardEntryDto[]> {
+        const leaderboard = await this.getCohortLeaderboard(cohortId);
+
+        return leaderboard.map(
+            (entry, index) =>
+                new PublicLeaderboardEntryDto({
+                    rank: index + 1,
+                    discordUsername: entry.discordUsername,
+                    totalScore: entry.totalScore,
+                    maxTotalScore: entry.maxTotalScore,
+                }),
+        );
     }
 }

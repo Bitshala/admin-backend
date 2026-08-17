@@ -1,4 +1,4 @@
-import { CohortType, CohortWeekType, UserRole } from '@/common/enum';
+import { CohortType, CohortWeekType } from '@/common/enum';
 import { Cohort } from '@/entities/cohort.entity';
 import {
     Exercise,
@@ -9,6 +9,7 @@ import { getCohortFullName } from '@/common/cohort-display';
 import {
     canViewBonusQuestions,
     filterLinksByRole,
+    ViewerRole,
 } from '@/cohorts/cohort-access.util';
 
 export interface CohortLink {
@@ -81,8 +82,11 @@ export class GetCohortResponseDto {
     // gated DTO can never be constructed without it (a missed call site is a
     // compile error, not a silent leak). Arrays are deep-copied so the response
     // never aliases (and can never mutate) entity state.
-    static fromEntity(cohort: Cohort, role: UserRole): GetCohortResponseDto {
+    static fromEntity(cohort: Cohort, role: ViewerRole): GetCohortResponseDto {
         const canSeeBonus = canViewBonusQuestions(role);
+        // GitHub Classroom ids and invite links are join tokens, not content:
+        // anyone holding one can enrol. Withhold them from anonymous viewers.
+        const isAnonymous = role === null;
 
         return new GetCohortResponseDto({
             id: cohort.id,
@@ -93,7 +97,7 @@ export class GetCohortResponseDto {
             endDate: cohort.getEndDate().toISOString(),
             registrationDeadline: cohort.registrationDeadline.toISOString(),
             hasExercises: cohort.hasExercises,
-            classroomId: cohort.classroomId ?? null,
+            classroomId: isAnonymous ? null : (cohort.classroomId ?? null),
             // Links are filtered by role; minRole is dropped from the response.
             links: filterLinksByRole(cohort.links ?? [], role).map((link) => ({
                 label: link.label,
@@ -129,8 +133,12 @@ export class GetCohortResponseDto {
                           expectedOutput: [...week.exercise.expectedOutput],
                       }
                     : null,
-                classroomInviteLink: week.classroomInviteLink || null,
-                classroomAssignmentUrl: week.classroomAssignmentUrl ?? null,
+                classroomInviteLink: isAnonymous
+                    ? null
+                    : week.classroomInviteLink || null,
+                classroomAssignmentUrl: isAnonymous
+                    ? null
+                    : (week.classroomAssignmentUrl ?? null),
                 scheduledDate: week.scheduledDate.toISOString(),
             })),
         });
@@ -138,6 +146,7 @@ export class GetCohortResponseDto {
 }
 
 export class PublicCohortResponseDto {
+    id!: string;
     type!: string;
     season!: number;
     startDate!: string;
@@ -145,6 +154,7 @@ export class PublicCohortResponseDto {
     registrationDeadline!: string;
 
     constructor(obj: PublicCohortResponseDto) {
+        this.id = obj.id;
         this.type = obj.type;
         this.season = obj.season;
         this.startDate = obj.startDate;
